@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="TSUKAN YOBIKO v0.3 - 通関士試験向けスマホファースト個人予備校アプリ">
+    <meta name="description" content="TSUKAN YOBIKO v0.4 - 通関士試験向けスマホファースト個人予備校アプリ">
     <meta name="theme-color" content="#1f5f5b">
     <title>TSUKAN YOBIKO</title>
     <link rel="stylesheet" href="style.css">
@@ -15,7 +15,7 @@
           <p class="eyebrow">通関士試験 個人予備校</p>
           <h1>TSUKAN YOBIKO</h1>
         </div>
-        <span class="version-pill">v0.3</span>
+        <span class="version-pill">v0.4</span>
       </header>
 
       <main class="app-main">
@@ -44,6 +44,12 @@
               <h3>演習ログ</h3>
             </div>
             <div id="homePracticeSummary" class="compact-list"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-heading">
+              <h3>過去問ログ</h3>
+            </div>
+            <div id="homePastExamSummary" class="compact-list"></div>
           </section>
         </section>
 
@@ -170,6 +176,85 @@
           </div>
         </section>
 
+        <section id="view-past-exams" class="view" aria-labelledby="past-exams-title">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Past Exams</p>
+              <h2 id="past-exams-title">過去問</h2>
+            </div>
+          </div>
+
+          <div id="pastExamStats" class="stats-grid"></div>
+
+          <div class="past-exam-layout">
+            <section class="panel past-exam-form-panel">
+              <div class="panel-heading">
+                <h3 id="pastExamFormTitle">過去問ログを追加</h3>
+              </div>
+              <div class="exam-preset-note">
+                <p>第59回メモ：通関業法・関税法等は選択式・複数選択問題が中心。通関実務は輸出申告、輸入申告、品目分類、計算、資料読み取りを含みます。</p>
+              </div>
+              <form id="pastExamLogForm" class="practice-form"></form>
+              <p id="pastExamFormMessage" class="form-message" role="status" aria-live="polite"></p>
+            </section>
+
+            <section class="practice-list-area">
+              <div class="filters panel past-exam-filters">
+                <label>
+                  検索
+                  <input id="pastExamSearchInput" type="search" placeholder="年度・科目・問題番号・論点・ミス理由を検索">
+                </label>
+                <label>
+                  試験回
+                  <select id="pastExamRoundFilter"></select>
+                </label>
+                <label>
+                  科目
+                  <select id="pastExamSubjectFilter"></select>
+                </label>
+                <label>
+                  出題形式
+                  <select id="pastExamQuestionTypeFilter"></select>
+                </label>
+                <label>
+                  結果
+                  <select id="pastExamResultFilter"></select>
+                </label>
+                <label>
+                  自信度
+                  <select id="pastExamConfidenceFilter"></select>
+                </label>
+                <label>
+                  関連単元
+                  <select id="pastExamUnitFilter"></select>
+                </label>
+                <label>
+                  弱点タグ
+                  <select id="pastExamWeaknessFilter"></select>
+                </label>
+                <label>
+                  優先度
+                  <select id="pastExamPriorityFilter"></select>
+                </label>
+                <label class="check-card filter-check">
+                  <input id="pastExamRetryOnlyFilter" type="checkbox">
+                  再演習対象のみ
+                </label>
+                <label class="check-card filter-check">
+                  <input id="pastExamAllCorrectOnlyFilter" type="checkbox">
+                  全正解のみ問題
+                </label>
+                <label class="check-card filter-check">
+                  <input id="pastExamPracticalOnlyFilter" type="checkbox">
+                  実務系問題のみ
+                </label>
+              </div>
+              <p id="pastExamResultCount" class="result-count" aria-live="polite"></p>
+              <div id="pastExamLogCards" class="practice-log-grid"></div>
+            </section>
+          </div>
+        </section>
+
         <section id="view-review" class="view" aria-labelledby="review-title">
           <div class="section-heading">
             <div>
@@ -217,7 +302,7 @@
               </div>
               <dl class="info-list">
                 <div><dt>アプリ名</dt><dd>TSUKAN YOBIKO</dd></div>
-                <div><dt>バージョン</dt><dd>v0.3</dd></div>
+                <div><dt>バージョン</dt><dd>v0.4</dd></div>
                 <div><dt>公開前提</dt><dd>GitHub Pagesで公開して使う静的アプリです。</dd></div>
                 <div><dt>保存方式</dt><dd id="storageStatus">確認中</dd></div>
               </dl>
@@ -260,7 +345,7 @@
                 <li>学習記録はこのブラウザのlocalStorageに保存されます。</li>
                 <li>GitHubには個人の学習記録は自動保存されません。</li>
                 <li>スマホとPCのデータは自動同期されません。JSONバックアップ/復元で移行してください。</li>
-                <li>バックアップファイルには学習記録が含まれるため、取り扱いに注意してください。</li>
+                <li>バックアップファイルには演習ログ・過去問ログを含む学習記録が含まれるため、取り扱いに注意してください。</li>
               </ul>
             </section>
           </div>
@@ -271,6 +356,7 @@
         <button class="nav-button is-active" type="button" data-view="home">ホーム</button>
         <button class="nav-button" type="button" data-view="units">単元</button>
         <button class="nav-button" type="button" data-view="practice">演習</button>
+        <button class="nav-button" type="button" data-view="past-exams">過去問</button>
         <button class="nav-button" type="button" data-view="review">復習</button>
         <button class="nav-button" type="button" data-view="settings">設定</button>
       </nav>

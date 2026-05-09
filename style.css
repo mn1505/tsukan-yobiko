@@ -162,6 +162,7 @@ button {
   margin-top: 8px;
   font-size: 1.75rem;
   line-height: 1;
+  overflow-wrap: anywhere;
 }
 
 .empty-state,
@@ -285,7 +286,8 @@ button:focus-visible {
   gap: 12px;
 }
 
-.practice-layout {
+.practice-layout,
+.past-exam-layout {
   display: grid;
   gap: 14px;
 }
@@ -294,6 +296,17 @@ button:focus-visible {
   display: grid;
   gap: 14px;
   padding: 16px;
+}
+
+.exam-preset-note {
+  padding: 12px 16px 0;
+}
+
+.exam-preset-note p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 650;
 }
 
 .practice-fieldset {
@@ -357,6 +370,10 @@ button:focus-visible {
   box-shadow: var(--shadow);
 }
 
+.past-exam-log-card {
+  border-left: 5px solid var(--primary);
+}
+
 .practice-log-top {
   display: flex;
   align-items: flex-start;
@@ -401,6 +418,19 @@ button:focus-visible {
   background: var(--surface-soft);
   color: var(--muted);
   font-size: 0.85rem;
+}
+
+.related-log-panel {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfa;
+}
+
+.related-log-panel h4 {
+  margin: 0;
 }
 
 .unit-card {
@@ -689,8 +719,8 @@ button:focus-visible {
   left: 0;
   z-index: 30;
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 6px;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
   padding: 10px 10px calc(10px + env(safe-area-inset-bottom));
   border-top: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.96);
@@ -703,7 +733,7 @@ button:focus-visible {
   border-radius: 8px;
   background: transparent;
   color: var(--muted);
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 800;
 }
 
@@ -796,12 +826,14 @@ button:focus-visible {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .practice-layout {
+  .practice-layout,
+  .past-exam-layout {
     grid-template-columns: minmax(320px, 0.88fr) minmax(0, 1.12fr);
     align-items: start;
   }
 
-  .practice-form-panel {
+  .practice-form-panel,
+  .past-exam-form-panel {
     position: sticky;
     top: 88px;
   }
@@ -817,7 +849,7 @@ button:focus-visible {
   .bottom-nav {
     right: 50%;
     left: 50%;
-    width: min(680px, calc(100% - 32px));
+    width: min(760px, calc(100% - 32px));
     transform: translateX(-50%);
     border: 1px solid var(--line);
     border-bottom: 0;
