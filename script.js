@@ -1,4 +1,4 @@
-const APP_VERSION = "v0.1";
+const APP_VERSION = "v0.2";
 const STORAGE_KEYS = {
   units: "tsukanYobiko.units",
   version: "tsukanYobiko.version",
@@ -44,8 +44,18 @@ const state = {
   filters: {
     search: "",
     subject: "すべて",
+    importance: "すべて",
     level: "すべて",
-    review: "すべて"
+    review: "すべて",
+    weakness: "すべて",
+    redoOnly: false
+  },
+  reviewFilters: {
+    subject: "すべて",
+    review: "すべて",
+    importance: "すべて",
+    weakness: "すべて",
+    redoOnly: false
   }
 };
 
@@ -135,11 +145,100 @@ function makeInitialUnits() {
 
 function loadState() {
   const savedUnits = readJson(STORAGE_KEYS.units);
-  state.units = Array.isArray(savedUnits) ? savedUnits : makeInitialUnits();
-  state.practiceLogs = readJson(STORAGE_KEYS.practiceLogs) || [];
-  state.pastExamLogs = readJson(STORAGE_KEYS.pastExamLogs) || [];
-  state.aiAnalyses = readJson(STORAGE_KEYS.aiAnalyses) || [];
+  state.units = Array.isArray(savedUnits) ? savedUnits.map(normalizeUnit) : makeInitialUnits();
+  state.practiceLogs = normalizeArray(readJson(STORAGE_KEYS.practiceLogs));
+  state.pastExamLogs = normalizeArray(readJson(STORAGE_KEYS.pastExamLogs));
+  state.aiAnalyses = normalizeArray(readJson(STORAGE_KEYS.aiAnalyses));
   localStorage.setItem(STORAGE_KEYS.version, APP_VERSION);
+}
+
+function normalizeArray(value) {
+  return Array.isArray(value) ? value : [];
+}
+
+function normalizeUnit(unit) {
+  const base = makeBlankUnit();
+  return {
+    ...base,
+    ...unit,
+    law: { ...base.law, ...(unit?.law || {}) },
+    exam: { ...base.exam, ...(unit?.exam || {}) },
+    pastExam: { ...base.pastExam, ...(unit?.pastExam || {}) },
+    exercises: Array.isArray(unit?.exercises) && unit.exercises.length
+      ? unit.exercises.map((exercise, index) => ({
+          question: `例題${index + 1}の問題文メモ`,
+          myAnswer: "",
+          result: "未採点",
+          explanation: "",
+          ...exercise
+        }))
+      : base.exercises,
+    optimization: { ...base.optimization, ...(unit?.optimization || {}) },
+    ai: {
+      ...base.ai,
+      ...(unit?.ai || {}),
+      weaknessTags: Array.isArray(unit?.ai?.weaknessTags) ? unit.ai.weaknessTags : []
+    }
+  };
+}
+
+function makeBlankUnit() {
+  return {
+    id: "",
+    subject: "",
+    title: "",
+    importance: "中",
+    level: "未判定",
+    reviewTarget: false,
+    redoTarget: false,
+    updatedAt: "",
+    law: {
+      basis: "",
+      articleSummary: "",
+      purpose: "",
+      overview: "",
+      yearlySupport: "",
+      checkedAt: "",
+      revisionMemo: ""
+    },
+    exam: {
+      keyPoint: "",
+      confusingPoints: "",
+      traps: "",
+      memoryPoints: "",
+      understandingPoints: "",
+      pastQuestionStyle: "",
+      relatedPastQuestions: "",
+      targetGoal: "",
+      mistakePatterns: ""
+    },
+    pastExam: {
+      questionMemo: "",
+      format: "未設定",
+      myAnswer: "",
+      result: "未実施",
+      mistakeReason: "",
+      aiMemo: ""
+    },
+    exercises: [1, 2, 3].map((number) => ({
+      question: `例題${number}の問題文メモ`,
+      myAnswer: "",
+      result: "未採点",
+      explanation: ""
+    })),
+    optimization: {
+      practiceHistoryMemo: "",
+      workbookMemo: "",
+      pastExamMemo: "",
+      wrongPatternMemo: ""
+    },
+    ai: {
+      analysisMemo: "",
+      promptMemo: "",
+      weaknessTags: []
+    },
+    freeMemo: ""
+  };
 }
 
 function readJson(key) {
@@ -154,6 +253,9 @@ function readJson(key) {
 
 function saveUnits() {
   localStorage.setItem(STORAGE_KEYS.units, JSON.stringify(state.units));
+  localStorage.setItem(STORAGE_KEYS.practiceLogs, JSON.stringify(state.practiceLogs));
+  localStorage.setItem(STORAGE_KEYS.pastExamLogs, JSON.stringify(state.pastExamLogs));
+  localStorage.setItem(STORAGE_KEYS.aiAnalyses, JSON.stringify(state.aiAnalyses));
   localStorage.setItem(STORAGE_KEYS.version, APP_VERSION);
 }
 
@@ -162,15 +264,31 @@ function todayString() {
 }
 
 function getReviewStatus(unit) {
-  const hasBadExercise = unit.exercises.some((exercise) => exercise.result === "×");
-  const hasWeakExercise = unit.exercises.some((exercise) => exercise.result === "△");
-  if (unit.level === "C" || hasBadExercise || unit.pastExam.result === "×") {
+  const reasons = getReviewReasons(unit);
+  if (unit.level === "C" || reasons.includes("例題に×あり") || reasons.includes("過去問が×")) {
     return { label: "最優先復習", weight: 2, className: "priority" };
   }
-  if (unit.level === "B" || hasWeakExercise || unit.reviewTarget || unit.pastExam.result === "△") {
+  if (unit.level === "B" || reasons.includes("例題に△あり") || unit.reviewTarget || unit.pastExam.result === "△" || getWeaknessCount(unit) > 0) {
     return { label: "通常復習", weight: 1, className: "normal" };
   }
   return { label: "復習不要", weight: 0, className: "ok" };
+}
+
+function getReviewReasons(unit) {
+  const reasons = [];
+  if (unit.level === "C") reasons.push("C判定");
+  if (unit.level === "B") reasons.push("B判定");
+  if (unit.exercises.some((exercise) => exercise.result === "×")) reasons.push("例題に×あり");
+  if (unit.exercises.some((exercise) => exercise.result === "△")) reasons.push("例題に△あり");
+  if (unit.pastExam.result === "×") reasons.push("過去問が×");
+  if (unit.pastExam.result === "△") reasons.push("過去問が△");
+  if (unit.reviewTarget) reasons.push("復習対象チェックあり");
+  if (getWeaknessCount(unit) > 0) reasons.push("弱点タグあり");
+  return reasons;
+}
+
+function getWeaknessCount(unit) {
+  return Array.isArray(unit.ai?.weaknessTags) ? unit.ai.weaknessTags.length : 0;
 }
 
 function render() {
@@ -209,7 +327,7 @@ function renderDashboard() {
     : `<p class="muted">まだ保存された単元はありません。</p>`;
 
   const recommendations = reviewUnits
-    .sort((a, b) => getReviewStatus(b).weight - getReviewStatus(a).weight || a.id.localeCompare(b.id))
+    .sort(compareReviewUnits)
     .slice(0, 3);
   document.querySelector("#recommendedReviews").innerHTML = recommendations.length
     ? recommendations.map((unit) => compactUnitButton(unit)).join("")
@@ -219,9 +337,17 @@ function renderDashboard() {
 function renderFilters() {
   const subjects = ["すべて", ...new Set(state.units.map((unit) => unit.subject))];
   fillSelect("#subjectFilter", subjects, state.filters.subject);
+  fillSelect("#importanceFilter", ["すべて", ...IMPORTANCE], state.filters.importance);
   fillSelect("#levelFilter", ["すべて", ...LEVELS], state.filters.level);
   fillSelect("#reviewFilter", ["すべて", "最優先復習", "通常復習", "復習不要"], state.filters.review);
+  fillSelect("#weaknessFilter", ["すべて", "弱点タグあり", "弱点タグなし"], state.filters.weakness);
   document.querySelector("#searchInput").value = state.filters.search;
+  document.querySelector("#redoOnlyFilter").checked = state.filters.redoOnly;
+  fillSelect("#reviewSubjectFilter", subjects, state.reviewFilters.subject);
+  fillSelect("#reviewStatusFilter", ["すべて", "最優先復習", "通常復習", "復習不要"], state.reviewFilters.review);
+  fillSelect("#reviewImportanceFilter", ["すべて", ...IMPORTANCE], state.reviewFilters.importance);
+  fillSelect("#reviewWeaknessFilter", ["すべて", "弱点タグあり", "弱点タグなし"], state.reviewFilters.weakness);
+  document.querySelector("#reviewRedoOnlyFilter").checked = state.reviewFilters.redoOnly;
 }
 
 function fillSelect(selector, options, selected) {
@@ -234,30 +360,89 @@ function filteredUnits() {
   const keyword = state.filters.search.trim().toLowerCase();
   return state.units.filter((unit) => {
     const review = getReviewStatus(unit).label;
-    const haystack = [unit.title, unit.subject, unit.exam.keyPoint, unit.freeMemo].join(" ").toLowerCase();
+    const hasWeakness = getWeaknessCount(unit) > 0;
+    const haystack = [
+      unit.title,
+      unit.subject,
+      unit.law.basis,
+      unit.law.articleSummary,
+      unit.law.purpose,
+      unit.law.overview,
+      unit.exam.keyPoint,
+      unit.exam.confusingPoints,
+      unit.exam.traps,
+      unit.exam.memoryPoints,
+      unit.exam.understandingPoints,
+      unit.exam.pastQuestionStyle,
+      unit.exam.relatedPastQuestions,
+      unit.freeMemo,
+      unit.ai.analysisMemo,
+      unit.exam.mistakePatterns,
+      unit.optimization.wrongPatternMemo,
+      unit.ai.weaknessTags.join(" ")
+    ].join(" ").toLowerCase();
     return (
       (!keyword || haystack.includes(keyword)) &&
       (state.filters.subject === "すべて" || unit.subject === state.filters.subject) &&
+      (state.filters.importance === "すべて" || unit.importance === state.filters.importance) &&
       (state.filters.level === "すべて" || unit.level === state.filters.level) &&
-      (state.filters.review === "すべて" || review === state.filters.review)
+      (state.filters.review === "すべて" || review === state.filters.review) &&
+      (state.filters.weakness === "すべて" ||
+        (state.filters.weakness === "弱点タグあり" && hasWeakness) ||
+        (state.filters.weakness === "弱点タグなし" && !hasWeakness)) &&
+      (!state.filters.redoOnly || unit.redoTarget)
     );
   });
 }
 
 function renderUnitList() {
   const units = filteredUnits();
+  document.querySelector("#unitResultCount").textContent = `表示中：${units.length} / ${state.units.length}単元`;
   document.querySelector("#unitCards").innerHTML = units.length
     ? units.map((unit) => unitCard(unit)).join("")
     : `<div class="panel empty-state"><p class="muted">条件に合う単元はありません。</p></div>`;
 }
 
 function renderReviewList() {
-  const units = state.units
-    .filter((unit) => getReviewStatus(unit).weight > 0)
-    .sort((a, b) => getReviewStatus(b).weight - getReviewStatus(a).weight || a.id.localeCompare(b.id));
+  const units = filteredReviewUnits();
+  document.querySelector("#reviewResultCount").textContent = `表示中：${units.length} / ${state.units.length}単元`;
   document.querySelector("#reviewCards").innerHTML = units.length
-    ? units.map((unit) => unitCard(unit)).join("")
-    : `<div class="panel empty-state"><p class="muted">要復習単元はありません。</p></div>`;
+    ? units.map((unit) => reviewCard(unit)).join("")
+    : `<div class="panel empty-state"><p class="muted">条件に合う復習単元はありません。</p></div>`;
+}
+
+function filteredReviewUnits() {
+  return [...state.units]
+    .filter((unit) => {
+      const review = getReviewStatus(unit).label;
+      const hasWeakness = getWeaknessCount(unit) > 0;
+      return (
+        (state.reviewFilters.subject === "すべて" || unit.subject === state.reviewFilters.subject) &&
+        (state.reviewFilters.review === "すべて" || review === state.reviewFilters.review) &&
+        (state.reviewFilters.importance === "すべて" || unit.importance === state.reviewFilters.importance) &&
+        (state.reviewFilters.weakness === "すべて" ||
+          (state.reviewFilters.weakness === "弱点タグあり" && hasWeakness) ||
+          (state.reviewFilters.weakness === "弱点タグなし" && !hasWeakness)) &&
+        (!state.reviewFilters.redoOnly || unit.redoTarget)
+      );
+    })
+    .sort(compareReviewUnits);
+}
+
+function compareReviewUnits(a, b) {
+  const reviewDiff = getReviewStatus(b).weight - getReviewStatus(a).weight;
+  if (reviewDiff) return reviewDiff;
+  const dateA = a.updatedAt || "0000-00-00";
+  const dateB = b.updatedAt || "0000-00-00";
+  const dateDiff = dateA.localeCompare(dateB);
+  if (dateDiff) return dateDiff;
+  const importanceDiff = importanceWeight(b.importance) - importanceWeight(a.importance);
+  if (importanceDiff) return importanceDiff;
+  return a.title.localeCompare(b.title, "ja");
+}
+
+function importanceWeight(value) {
+  return value === "高" ? 3 : value === "中" ? 2 : value === "低" ? 1 : 0;
 }
 
 function unitCard(unit) {
@@ -274,9 +459,34 @@ function unitCard(unit) {
         <span class="badge ${importanceClass}">重要度 ${escapeHtml(unit.importance)}</span>
         <span class="badge ${levelClass}">到達 ${escapeHtml(unit.level)}</span>
         <span class="badge ${review.className}">${review.label}</span>
-        <span class="badge">弱点 ${unit.ai.weaknessTags.length}</span>
+        <span class="badge">弱点 ${getWeaknessCount(unit)}</span>
       </div>
       <span class="muted">最終更新日：${escapeHtml(unit.updatedAt || "未保存")}</span>
+    </button>
+  `;
+}
+
+function reviewCard(unit) {
+  const review = getReviewStatus(unit);
+  const reasons = getReviewReasons(unit);
+  const levelClass = unit.level === "A" ? "level-a" : unit.level === "B" ? "level-b" : unit.level === "C" ? "level-c" : "";
+  const importanceClass = unit.importance === "高" ? "high" : unit.importance === "中" ? "medium" : "";
+  return `
+    <button class="unit-card review-card" type="button" data-open-unit="${unit.id}">
+      <div>
+        <p class="eyebrow">${escapeHtml(unit.subject)}</p>
+        <h3>${escapeHtml(unit.title)}</h3>
+      </div>
+      <div class="card-meta">
+        <span class="badge ${importanceClass}">重要度 ${escapeHtml(unit.importance)}</span>
+        <span class="badge ${levelClass}">到達 ${escapeHtml(unit.level)}</span>
+        <span class="badge ${review.className}">${review.label}</span>
+        <span class="badge">弱点 ${getWeaknessCount(unit)}</span>
+      </div>
+      <dl class="review-facts">
+        <div><dt>復習理由</dt><dd>${escapeHtml(reasons.length ? reasons.join(" / ") : "該当なし")}</dd></div>
+        <div><dt>最終更新日</dt><dd>${escapeHtml(unit.updatedAt || "未保存")}</dd></div>
+      </dl>
     </button>
   `;
 }
@@ -452,6 +662,7 @@ function setNestedValue(target, path, value) {
   const keys = path.split(".");
   let current = target;
   keys.slice(0, -1).forEach((key) => {
+    if (!current[key]) current[key] = {};
     current = current[key];
   });
   current[keys[keys.length - 1]] = value;
@@ -495,8 +706,97 @@ function switchView(view, closeUnitDetail = true) {
 
 function renderSettings() {
   const saved = localStorage.getItem(STORAGE_KEYS.units);
-  const bytes = saved ? new Blob([saved]).size : 0;
-  document.querySelector("#storageStatus").textContent = `${state.units.length}単元 / 約${Math.ceil(bytes / 1024)}KBをこのブラウザに保存`;
+  const backupJson = JSON.stringify(makeBackupPayload());
+  const sizeKb = Math.max(1, Math.ceil(backupJson.length / 1024));
+  const last = getLastUpdatedUnit();
+  document.querySelector("#storageStatus").textContent = `${state.units.length}単元 / 約${sizeKb}KBをこのブラウザに保存`;
+  document.querySelector("#storageDetails").innerHTML = `
+    <div><dt>保存中の単元数</dt><dd>${state.units.length}単元</dd></div>
+    <div><dt>最終更新単元</dt><dd>${escapeHtml(last?.title || "未保存")}</dd></div>
+    <div><dt>最終更新日</dt><dd>${escapeHtml(last?.updatedAt || "未保存")}</dd></div>
+    <div><dt>おおよその保存サイズ</dt><dd>約${sizeKb}KB</dd></div>
+    <div><dt>バージョン</dt><dd>${APP_VERSION}</dd></div>
+  `;
+  if (!saved) saveUnits();
+}
+
+function getLastUpdatedUnit() {
+  return [...state.units].filter((unit) => unit.updatedAt).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0];
+}
+
+function makeBackupPayload() {
+  return {
+    appName: "TSUKAN YOBIKO",
+    version: APP_VERSION,
+    exportedAt: new Date().toISOString(),
+    units: state.units,
+    practiceLogs: state.practiceLogs,
+    pastExamLogs: state.pastExamLogs,
+    aiAnalyses: state.aiAnalyses
+  };
+}
+
+function exportBackup() {
+  const json = JSON.stringify(makeBackupPayload(), null, 2);
+  const blob = new Blob([json], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `tsukan-yobiko-backup-${backupTimestamp()}.json`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  showToast("バックアップを書き出しました。");
+}
+
+function backupTimestamp() {
+  const date = new Date();
+  const pad = (value) => String(value).padStart(2, "0");
+  return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}-${pad(date.getHours())}${pad(date.getMinutes())}`;
+}
+
+function importBackup(file) {
+  const message = document.querySelector("#importMessage");
+  if (!file) return;
+  const reader = new FileReader();
+  reader.addEventListener("load", () => {
+    try {
+      const parsed = JSON.parse(String(reader.result || ""));
+      validateBackup(parsed);
+      const confirmed = window.confirm("現在の学習データを、選択したバックアップ内容で上書きします。よろしいですか？");
+      if (!confirmed) return;
+      state.units = parsed.units.map(normalizeUnit);
+      state.practiceLogs = normalizeArray(parsed.practiceLogs);
+      state.pastExamLogs = normalizeArray(parsed.pastExamLogs);
+      state.aiAnalyses = normalizeArray(parsed.aiAnalyses);
+      closeDetail();
+      saveUnits();
+      render();
+      message.textContent = "バックアップから復元しました。";
+      showToast("復元しました。");
+    } catch (error) {
+      message.textContent = error instanceof SyntaxError ? "JSONとして読み込めません。" : error.message || "想定外の形式のため復元できません。";
+    } finally {
+      document.querySelector("#importInput").value = "";
+    }
+  });
+  reader.addEventListener("error", () => {
+    message.textContent = "ファイルを読み込めませんでした。";
+  });
+  reader.readAsText(file);
+}
+
+function validateBackup(value) {
+  if (!value || typeof value !== "object") {
+    throw new Error("想定外の形式のため復元できません。");
+  }
+  if (!Object.prototype.hasOwnProperty.call(value, "units")) {
+    throw new Error("unitsが存在しないため復元できません。");
+  }
+  if (!Array.isArray(value.units)) {
+    throw new Error("unitsが配列ではないため復元できません。");
+  }
 }
 
 function showToast(message) {
@@ -533,6 +833,10 @@ function attachEvents() {
     state.filters.subject = event.target.value;
     renderUnitList();
   });
+  document.querySelector("#importanceFilter").addEventListener("change", (event) => {
+    state.filters.importance = event.target.value;
+    renderUnitList();
+  });
   document.querySelector("#levelFilter").addEventListener("change", (event) => {
     state.filters.level = event.target.value;
     renderUnitList();
@@ -540,6 +844,34 @@ function attachEvents() {
   document.querySelector("#reviewFilter").addEventListener("change", (event) => {
     state.filters.review = event.target.value;
     renderUnitList();
+  });
+  document.querySelector("#weaknessFilter").addEventListener("change", (event) => {
+    state.filters.weakness = event.target.value;
+    renderUnitList();
+  });
+  document.querySelector("#redoOnlyFilter").addEventListener("change", (event) => {
+    state.filters.redoOnly = event.target.checked;
+    renderUnitList();
+  });
+  document.querySelector("#reviewSubjectFilter").addEventListener("change", (event) => {
+    state.reviewFilters.subject = event.target.value;
+    renderReviewList();
+  });
+  document.querySelector("#reviewStatusFilter").addEventListener("change", (event) => {
+    state.reviewFilters.review = event.target.value;
+    renderReviewList();
+  });
+  document.querySelector("#reviewImportanceFilter").addEventListener("change", (event) => {
+    state.reviewFilters.importance = event.target.value;
+    renderReviewList();
+  });
+  document.querySelector("#reviewWeaknessFilter").addEventListener("change", (event) => {
+    state.reviewFilters.weakness = event.target.value;
+    renderReviewList();
+  });
+  document.querySelector("#reviewRedoOnlyFilter").addEventListener("change", (event) => {
+    state.reviewFilters.redoOnly = event.target.checked;
+    renderReviewList();
   });
   document.body.addEventListener("click", (event) => {
     const opener = event.target.closest("[data-open-unit]");
@@ -563,6 +895,10 @@ function attachEvents() {
     saveUnits();
     render();
     showToast("保存しました。");
+  });
+  document.querySelector("#exportButton").addEventListener("click", exportBackup);
+  document.querySelector("#importInput").addEventListener("change", (event) => {
+    importBackup(event.target.files[0]);
   });
   document.querySelector("#resetButton").addEventListener("click", () => {
     const confirmed = window.confirm("保存済みの学習記録を削除し、初期データに戻します。よろしいですか？");

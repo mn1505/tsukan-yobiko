@@ -42,7 +42,7 @@ button {
 
 .app-shell {
   min-height: 100vh;
-  padding-bottom: 86px;
+  padding-bottom: 112px;
 }
 
 .app-header {
@@ -190,6 +190,17 @@ button {
   margin-bottom: 14px;
 }
 
+.review-filters {
+  margin-bottom: 10px;
+}
+
+.result-count {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
 label,
 .field-label {
   display: grid;
@@ -203,7 +214,7 @@ input,
 select,
 textarea {
   width: 100%;
-  min-height: 46px;
+  min-height: 48px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fff;
@@ -244,6 +255,10 @@ button:focus-visible {
   box-shadow: var(--shadow);
 }
 
+.review-card {
+  align-content: start;
+}
+
 .unit-card h3 {
   margin: 0;
   font-size: 1.05rem;
@@ -254,6 +269,29 @@ button:focus-visible {
   display: flex;
   flex-wrap: wrap;
   gap: 7px;
+}
+
+.review-facts {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-top: 2px;
+}
+
+.review-facts div {
+  display: grid;
+  gap: 2px;
+}
+
+.review-facts dt {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.review-facts dd {
+  margin: 0;
+  font-size: 0.92rem;
 }
 
 .badge.high,
@@ -343,6 +381,7 @@ button:focus-visible {
   border-color: var(--primary);
   background: var(--primary);
   color: #fff;
+  box-shadow: 0 8px 18px rgba(31, 95, 91, 0.18);
 }
 
 .detail-form {
@@ -377,8 +416,14 @@ button:focus-visible {
 }
 
 .check-card input {
-  width: 18px;
-  min-height: 18px;
+  width: 20px;
+  min-height: 20px;
+  flex: 0 0 auto;
+}
+
+.filter-check {
+  min-height: 48px;
+  align-self: end;
 }
 
 .exercise-card {
@@ -397,7 +442,7 @@ button:focus-visible {
 .primary-button,
 .ghost-button,
 .danger-button {
-  min-height: 46px;
+  min-height: 48px;
   border-radius: 8px;
   padding: 10px 16px;
   font-weight: 800;
@@ -407,6 +452,10 @@ button:focus-visible {
   border: 1px solid var(--primary);
   background: var(--primary);
   color: #fff;
+}
+
+#saveUnitButton {
+  min-width: 96px;
 }
 
 .ghost-button {
@@ -424,6 +473,20 @@ button:focus-visible {
 .settings-grid {
   display: grid;
   gap: 12px;
+}
+
+.settings-actions {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+}
+
+.file-picker {
+  display: grid;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 800;
 }
 
 .info-list {
@@ -517,8 +580,16 @@ button:focus-visible {
   }
 
   .filters {
-    grid-template-columns: 2fr 1fr 1fr 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     align-items: end;
+  }
+
+  .filters label:first-child {
+    grid-column: span 3;
+  }
+
+  .review-filters label:first-child {
+    grid-column: auto;
   }
 
   .unit-grid {
@@ -543,6 +614,18 @@ button:focus-visible {
 }
 
 @media (min-width: 1000px) {
+  .filters {
+    grid-template-columns: 2fr repeat(5, minmax(0, 1fr));
+  }
+
+  .filters label:first-child {
+    grid-column: auto;
+  }
+
+  .review-filters {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
   .unit-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
