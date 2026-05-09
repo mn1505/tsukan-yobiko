@@ -1,4 +1,4 @@
-const APP_VERSION = "v0.4";
+const APP_VERSION = "v0.5";
 const STORAGE_KEYS = {
   units: "tsukanYobiko.units",
   version: "tsukanYobiko.version",
@@ -47,6 +47,34 @@ const WEAKNESS_TAGS = [
   "ケアレスミス",
   "復習不足"
 ];
+const AI_PROMPT_TYPES = [
+  "回答添削",
+  "誤答分析",
+  "弱点抽出",
+  "復習指示",
+  "類似問題作成",
+  "到達判定",
+  "単元理解チェック",
+  "過去問分析",
+  "総合学習相談"
+];
+const AI_TARGET_TYPES = ["単元", "演習ログ", "過去問ログ", "復習対象", "全体サマリー"];
+const AI_ANALYSIS_POINTS = {
+  "回答添削": ["結論は合っているか", "理由づけは正しいか", "用語の使い方は正しいか", "条文・制度理解にズレはないか", "本試験ならどこで失点しそうか", "より良い回答にするにはどう修正すべきか"],
+  "誤答分析": ["間違えた直接原因", "背後にある理解不足", "暗記不足か理解不足か", "混同している制度・用語", "次に復習すべき論点", "同じミスを防ぐための注意点"],
+  "弱点抽出": ["弱点タグ候補", "重要な弱点上位3つ", "本試験で危険な弱点", "すぐ復習すべき単元", "短期で改善できるポイント", "長期的に積み上げるべきポイント"],
+  "復習指示": ["今日やるべき復習", "優先順位", "1時間でやる場合のメニュー", "30分でやる場合のメニュー", "次に解くべき問題タイプ", "A判定に上げるための条件"],
+  "類似問題作成": ["同じ論点の基礎問題", "本試験に近い選択式問題", "引っかけを含む問題", "解答", "解説", "間違えやすいポイント", "市販問題集や過去問の本文をそのまま複製せず、学習データの論点をもとにオリジナル問題を作ること"],
+  "到達判定": ["現在のA/B/C判定の妥当性", "本試験で正答できる可能性", "A判定に必要な追加条件", "B判定に留まる理由", "C判定なら最初に戻るべきポイント"],
+  "単元理解チェック": ["制度趣旨を説明できているか", "全体像を理解できているか", "試験上の重要点を押さえているか", "引っかけに耐えられるか", "混同ポイントが整理できているか", "確認問題を3問作る"],
+  "過去問分析": ["問題の論点", "出題者が確認したい知識", "正答に必要な判断手順", "自分のミス原因", "次に復習すべき単元", "類似問題への対応力", "本試験での危険度"],
+  "総合学習相談": ["現在の学習状況", "合格可能性を上げるうえでの優先課題", "科目別の危険度", "復習優先順位", "今週やるべきこと", "アプリへの記録方法の改善案"]
+};
+const AI_OUTPUT_FORMATS = {
+  default: ["総評", "良い点", "問題点", "弱点タグ候補", "本試験での危険ポイント", "次に復習すべきこと", "A判定に上げる条件"],
+  "類似問題作成": ["問題", "選択肢", "正答", "解説", "引っかけポイント", "復習すべき知識"],
+  "復習指示": ["最優先", "通常復習", "余裕があれば", "30分メニュー", "1時間メニュー"]
+};
 
 const state = {
   units: [],
@@ -96,6 +124,14 @@ const state = {
     retryOnly: false,
     allCorrectOnly: false,
     practicalOnly: false
+  },
+  aiForm: {
+    promptType: "単元理解チェック",
+    targetType: "単元",
+    targetId: "",
+    additionalConditions: "",
+    promptText: "",
+    currentAnalysisId: ""
   },
   editingPracticeLogId: null,
   editingPastExamLogId: null,
@@ -309,7 +345,7 @@ function loadState() {
   state.units = Array.isArray(savedUnits) ? savedUnits.map(normalizeUnit) : makeInitialUnits();
   state.practiceLogs = normalizeArray(readJson(STORAGE_KEYS.practiceLogs)).map(normalizePracticeLog);
   state.pastExamLogs = normalizeArray(readJson(STORAGE_KEYS.pastExamLogs)).map(normalizePastExamLog);
-  state.aiAnalyses = normalizeArray(readJson(STORAGE_KEYS.aiAnalyses));
+  state.aiAnalyses = normalizeArray(readJson(STORAGE_KEYS.aiAnalyses)).map(normalizeAiAnalysis);
   localStorage.setItem(STORAGE_KEYS.version, APP_VERSION);
 }
 
@@ -378,6 +414,24 @@ function normalizePastExamLog(log) {
   if (!normalized.priority) normalized.priority = "未設定";
   const unit = state.units.find((item) => item.id === normalized.relatedUnitId);
   if (unit) normalized.relatedUnitTitle = unit.title;
+  return normalized;
+}
+
+function normalizeAiAnalysis(item) {
+  const normalized = {
+    id: "",
+    createdAt: "",
+    promptType: "",
+    targetType: "",
+    targetId: "",
+    targetTitle: "",
+    promptText: "",
+    resultMemo: "",
+    ...(item || {})
+  };
+  if (!normalized.id) normalized.id = makeAiAnalysisId();
+  if (!normalized.createdAt) normalized.createdAt = new Date().toISOString();
+  if (!normalized.resultMemo) normalized.resultMemo = "";
   return normalized;
 }
 
@@ -472,6 +526,11 @@ function makePastExamLogId() {
   return `past-${Date.now().toString(36)}-${random}`;
 }
 
+function makeAiAnalysisId() {
+  const random = Math.random().toString(36).slice(2, 10);
+  return `ai-${Date.now().toString(36)}-${random}`;
+}
+
 function getReviewStatus(unit) {
   const reasons = getReviewReasons(unit);
   if (
@@ -540,6 +599,7 @@ function render() {
   renderUnitList();
   renderPracticeView();
   renderPastExamView();
+  renderAiView();
   renderReviewList();
   renderSettings();
   if (state.activeUnitId) {
@@ -631,6 +691,18 @@ function renderDashboard() {
       `).join("") : `<p class="muted">×の過去問ログはありません。</p>`}
     </div>
   `;
+
+  const recentAi = [...state.aiAnalyses]
+    .sort(compareAiAnalyses)
+    .slice(0, 3);
+  document.querySelector("#homeAiHistory").innerHTML = recentAi.length
+    ? recentAi.map((item) => `
+      <div class="mini-item">
+        <span>${escapeHtml(formatDateTime(item.createdAt))} / ${escapeHtml(item.promptType || "種別なし")}</span>
+        <small>${escapeHtml(item.targetTitle || "対象なし")}</small>
+      </div>
+    `).join("")
+    : `<p class="muted">AIプロンプト生成履歴はまだありません。</p>`;
 }
 
 function renderFilters() {
@@ -1006,6 +1078,7 @@ function pastExamLogCard(log) {
         <div><dt>ミス理由</dt><dd>${escapeHtml(truncateText(log.mistakeReason, 64) || "未入力")}</dd></div>
       </dl>
       <div class="card-actions">
+        <button class="ghost-button" type="button" data-ai-past-exam-log="${escapeAttribute(log.id)}">AI解析</button>
         <button class="ghost-button" type="button" data-edit-past-exam-log="${escapeAttribute(log.id)}">編集</button>
         <button class="danger-button" type="button" data-delete-past-exam-log="${escapeAttribute(log.id)}">削除</button>
       </div>
@@ -1214,6 +1287,7 @@ function practiceLogCard(log) {
         <div><dt>ミス理由</dt><dd>${escapeHtml(truncateText(log.mistakeReason, 64) || "未入力")}</dd></div>
       </dl>
       <div class="card-actions">
+        <button class="ghost-button" type="button" data-ai-practice-log="${escapeAttribute(log.id)}">AI解析</button>
         <button class="ghost-button" type="button" data-edit-practice-log="${escapeAttribute(log.id)}">編集</button>
         <button class="danger-button" type="button" data-delete-practice-log="${escapeAttribute(log.id)}">削除</button>
       </div>
@@ -1226,6 +1300,408 @@ function practiceResultClass(result) {
   if (result === "△") return "is-partial";
   if (result === "×") return "is-wrong";
   return "is-pending";
+}
+
+function renderAiView() {
+  fillSelect("#aiPromptTypeSelect", AI_PROMPT_TYPES, state.aiForm.promptType);
+  fillSelect("#aiTargetTypeSelect", AI_TARGET_TYPES, state.aiForm.targetType);
+  renderAiTargetSelect();
+  document.querySelector("#aiAdditionalConditions").value = state.aiForm.additionalConditions;
+  document.querySelector("#aiPromptResult").value = state.aiForm.promptText;
+  renderAiHistory();
+}
+
+function renderAiTargetSelect() {
+  const select = document.querySelector("#aiTargetSelect");
+  const label = document.querySelector("#aiTargetSelectLabel");
+  const hint = document.querySelector("#aiTargetHint");
+  const options = getAiTargetOptions(state.aiForm.targetType);
+  const needsSelect = ["単元", "演習ログ", "過去問ログ"].includes(state.aiForm.targetType);
+  label.classList.toggle("is-hidden", !needsSelect);
+  hint.textContent = needsSelect ? "" : state.aiForm.targetType === "復習対象"
+    ? "現在の復習対象単元を最大10件まで使います。"
+    : "単元・演習ログ・過去問ログの集計値を使います。";
+  if (!needsSelect) {
+    select.innerHTML = `<option value="">自動選択</option>`;
+    state.aiForm.targetId = "";
+    return;
+  }
+  select.innerHTML = options.length
+    ? options.map((option) => `<option value="${escapeAttribute(option.value)}">${escapeHtml(option.label)}</option>`).join("")
+    : `<option value="">対象データがありません</option>`;
+  if (!options.some((option) => option.value === state.aiForm.targetId)) {
+    state.aiForm.targetId = options[0]?.value || "";
+  }
+  select.value = state.aiForm.targetId;
+}
+
+function getAiTargetOptions(targetType) {
+  if (targetType === "単元") {
+    return state.units.map((unit) => ({ value: unit.id, label: `${unit.subject} / ${unit.title}` }));
+  }
+  if (targetType === "演習ログ") {
+    return [...state.practiceLogs].sort(comparePracticeLogs).map((log) => ({
+      value: log.id,
+      label: `${log.studiedAt || "日付なし"} / ${log.unitTitle || "単元なし"} / ${log.questionRef || log.sourceName || "参照なし"}`
+    }));
+  }
+  if (targetType === "過去問ログ") {
+    return [...state.pastExamLogs].sort(comparePastExamLogs).map((log) => ({
+      value: log.id,
+      label: `${log.studiedAt || "日付なし"} / ${log.examRound || "試験回なし"} / ${log.subject || "未設定"} / ${log.questionNo || "問題番号なし"}`
+    }));
+  }
+  return [];
+}
+
+function renderAiHistory() {
+  const items = [...state.aiAnalyses].sort(compareAiAnalyses).slice(0, 20);
+  document.querySelector("#aiHistoryList").innerHTML = items.length
+    ? items.map((item) => `
+      <article class="ai-history-card">
+        <div>
+          <p class="eyebrow">${escapeHtml(formatDateTime(item.createdAt))}</p>
+          <h3>${escapeHtml(item.promptType || "種別なし")} / ${escapeHtml(item.targetType || "対象なし")}</h3>
+        </div>
+        <div class="card-meta">
+          <span class="badge">${escapeHtml(item.targetTitle || "対象名なし")}</span>
+        </div>
+        <p class="muted">${escapeHtml(truncateText(item.promptText, 120) || "プロンプト本文なし")}</p>
+        <label>
+          AI返答メモ
+          <textarea data-ai-result-memo="${escapeAttribute(item.id)}" placeholder="ChatGPTなどから返ってきた解析結果を必要に応じて保存">${escapeHtml(item.resultMemo || "")}</textarea>
+        </label>
+        <div class="card-actions">
+          <button class="ghost-button" type="button" data-show-ai-analysis="${escapeAttribute(item.id)}">再表示</button>
+          <button class="primary-button" type="button" data-save-ai-result-memo="${escapeAttribute(item.id)}">メモ保存</button>
+          <button class="danger-button" type="button" data-delete-ai-analysis="${escapeAttribute(item.id)}">削除</button>
+        </div>
+      </article>
+    `).join("")
+    : `<div class="empty-state"><p class="muted">生成履歴はまだありません。</p></div>`;
+}
+
+function compareAiAnalyses(a, b) {
+  return (b.createdAt || "").localeCompare(a.createdAt || "");
+}
+
+function generateAiPrompt() {
+  const target = buildAiTargetData();
+  if (!target) {
+    showToast("対象データがありません。");
+    return;
+  }
+  const promptText = buildAiPromptText(state.aiForm.promptType, target, state.aiForm.additionalConditions);
+  const analysis = normalizeAiAnalysis({
+    id: makeAiAnalysisId(),
+    createdAt: new Date().toISOString(),
+    promptType: state.aiForm.promptType,
+    targetType: state.aiForm.targetType,
+    targetId: target.id,
+    targetTitle: target.title,
+    promptText,
+    resultMemo: ""
+  });
+  state.aiAnalyses.unshift(analysis);
+  state.aiForm.promptText = promptText;
+  state.aiForm.currentAnalysisId = analysis.id;
+  saveUnits();
+  render();
+  showToast("プロンプトを生成しました。");
+}
+
+function buildAiPromptText(promptType, target, additionalConditions) {
+  const points = AI_ANALYSIS_POINTS[promptType] || AI_ANALYSIS_POINTS["総合学習相談"];
+  const output = AI_OUTPUT_FORMATS[promptType] || AI_OUTPUT_FORMATS.default;
+  return [
+    "【役割指定】",
+    "あなたは通関士試験のプロ講師です。",
+    "私は通関士試験の独学者です。",
+    "合格レベルは、過去問を安定して解答できる状態です。",
+    "以下の学習データをもとに、試験合格に直結する形で分析してください。",
+    "",
+    "【目的】",
+    `${promptType}を行い、次の学習行動が明確になるようにしてください。`,
+    "",
+    "【対象データ】",
+    target.body,
+    "",
+    "【分析してほしい観点】",
+    bulletLines(points),
+    "",
+    "【出力形式】",
+    bulletLines(output),
+    "",
+    "【追加条件】",
+    additionalConditions.trim() || "特になし"
+  ].join("\n");
+}
+
+function buildAiTargetData() {
+  if (state.aiForm.targetType === "単元") {
+    const unit = state.units.find((item) => item.id === state.aiForm.targetId) || state.units[0];
+    return unit ? { id: unit.id, title: unit.title, body: buildUnitPromptData(unit) } : null;
+  }
+  if (state.aiForm.targetType === "演習ログ") {
+    const log = state.practiceLogs.find((item) => item.id === state.aiForm.targetId) || state.practiceLogs[0];
+    return log ? { id: log.id, title: log.unitTitle || log.questionRef || "演習ログ", body: buildPracticePromptData(log) } : null;
+  }
+  if (state.aiForm.targetType === "過去問ログ") {
+    const log = state.pastExamLogs.find((item) => item.id === state.aiForm.targetId) || state.pastExamLogs[0];
+    return log ? { id: log.id, title: [log.examRound, log.subject, log.questionNo].filter(Boolean).join(" / ") || "過去問ログ", body: buildPastExamPromptData(log) } : null;
+  }
+  if (state.aiForm.targetType === "復習対象") {
+    return { id: "", title: "復習対象", body: buildReviewTargetsPromptData() };
+  }
+  return { id: "", title: "全体サマリー", body: buildOverallSummaryPromptData() };
+}
+
+function buildUnitPromptData(unit) {
+  const review = getReviewStatus(unit);
+  const exercises = unit.exercises.map((exercise, index) => [
+    `例題${index + 1}`,
+    `問題文: ${emptyText(exercise.question)}`,
+    `自分の回答: ${emptyText(exercise.myAnswer)}`,
+    `採点結果: ${emptyText(exercise.result)}`,
+    `解説: ${emptyText(exercise.explanation)}`
+  ].join("\n  ")).join("\n");
+  return keyValueLines([
+    ["科目", unit.subject],
+    ["単元名", unit.title],
+    ["重要度", unit.importance],
+    ["到達判定", unit.level],
+    ["復習状態", review.label],
+    ["法令根拠", unit.law.basis],
+    ["条文要旨", unit.law.articleSummary],
+    ["制度趣旨", unit.law.purpose],
+    ["全体像", unit.law.overview],
+    ["試験での重要点", unit.exam.keyPoint],
+    ["混同しやすい点", unit.exam.confusingPoints],
+    ["引っかけ", unit.exam.traps],
+    ["暗記ポイント", unit.exam.memoryPoints],
+    ["理解ポイント", unit.exam.understandingPoints],
+    ["過去問での問われ方", unit.exam.pastQuestionStyle],
+    ["関連過去問", unit.exam.relatedPastQuestions],
+    ["例題", exercises || "未入力"],
+    ["自分の回答", unit.pastExam.myAnswer],
+    ["採点結果", unit.pastExam.result],
+    ["解説", unit.pastExam.aiMemo],
+    ["AI解析メモ", unit.ai.analysisMemo],
+    ["弱点タグ", unit.ai.weaknessTags.join(" / ")],
+    ["自由メモ", unit.freeMemo]
+  ]);
+}
+
+function buildPracticePromptData(log) {
+  return keyValueLines([
+    ["学習日", log.studiedAt],
+    ["出典種別", log.sourceType],
+    ["出典名", log.sourceName],
+    ["科目", log.subject],
+    ["関連単元", log.unitTitle],
+    ["問題番号・参照", log.questionRef],
+    ["問題形式", log.questionType],
+    ["自分の回答メモ", log.answerMemo],
+    ["正答・解説メモ", log.correctAnswerMemo],
+    ["結果", log.result],
+    ["自信度", log.confidence],
+    ["ミス理由", log.mistakeReason],
+    ["弱点タグ", log.weaknessTags.join(" / ")],
+    ["再演習対象", log.retry ? "対象" : "対象外"],
+    ["AI解析メモ", log.aiAnalysisMemo]
+  ]);
+}
+
+function buildPastExamPromptData(log) {
+  return keyValueLines([
+    ["学習日", log.studiedAt],
+    ["試験回", log.examRound],
+    ["年度", log.examYear],
+    ["試験日", log.examDate],
+    ["科目", log.subject],
+    ["問題番号", log.questionNo],
+    ["小問番号", log.subQuestionNo],
+    ["関連単元", log.relatedUnitTitle],
+    ["出題形式", log.questionType],
+    ["配点・採点方式", log.scoreType],
+    ["論点", log.topic],
+    ["問題要約", log.questionSummary],
+    ["問題本文メモ", log.questionTextMemo],
+    ["自分の回答", log.myAnswer],
+    ["正答メモ", log.correctAnswer],
+    ["結果", log.result],
+    ["自信度", log.confidence],
+    ["ミス理由", log.mistakeReason],
+    ["弱点タグ", log.weaknessTags.join(" / ")],
+    ["再演習対象", log.retry ? "対象" : "対象外"],
+    ["優先度", log.priority],
+    ["AI解析メモ", log.aiAnalysisMemo],
+    ["出典ファイルメモ", log.sourceFileMemo]
+  ]);
+}
+
+function buildReviewTargetsPromptData() {
+  const units = state.units.filter((unit) => getReviewStatus(unit).weight > 0).sort(compareReviewUnits).slice(0, 10);
+  if (!units.length) return "現在の復習対象単元はありません。";
+  return units.map((unit, index) => {
+    const review = getReviewStatus(unit);
+    return `${index + 1}. ${keyValueLines([
+      ["科目", unit.subject],
+      ["単元名", unit.title],
+      ["重要度", unit.importance],
+      ["到達判定", unit.level],
+      ["復習状態", review.label],
+      ["復習理由", getReviewReasons(unit).join(" / ")],
+      ["弱点タグ", unit.ai.weaknessTags.join(" / ")],
+      ["最終更新日", unit.updatedAt]
+    ]).replaceAll("\n", "\n   ")}`;
+  }).join("\n\n");
+}
+
+function buildOverallSummaryPromptData() {
+  const counts = LEVELS.reduce((acc, level) => ({ ...acc, [level]: state.units.filter((unit) => unit.level === level).length }), {});
+  const reviewUnits = state.units.filter((unit) => getReviewStatus(unit).weight > 0);
+  const practiceStats = getPracticeStats(state.practiceLogs);
+  const pastStats = getPastExamStats(state.pastExamLogs);
+  const subjectAccuracy = PAST_EXAM_SUBJECTS
+    .filter((subject) => subject !== "未設定")
+    .map((subject) => `${subject}: ${pastStats.subjects[subject]?.accuracy || "0.0%"}`)
+    .join(" / ");
+  return keyValueLines([
+    ["総単元数", state.units.length],
+    ["A/B/C/未判定数", `A:${counts.A || 0} / B:${counts.B || 0} / C:${counts.C || 0} / 未判定:${counts["未判定"] || 0}`],
+    ["要復習数", reviewUnits.length],
+    ["演習ログ総数", practiceStats.total],
+    ["演習正答率", practiceStats.accuracy],
+    ["過去問ログ総数", pastStats.total],
+    ["過去問正答率", pastStats.accuracy],
+    ["科目別過去問正答率", subjectAccuracy],
+    ["再演習対象数", practiceStats.retry + pastStats.retry],
+    ["多い弱点タグ上位", getTopWeaknessTags().join(" / ")],
+    ["直近の×演習ログ", summarizeRecentWrongPracticeLogs()],
+    ["直近の×過去問ログ", summarizeRecentWrongPastExamLogs()]
+  ]);
+}
+
+function getTopWeaknessTags() {
+  const counts = {};
+  state.units.forEach((unit) => unit.ai.weaknessTags.forEach((tag) => counts[tag] = (counts[tag] || 0) + 1));
+  state.practiceLogs.forEach((log) => log.weaknessTags.forEach((tag) => counts[tag] = (counts[tag] || 0) + 1));
+  state.pastExamLogs.forEach((log) => log.weaknessTags.forEach((tag) => counts[tag] = (counts[tag] || 0) + 1));
+  return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([tag, count]) => `${tag}(${count})`);
+}
+
+function summarizeRecentWrongPracticeLogs() {
+  const logs = [...state.practiceLogs].filter((log) => log.result === "×").sort(comparePracticeLogs).slice(0, 3);
+  return logs.length ? logs.map((log) => `${log.studiedAt || "日付なし"} ${log.unitTitle || "単元なし"} ${log.questionRef || ""} ミス理由:${log.mistakeReason || "未入力"}`).join("\n") : "なし";
+}
+
+function summarizeRecentWrongPastExamLogs() {
+  const logs = [...state.pastExamLogs].filter((log) => log.result === "×").sort(comparePastExamLogs).slice(0, 3);
+  return logs.length ? logs.map((log) => `${log.studiedAt || "日付なし"} ${log.examRound || ""} ${log.subject || ""} ${log.questionNo || ""} 論点:${log.topic || "未入力"} ミス理由:${log.mistakeReason || "未入力"}`).join("\n") : "なし";
+}
+
+function keyValueLines(rows) {
+  return rows.map(([key, value]) => `- ${key}: ${emptyText(value)}`).join("\n");
+}
+
+function bulletLines(items) {
+  return items.map((item) => `- ${item}`).join("\n");
+}
+
+function emptyText(value) {
+  const text = String(value ?? "").trim();
+  return text || "未入力";
+}
+
+function showAiAnalysis(analysisId) {
+  const item = state.aiAnalyses.find((analysis) => analysis.id === analysisId);
+  if (!item) return;
+  state.aiForm.promptType = item.promptType || state.aiForm.promptType;
+  state.aiForm.targetType = item.targetType || state.aiForm.targetType;
+  state.aiForm.targetId = item.targetId || "";
+  state.aiForm.promptText = item.promptText || "";
+  state.aiForm.currentAnalysisId = item.id;
+  renderAiView();
+  switchView("ai");
+  document.querySelector("#aiPromptResult").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function deleteAiAnalysis(analysisId) {
+  const confirmed = window.confirm("このAIプロンプト生成履歴を削除します。よろしいですか？");
+  if (!confirmed) return;
+  state.aiAnalyses = state.aiAnalyses.filter((item) => item.id !== analysisId);
+  if (state.aiForm.currentAnalysisId === analysisId) state.aiForm.currentAnalysisId = "";
+  saveUnits();
+  render();
+  showToast("削除しました。");
+}
+
+function saveAiResultMemo(analysisId) {
+  const item = state.aiAnalyses.find((analysis) => analysis.id === analysisId);
+  const input = [...document.querySelectorAll("[data-ai-result-memo]")]
+    .find((element) => element.dataset.aiResultMemo === analysisId);
+  if (!item || !input) return;
+  item.resultMemo = input.value.trim();
+  saveUnits();
+  render();
+  showToast("AI返答メモを保存しました。");
+}
+
+function saveCurrentAiPromptMemo() {
+  const text = document.querySelector("#aiPromptResult").value.trim();
+  if (!text) {
+    showToast("保存する生成結果がありません。");
+    return;
+  }
+  const item = state.aiAnalyses.find((analysis) => analysis.id === state.aiForm.currentAnalysisId);
+  if (item) {
+    item.promptText = text;
+  } else {
+    const analysis = normalizeAiAnalysis({
+      promptType: state.aiForm.promptType,
+      targetType: state.aiForm.targetType,
+      targetId: state.aiForm.targetId,
+      targetTitle: buildAiTargetData()?.title || "",
+      promptText: text,
+      resultMemo: ""
+    });
+    state.aiAnalyses.unshift(analysis);
+    state.aiForm.currentAnalysisId = analysis.id;
+  }
+  state.aiForm.promptText = text;
+  saveUnits();
+  render();
+  showToast("AI解析メモ用の履歴として保存しました。");
+}
+
+function openAiForTarget(targetType, targetId, promptType) {
+  state.aiForm.targetType = targetType;
+  state.aiForm.targetId = targetId || "";
+  state.aiForm.promptType = promptType;
+  state.aiForm.promptText = "";
+  state.aiForm.currentAnalysisId = "";
+  switchView("ai");
+  renderAiView();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+async function copyAiPrompt() {
+  const textarea = document.querySelector("#aiPromptResult");
+  const text = textarea.value;
+  if (!text.trim()) {
+    showToast("コピーするプロンプトがありません。");
+    return;
+  }
+  try {
+    if (!navigator.clipboard?.writeText) throw new Error("clipboard unavailable");
+    await navigator.clipboard.writeText(text);
+    showToast("コピーしました。");
+  } catch (error) {
+    textarea.focus();
+    textarea.select();
+    showToast("コピーできませんでした。選択中の本文を手動でコピーしてください。");
+  }
 }
 
 function truncateText(value, length) {
@@ -1346,6 +1822,11 @@ function renderUnitDetail() {
     .map((tab) => `<button class="tab-button ${tab.id === state.activeTab ? "is-active" : ""}" type="button" data-tab="${tab.id}" role="tab" aria-selected="${tab.id === state.activeTab}">${tab.label}</button>`)
     .join("");
   document.querySelector("#unitForm").innerHTML = renderTabForm(unit, state.activeTab);
+  if (!document.querySelector("#detailAiButton")) {
+    document.querySelector(".detail-header").insertAdjacentHTML("beforeend", `<button id="detailAiButton" class="ghost-button" type="button" data-ai-unit="${escapeAttribute(unit.id)}">この単元をAI解析</button>`);
+  } else {
+    document.querySelector("#detailAiButton").dataset.aiUnit = unit.id;
+  }
 }
 
 function renderTabForm(unit, tab) {
@@ -1727,6 +2208,7 @@ function renderSettings() {
     <div><dt>保存中の単元数</dt><dd>${state.units.length}単元</dd></div>
     <div><dt>保存中の演習ログ数</dt><dd>${state.practiceLogs.length}件</dd></div>
     <div><dt>保存中の過去問ログ数</dt><dd>${state.pastExamLogs.length}件</dd></div>
+    <div><dt>保存中のAI履歴数</dt><dd>${state.aiAnalyses.length}件</dd></div>
     <div><dt>最終更新単元</dt><dd>${escapeHtml(last?.title || "未保存")}</dd></div>
     <div><dt>最終更新日</dt><dd>${escapeHtml(last?.updatedAt || "未保存")}</dd></div>
     <div><dt>おおよその保存サイズ</dt><dd>約${sizeKb}KB</dd></div>
@@ -1771,6 +2253,14 @@ function backupTimestamp() {
   return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}-${pad(date.getHours())}${pad(date.getMinutes())}`;
 }
 
+function formatDateTime(value) {
+  if (!value) return "日時なし";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  const pad = (number) => String(number).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
 function importBackup(file) {
   const message = document.querySelector("#importMessage");
   if (!file) return;
@@ -1784,7 +2274,7 @@ function importBackup(file) {
       state.units = parsed.units.map(normalizeUnit);
       state.practiceLogs = normalizeArray(parsed.practiceLogs).map(normalizePracticeLog);
       state.pastExamLogs = normalizeArray(parsed.pastExamLogs).map(normalizePastExamLog);
-      state.aiAnalyses = normalizeArray(parsed.aiAnalyses);
+      state.aiAnalyses = normalizeArray(parsed.aiAnalyses).map(normalizeAiAnalysis);
       closeDetail();
       saveUnits();
       render();
@@ -1980,7 +2470,64 @@ function attachEvents() {
     state.pastExamFilters.practicalOnly = event.target.checked;
     renderPastExamLogList();
   });
+  document.querySelector("#aiPromptTypeSelect").addEventListener("change", (event) => {
+    state.aiForm.promptType = event.target.value;
+  });
+  document.querySelector("#aiTargetTypeSelect").addEventListener("change", (event) => {
+    state.aiForm.targetType = event.target.value;
+    state.aiForm.targetId = "";
+    renderAiTargetSelect();
+  });
+  document.querySelector("#aiTargetSelect").addEventListener("change", (event) => {
+    state.aiForm.targetId = event.target.value;
+  });
+  document.querySelector("#aiAdditionalConditions").addEventListener("input", (event) => {
+    state.aiForm.additionalConditions = event.target.value;
+  });
+  document.querySelector("#generateAiPromptButton").addEventListener("click", generateAiPrompt);
+  document.querySelector("#copyAiPromptButton").addEventListener("click", copyAiPrompt);
+  document.querySelector("#clearAiPromptButton").addEventListener("click", () => {
+    state.aiForm.promptText = "";
+    state.aiForm.currentAnalysisId = "";
+    document.querySelector("#aiPromptResult").value = "";
+  });
+  document.querySelector("#saveAiPromptMemoButton").addEventListener("click", saveCurrentAiPromptMemo);
+  document.querySelector("#aiPromptResult").addEventListener("input", (event) => {
+    state.aiForm.promptText = event.target.value;
+  });
   document.body.addEventListener("click", (event) => {
+    const aiPracticeButton = event.target.closest("[data-ai-practice-log]");
+    if (aiPracticeButton) {
+      openAiForTarget("演習ログ", aiPracticeButton.dataset.aiPracticeLog, "誤答分析");
+      return;
+    }
+    const aiPastExamButton = event.target.closest("[data-ai-past-exam-log]");
+    if (aiPastExamButton) {
+      openAiForTarget("過去問ログ", aiPastExamButton.dataset.aiPastExamLog, "過去問分析");
+      return;
+    }
+    const aiUnitButton = event.target.closest("[data-ai-unit]");
+    if (aiUnitButton) {
+      const unit = getActiveUnit();
+      if (unit) collectFormIntoUnit(unit);
+      openAiForTarget("単元", aiUnitButton.dataset.aiUnit, "単元理解チェック");
+      return;
+    }
+    const showAiButton = event.target.closest("[data-show-ai-analysis]");
+    if (showAiButton) {
+      showAiAnalysis(showAiButton.dataset.showAiAnalysis);
+      return;
+    }
+    const saveAiMemoButton = event.target.closest("[data-save-ai-result-memo]");
+    if (saveAiMemoButton) {
+      saveAiResultMemo(saveAiMemoButton.dataset.saveAiResultMemo);
+      return;
+    }
+    const deleteAiButton = event.target.closest("[data-delete-ai-analysis]");
+    if (deleteAiButton) {
+      deleteAiAnalysis(deleteAiButton.dataset.deleteAiAnalysis);
+      return;
+    }
     const editPracticeButton = event.target.closest("[data-edit-practice-log]");
     if (editPracticeButton) {
       editPracticeLog(editPracticeButton.dataset.editPracticeLog);
