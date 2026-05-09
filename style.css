@@ -288,6 +288,7 @@ button:focus-visible {
 
 .practice-layout,
 .past-exam-layout,
+.practical-layout,
 .ai-layout {
   display: grid;
   gap: 14px;
@@ -373,6 +374,10 @@ button:focus-visible {
 
 .past-exam-log-card {
   border-left: 5px solid var(--primary);
+}
+
+.practical-log-card {
+  border-left: 5px solid var(--accent);
 }
 
 .practice-log-top {
@@ -511,6 +516,10 @@ button:focus-visible {
 
 .analysis-hero,
 #view-analysis .panel {
+  margin-bottom: 14px;
+}
+
+.practical-weakness-panel {
   margin-bottom: 14px;
 }
 
@@ -947,7 +956,7 @@ button:focus-visible {
   left: 0;
   z-index: 30;
   display: grid;
-  grid-template-columns: repeat(8, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 1px;
   padding: 7px 6px calc(7px + env(safe-area-inset-bottom));
   border-top: 1px solid var(--line);
@@ -956,7 +965,7 @@ button:focus-visible {
 }
 
 .nav-button {
-  min-height: 48px;
+  min-height: 42px;
   border: 0;
   border-radius: 8px;
   background: transparent;
@@ -1077,6 +1086,7 @@ button:focus-visible {
 
   .practice-layout,
   .past-exam-layout,
+  .practical-layout,
   .ai-layout {
     grid-template-columns: minmax(320px, 0.88fr) minmax(0, 1.12fr);
     align-items: start;
@@ -1084,6 +1094,7 @@ button:focus-visible {
 
   .practice-form-panel,
   .past-exam-form-panel,
+  .practical-form-panel,
   .ai-form-panel {
     position: sticky;
     top: 88px;
@@ -1101,6 +1112,7 @@ button:focus-visible {
     right: 50%;
     left: 50%;
     width: min(860px, calc(100% - 32px));
+    grid-template-columns: repeat(9, minmax(0, 1fr));
     transform: translateX(-50%);
     border: 1px solid var(--line);
     border-bottom: 0;

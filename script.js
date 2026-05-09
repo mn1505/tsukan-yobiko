@@ -1,9 +1,10 @@
-const APP_VERSION = "v0.6";
+const APP_VERSION = "v0.7";
 const STORAGE_KEYS = {
   units: "tsukanYobiko.units",
   version: "tsukanYobiko.version",
   practiceLogs: "tsukanYobiko.practiceLogs",
   pastExamLogs: "tsukanYobiko.pastExamLogs",
+  practicalLogs: "tsukanYobiko.practicalLogs",
   aiAnalyses: "tsukanYobiko.aiAnalyses"
 };
 
@@ -17,6 +18,13 @@ const PRACTICE_SUBJECTS = ["通関業法", "関税法等", "通関実務", "共�
 const PRACTICE_QUESTION_TYPES = ["未設定", "空欄補充", "正誤選択", "すべて選択", "申告書作成", "品目分類", "計算", "資料読み取り", "記述メモ", "その他"];
 const PRACTICE_RESULTS = ["未判定", "○", "△", "×"];
 const PRACTICE_CONFIDENCE = ["未設定", "自信あり", "迷った", "当てた", "分からなかった"];
+const PRACTICAL_TYPES = ["未設定", "輸出申告", "輸入申告", "申告書作成", "品目分類", "課税価格計算", "関税額計算", "消費税等計算", "按分計算", "為替換算", "NACCS入力", "資料読み取り", "その他"];
+const PRACTICAL_SOURCE_TYPES = ["第59回過去問", "過去問", "0からの申告書", "計算ドリル", "自作問題", "その他"];
+const DECLARATION_TYPES = ["未設定", "輸出申告", "輸入申告", "輸入（納税）申告", "その他"];
+const CALCULATION_TYPES = ["未設定", "課税価格", "関税額", "消費税", "地方消費税", "按分", "為替換算", "加算要素", "控除要素", "税率適用", "その他"];
+const PRACTICAL_PRIORITIES = ["未設定", "高", "中", "低"];
+const PRACTICAL_DECLARATION_TYPES = ["輸出申告", "輸入申告", "申告書作成", "NACCS入力", "資料読み取り"];
+const PRACTICAL_CALCULATION_TYPES = ["課税価格計算", "関税額計算", "消費税等計算", "按分計算", "為替換算"];
 const PAST_EXAM_ROUNDS = ["第59回", "第58回", "第57回", "第56回", "第55回", "その他"];
 const PAST_EXAM_SUBJECTS = ["通関業法", "関税法等", "通関実務", "共通", "未設定"];
 const PAST_EXAM_SCORE_TYPES = ["未設定", "部分点あり", "全正解のみ", "計算式", "申告書形式", "その他"];
@@ -46,8 +54,24 @@ const WEAKNESS_TAGS = [
   "暗記不足",
   "理解不足",
   "ケアレスミス",
-  "復習不足"
+  "復習不足",
+  "申告書欄ミス",
+  "品目分類ミス",
+  "統計品目番号",
+  "課税価格計算",
+  "加算要素",
+  "控除要素",
+  "税率適用",
+  "関税額計算",
+  "消費税計算",
+  "按分計算",
+  "為替換算",
+  "インボイス読取",
+  "別冊資料読取",
+  "NACCS入力",
+  "時間不足"
 ];
+const PRACTICAL_WEAKNESS_TAGS = ["申告書欄ミス", "品目分類ミス", "統計品目番号", "課税価格計算", "加算要素", "控除要素", "税率適用", "関税額計算", "消費税計算", "按分計算", "為替換算", "インボイス読取", "別冊資料読取", "NACCS入力", "時間不足"];
 const AI_PROMPT_TYPES = [
   "回答添削",
   "誤答分析",
@@ -59,7 +83,7 @@ const AI_PROMPT_TYPES = [
   "過去問分析",
   "総合学習相談"
 ];
-const AI_TARGET_TYPES = ["単元", "演習ログ", "過去問ログ", "復習対象", "全体サマリー"];
+const AI_TARGET_TYPES = ["単元", "演習ログ", "過去問ログ", "実務ログ", "復習対象", "全体サマリー"];
 const AI_ANALYSIS_POINTS = {
   "回答添削": ["結論は合っているか", "理由づけは正しいか", "用語の使い方は正しいか", "条文・制度理解にズレはないか", "本試験ならどこで失点しそうか", "より良い回答にするにはどう修正すべきか"],
   "誤答分析": ["間違えた直接原因", "背後にある理解不足", "暗記不足か理解不足か", "混同している制度・用語", "次に復習すべき論点", "同じミスを防ぐための注意点"],
@@ -81,6 +105,7 @@ const state = {
   units: [],
   practiceLogs: [],
   pastExamLogs: [],
+  practicalLogs: [],
   aiAnalyses: [],
   activeView: "home",
   activeUnitId: null,
@@ -126,6 +151,20 @@ const state = {
     allCorrectOnly: false,
     practicalOnly: false
   },
+  practicalFilters: {
+    search: "",
+    practicalType: "すべて",
+    sourceType: "すべて",
+    result: "すべて",
+    confidence: "すべて",
+    unitId: "すべて",
+    calculationType: "すべて",
+    weakness: "すべて",
+    priority: "すべて",
+    retryOnly: false,
+    declarationOnly: false,
+    calculationOnly: false
+  },
   aiForm: {
     promptType: "単元理解チェック",
     targetType: "単元",
@@ -136,8 +175,10 @@ const state = {
   },
   editingPracticeLogId: null,
   editingPastExamLogId: null,
+  editingPracticalLogId: null,
   practiceFormMessage: "",
-  pastExamFormMessage: ""
+  pastExamFormMessage: "",
+  practicalFormMessage: ""
 };
 
 const blankPracticeLog = {
@@ -257,12 +298,80 @@ const pastExamFieldsets = [
   { title: "弱点・復習", fields: ["weaknessTags", "retry", "priority", "aiAnalysisMemo"] }
 ];
 
+const blankPracticalLog = {
+  id: "",
+  studiedAt: "",
+  practicalType: "未設定",
+  sourceType: "その他",
+  sourceName: "",
+  subject: "通関実務",
+  relatedUnitId: "",
+  relatedUnitTitle: "",
+  questionRef: "",
+  result: "未判定",
+  scoreMemo: "",
+  timeSpentMinutes: "",
+  confidence: "未設定",
+  declarationType: "未設定",
+  classificationMemo: "",
+  calculationType: "未設定",
+  calculationMemo: "",
+  invoiceMemo: "",
+  exchangeRateMemo: "",
+  taxRateMemo: "",
+  nacssMemo: "",
+  materialReadingMemo: "",
+  mistakeField: "",
+  mistakeReason: "",
+  weaknessTags: [],
+  retry: false,
+  priority: "未設定",
+  aiAnalysisMemo: "",
+  createdAt: "",
+  updatedAt: ""
+};
+
+const practicalFieldLabels = {
+  studiedAt: "学習日",
+  practicalType: "実務区分",
+  sourceType: "出典種別",
+  sourceName: "出典名",
+  relatedUnitId: "関連単元",
+  questionRef: "問題番号・参照",
+  result: "結果",
+  scoreMemo: "得点・配点メモ",
+  timeSpentMinutes: "所要時間（分）",
+  confidence: "自信度",
+  declarationType: "申告種別",
+  classificationMemo: "品目分類メモ",
+  calculationType: "計算類型",
+  calculationMemo: "計算過程メモ",
+  invoiceMemo: "インボイス読取メモ",
+  exchangeRateMemo: "為替換算メモ",
+  taxRateMemo: "税率・税額メモ",
+  nacssMemo: "NACCS入力項目メモ",
+  materialReadingMemo: "資料読み取りメモ",
+  mistakeField: "ミスした欄・項目",
+  mistakeReason: "ミス理由",
+  weaknessTags: "弱点タグ",
+  retry: "再演習対象",
+  priority: "優先度",
+  aiAnalysisMemo: "AI解析メモ"
+};
+
+const practicalFieldsets = [
+  { title: "基本情報", fields: ["studiedAt", "practicalType", "sourceType", "sourceName", "relatedUnitId", "questionRef", "result", "scoreMemo", "timeSpentMinutes", "confidence"] },
+  { title: "申告・分類・計算メモ", fields: ["declarationType", "classificationMemo", "calculationType", "calculationMemo", "invoiceMemo", "exchangeRateMemo", "taxRateMemo", "nacssMemo", "materialReadingMemo"] },
+  { title: "ミス分析", fields: ["mistakeField", "mistakeReason", "weaknessTags", "retry", "priority", "aiAnalysisMemo"] }
+];
+
 const tabDefinitions = [
   { id: "basic", label: "基本" },
   { id: "law", label: "法令" },
   { id: "exam", label: "試験" },
   { id: "past", label: "過去問" },
   { id: "practice", label: "演習" },
+  { id: "practical", label: "実務" },
   { id: "weakness", label: "弱点" },
   { id: "memo", label: "メモ" }
 ];
@@ -346,6 +455,7 @@ function loadState() {
   state.units = Array.isArray(savedUnits) ? savedUnits.map(normalizeUnit) : makeInitialUnits();
   state.practiceLogs = normalizeArray(readJson(STORAGE_KEYS.practiceLogs)).map(normalizePracticeLog);
   state.pastExamLogs = normalizeArray(readJson(STORAGE_KEYS.pastExamLogs)).map(normalizePastExamLog);
+  state.practicalLogs = normalizeArray(readJson(STORAGE_KEYS.practicalLogs)).map(normalizePracticalLog);
   state.aiAnalyses = normalizeArray(readJson(STORAGE_KEYS.aiAnalyses)).map(normalizeAiAnalysis);
   localStorage.setItem(STORAGE_KEYS.version, APP_VERSION);
 }
@@ -412,6 +522,27 @@ function normalizePastExamLog(log) {
   if (!normalized.scoreType) normalized.scoreType = "未設定";
   if (!normalized.result) normalized.result = "未実施";
   if (!normalized.confidence) normalized.confidence = "未設定";
+  if (!normalized.priority) normalized.priority = "未設定";
+  const unit = state.units.find((item) => item.id === normalized.relatedUnitId);
+  if (unit) normalized.relatedUnitTitle = unit.title;
+  return normalized;
+}
+
+function normalizePracticalLog(log) {
+  const normalized = {
+    ...blankPracticalLog,
+    ...(log || {}),
+    weaknessTags: Array.isArray(log?.weaknessTags) ? log.weaknessTags : []
+  };
+  if (!normalized.id) normalized.id = makePracticalLogId();
+  if (!normalized.studiedAt) normalized.studiedAt = todayString();
+  if (!normalized.practicalType) normalized.practicalType = "未設定";
+  if (!normalized.sourceType) normalized.sourceType = "その他";
+  if (!normalized.subject) normalized.subject = "通関実務";
+  if (!normalized.result) normalized.result = "未判定";
+  if (!normalized.confidence) normalized.confidence = "未設定";
+  if (!normalized.declarationType) normalized.declarationType = "未設定";
+  if (!normalized.calculationType) normalized.calculationType = "未設定";
   if (!normalized.priority) normalized.priority = "未設定";
   const unit = state.units.find((item) => item.id === normalized.relatedUnitId);
   if (unit) normalized.relatedUnitTitle = unit.title;
@@ -509,6 +640,7 @@ function saveUnits() {
   localStorage.setItem(STORAGE_KEYS.units, JSON.stringify(state.units));
   localStorage.setItem(STORAGE_KEYS.practiceLogs, JSON.stringify(state.practiceLogs));
   localStorage.setItem(STORAGE_KEYS.pastExamLogs, JSON.stringify(state.pastExamLogs));
+  localStorage.setItem(STORAGE_KEYS.practicalLogs, JSON.stringify(state.practicalLogs));
   localStorage.setItem(STORAGE_KEYS.aiAnalyses, JSON.stringify(state.aiAnalyses));
   localStorage.setItem(STORAGE_KEYS.version, APP_VERSION);
 }
@@ -527,6 +659,11 @@ function makePastExamLogId() {
   return `past-${Date.now().toString(36)}-${random}`;
 }
 
+function makePracticalLogId() {
+  const random = Math.random().toString(36).slice(2, 10);
+  return `prac-${Date.now().toString(36)}-${random}`;
+}
+
 function makeAiAnalysisId() {
   const random = Math.random().toString(36).slice(2, 10);
   return `ai-${Date.now().toString(36)}-${random}`;
@@ -540,7 +677,9 @@ function getReviewStatus(unit) {
     reasons.includes("過去問が×") ||
     reasons.includes("関連演習ログに×あり") ||
     reasons.includes("関連過去問ログに×あり") ||
-    reasons.includes("関連過去問ログに高優先度あり")
+    reasons.includes("関連過去問ログに高優先度あり") ||
+    reasons.includes("関連実務ログに×あり") ||
+    reasons.includes("関連実務ログに高優先度あり")
   ) {
     return { label: "最優先復習", weight: 2, className: "priority" };
   }
@@ -553,6 +692,8 @@ function getReviewStatus(unit) {
     reasons.includes("関連演習ログに再演習対象あり") ||
     reasons.includes("関連過去問ログに△あり") ||
     reasons.includes("関連過去問ログに再演習対象あり") ||
+    reasons.includes("関連実務ログに△あり") ||
+    reasons.includes("関連実務ログに再演習対象あり") ||
     getWeaknessCount(unit) > 0
   ) {
     return { label: "通常復習", weight: 1, className: "normal" };
@@ -577,6 +718,11 @@ function getReviewReasons(unit) {
   if (pastLogs.some((log) => log.result === "△")) reasons.push("関連過去問ログに△あり");
   if (pastLogs.some((log) => log.retry)) reasons.push("関連過去問ログに再演習対象あり");
   if (pastLogs.some((log) => log.priority === "高")) reasons.push("関連過去問ログに高優先度あり");
+  const practicalLogs = getPracticalLogsForUnit(unit.id);
+  if (practicalLogs.some((log) => log.result === "×")) reasons.push("関連実務ログに×あり");
+  if (practicalLogs.some((log) => log.result === "△")) reasons.push("関連実務ログに△あり");
+  if (practicalLogs.some((log) => log.retry)) reasons.push("関連実務ログに再演習対象あり");
+  if (practicalLogs.some((log) => log.priority === "高")) reasons.push("関連実務ログに高優先度あり");
   if (unit.reviewTarget) reasons.push("復習対象チェックあり");
   if (getWeaknessCount(unit) > 0) reasons.push("弱点タグあり");
   return reasons;
@@ -590,6 +736,10 @@ function getPastExamLogsForUnit(unitId) {
   return state.pastExamLogs.filter((log) => log.relatedUnitId === unitId);
 }
 
+function getPracticalLogsForUnit(unitId) {
+  return state.practicalLogs.filter((log) => log.relatedUnitId === unitId);
+}
+
 function getWeaknessCount(unit) {
   return Array.isArray(unit.ai?.weaknessTags) ? unit.ai.weaknessTags.length : 0;
 }
@@ -600,6 +750,7 @@ function render() {
   renderUnitList();
   renderPracticeView();
   renderPastExamView();
+  renderPracticalView();
   renderAiView();
   renderAnalysisView();
   renderReviewList();
@@ -693,6 +844,33 @@ function renderDashboard() {
       `).join("") : `<p class="muted">×の過去問ログはありません。</p>`}
     </div>
   `;
+
+  const practicalStats = getPracticalStats(state.practicalLogs);
+  const recentPracticalDate = getRecentPracticalDate();
+  const recentWrongPracticalLogs = [...state.practicalLogs]
+    .filter((log) => log.result === "×")
+    .sort(comparePracticalLogs)
+    .slice(0, 3);
+  const practicalHost = document.querySelector("#homePracticalSummary");
+  if (practicalHost) {
+    practicalHost.innerHTML = `
+      <dl class="summary-list">
+        <div><dt>総実務ログ数</dt><dd>${practicalStats.total}</dd></div>
+        <div><dt>実務正答率</dt><dd>${dataAwareAccuracy(practicalStats)}</dd></div>
+        <div><dt>実務系再演習対象数</dt><dd>${practicalStats.retry}</dd></div>
+        <div><dt>最近の実務学習日</dt><dd>${escapeHtml(recentPracticalDate || "未記録")}</dd></div>
+      </dl>
+      <div class="mini-list">
+        <p class="muted mini-list-title">直近の×実務ログ</p>
+        ${recentWrongPracticalLogs.length ? recentWrongPracticalLogs.map((log) => `
+          <div class="mini-item">
+            <span>${escapeHtml(log.studiedAt || "日付なし")} / ${escapeHtml(log.practicalType || "未設定")} / ${escapeHtml(log.relatedUnitTitle || "単元未設定")}</span>
+            <small>${escapeHtml([log.questionRef, log.mistakeField].filter(Boolean).join(" / ") || "参照未設定")}</small>
+          </div>
+        `).join("") : `<p class="muted">×の実務ログはありません。</p>`}
+      </div>
+    `;
+  }
 
   const recentAi = [...state.aiAnalyses]
     .sort(compareAiAnalyses)
@@ -913,6 +1091,343 @@ function getRecentPastExamDate() {
     .sort((a, b) => b.localeCompare(a))[0];
 }
 
+function renderPracticalView() {
+  renderPracticalStats();
+  renderPracticalWeaknessSummary();
+  renderPracticalForm();
+  renderPracticalFilters();
+  renderPracticalLogList();
+}
+
+function renderPracticalStats() {
+  const stats = getPracticalStats(state.practicalLogs);
+  const typeLines = stats.byType.length
+    ? stats.byType.slice(0, 6).map((item) => `${item.label} ${item.total}件 / ${item.accuracy}`).join(" / ")
+    : "データ不足";
+  const calcLines = stats.byCalculationType.length
+    ? stats.byCalculationType.slice(0, 6).map((item) => `${item.label} ${item.accuracy}`).join(" / ")
+    : "データ不足";
+  const rows = [
+    ["総実務ログ数", stats.total],
+    ["○", stats.correct],
+    ["△", stats.partial],
+    ["×", stats.wrong],
+    ["未判定", stats.pending],
+    ["正答率", dataAwareAccuracy(stats)],
+    ["再演習対象", stats.retry],
+    ["平均所要時間", stats.averageTime],
+    ["実務区分別", typeLines],
+    ["計算類型別", calcLines]
+  ];
+  document.querySelector("#practicalStats").innerHTML = rows
+    .map(([label, value]) => `<div class="stat-card"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`)
+    .join("");
+}
+
+function getPracticalStats(logs) {
+  const correct = logs.filter((log) => log.result === "○").length;
+  const partial = logs.filter((log) => log.result === "△").length;
+  const wrong = logs.filter((log) => log.result === "×").length;
+  const pending = logs.filter((log) => log.result === "未判定").length;
+  const retry = logs.filter((log) => log.retry).length;
+  const denominator = correct + partial + wrong;
+  const accuracyValue = denominator ? (correct / denominator) * 100 : null;
+  const numericTimes = logs.map((log) => Number(log.timeSpentMinutes)).filter((value) => Number.isFinite(value) && value > 0);
+  const averageTime = numericTimes.length ? `${(numericTimes.reduce((sum, value) => sum + value, 0) / numericTimes.length).toFixed(1)}分` : "データ不足";
+  return {
+    total: logs.length,
+    correct,
+    partial,
+    wrong,
+    pending,
+    retry,
+    denominator,
+    accuracyValue,
+    accuracy: accuracyValue === null ? "データ不足" : `${accuracyValue.toFixed(1)}%`,
+    averageTime,
+    byType: groupAccuracy(logs, "practicalType", "未判定"),
+    byCalculationType: groupAccuracy(logs.filter((log) => log.calculationType && log.calculationType !== "未設定"), "calculationType", "未判定")
+  };
+}
+
+function getRecentPracticalDate() {
+  return state.practicalLogs
+    .map((log) => log.studiedAt)
+    .filter(Boolean)
+    .sort((a, b) => b.localeCompare(a))[0];
+}
+
+function buildPracticalWeaknessSummary() {
+  const logs = state.practicalLogs;
+  return {
+    practicalTagRanking: rankFromValues(logs.flatMap((log) => (log.weaknessTags || []).filter((tag) => PRACTICAL_WEAKNESS_TAGS.includes(tag)))),
+    mistakeFieldRanking: rankFromValues(logs.map((log) => log.mistakeField).filter(Boolean)),
+    calculationMistakes: groupMistakesBy(logs, "calculationType"),
+    practicalWrongByType: rankFromValues(logs.filter((log) => log.result === "×").map((log) => log.practicalType).filter(Boolean)),
+    timeShortageCount: logs.filter((log) => (log.weaknessTags || []).includes("時間不足")).length,
+    retryByType: rankFromValues(logs.filter((log) => log.retry).map((log) => log.practicalType).filter(Boolean))
+  };
+}
+
+function rankFromValues(values) {
+  return Object.entries(values.reduce((acc, value) => {
+    const key = String(value || "").trim();
+    if (key && key !== "未設定") acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {})).map(([label, count]) => ({ label, count })).sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, "ja"));
+}
+
+function groupMistakesBy(logs, key) {
+  return rankFromValues(logs.filter((log) => log.result === "×" || log.result === "△" || log.mistakeField || log.mistakeReason).map((log) => log[key]));
+}
+
+function renderPracticalWeaknessSummary() {
+  const summary = buildPracticalWeaknessSummary();
+  const hasData = summary.practicalTagRanking.length ||
+    summary.mistakeFieldRanking.length ||
+    summary.calculationMistakes.length ||
+    summary.practicalWrongByType.length ||
+    summary.timeShortageCount ||
+    summary.retryByType.length;
+  document.querySelector("#practicalWeaknessSummary").innerHTML = hasData ? `
+    <div class="analysis-card-grid three-col">
+      ${practicalRankingCard("実務用弱点タグ", summary.practicalTagRanking)}
+      ${practicalRankingCard("ミスした欄・項目", summary.mistakeFieldRanking)}
+      ${practicalRankingCard("計算類型別ミス数", summary.calculationMistakes)}
+      ${practicalRankingCard("実務区分別×数", summary.practicalWrongByType)}
+      <article class="analysis-card"><h4>時間不足タグ件数</h4><strong>${summary.timeShortageCount}</strong></article>
+      ${practicalRankingCard("再演習対象の多い実務区分", summary.retryByType)}
+    </div>
+  ` : `<p class="muted">実務弱点データはまだ記録されていません。</p>`;
+}
+
+function practicalRankingCard(title, items) {
+  return `
+    <article class="analysis-card">
+      <h4>${escapeHtml(title)}</h4>
+      ${items.length ? `
+        <div class="mini-list">
+          ${items.slice(0, 5).map((item) => `
+            <div class="mini-item">
+              <span>${escapeHtml(item.label)}</span>
+              <small>${item.count}件</small>
+            </div>
+          `).join("")}
+        </div>
+      ` : `<p class="muted">データ不足</p>`}
+    </article>
+  `;
+}
+
+function renderPracticalForm() {
+  const editingLog = state.practicalLogs.find((log) => log.id === state.editingPracticalLogId);
+  const log = editingLog || { ...blankPracticalLog, studiedAt: todayString() };
+  document.querySelector("#practicalFormTitle").textContent = editingLog ? "実務ログを編集" : "実務ログを追加";
+  document.querySelector("#practicalLogForm").innerHTML = `
+    ${practicalFieldsets.map((fieldset) => `
+      <fieldset class="practice-fieldset">
+        <legend>${escapeHtml(fieldset.title)}</legend>
+        <div class="form-grid">
+          ${fieldset.fields.map((field) => renderPracticalField(field, log)).join("")}
+        </div>
+      </fieldset>
+    `).join("")}
+    <div class="form-actions">
+      <button class="primary-button" type="submit">${editingLog ? "実務ログを更新" : "実務ログを保存"}</button>
+      ${editingLog ? `<button id="cancelPracticalEditButton" class="ghost-button" type="button">キャンセル</button>` : ""}
+    </div>
+  `;
+  document.querySelector("#practicalFormMessage").textContent = state.practicalFormMessage;
+}
+
+function renderPracticalField(field, log) {
+  if (field === "studiedAt") return practicalInput(field, log[field], "date");
+  if (field === "practicalType") return practicalSelect(field, uniqueOptions(PRACTICAL_TYPES, log[field]), log[field]);
+  if (field === "sourceType") return practicalSelect(field, uniqueOptions(PRACTICAL_SOURCE_TYPES, log[field]), log[field]);
+  if (field === "result") return practicalSelect(field, PRACTICE_RESULTS, log[field]);
+  if (field === "confidence") return practicalSelect(field, PRACTICE_CONFIDENCE, log[field]);
+  if (field === "declarationType") return practicalSelect(field, uniqueOptions(DECLARATION_TYPES, log[field]), log[field]);
+  if (field === "calculationType") return practicalSelect(field, uniqueOptions(CALCULATION_TYPES, log[field]), log[field]);
+  if (field === "priority") return practicalSelect(field, PRACTICAL_PRIORITIES, log[field]);
+  if (field === "relatedUnitId") {
+    const sortedUnits = [...state.units].sort((a, b) => {
+      const aPractical = a.subject === "通関実務" ? 0 : 1;
+      const bPractical = b.subject === "通関実務" ? 0 : 1;
+      return aPractical - bPractical || a.title.localeCompare(b.title, "ja");
+    });
+    const options = [{ value: "", label: "未設定" }, ...sortedUnits.map((unit) => ({ value: unit.id, label: `${unit.subject} / ${unit.title}` }))];
+    return `
+      <label class="field-wide">
+        ${practicalFieldLabels[field]}
+        <select name="${field}">
+          ${options.map((option) => `<option value="${escapeAttribute(option.value)}" ${option.value === log.relatedUnitId ? "selected" : ""}>${escapeHtml(option.label)}</option>`).join("")}
+        </select>
+      </label>
+    `;
+  }
+  if (field === "weaknessTags") {
+    return `
+      <div class="field-wide">
+        <div class="field-label">弱点タグ</div>
+        <div class="check-row practice-tag-row">
+          ${WEAKNESS_TAGS.map((tag) => `
+            <label class="check-card">
+              <input type="checkbox" name="weaknessTags" value="${escapeAttribute(tag)}" ${log.weaknessTags.includes(tag) ? "checked" : ""}>
+              ${escapeHtml(tag)}
+            </label>
+          `).join("")}
+        </div>
+      </div>
+    `;
+  }
+  if (field === "retry") {
+    return `
+      <label class="check-card field-wide">
+        <input type="checkbox" name="${field}" ${log.retry ? "checked" : ""}>
+        ${practicalFieldLabels[field]}
+      </label>
+    `;
+  }
+  if (["classificationMemo", "calculationMemo", "invoiceMemo", "exchangeRateMemo", "taxRateMemo", "nacssMemo", "materialReadingMemo", "mistakeReason", "aiAnalysisMemo"].includes(field)) {
+    return `
+      <label class="field-wide">
+        ${practicalFieldLabels[field]}
+        <textarea name="${field}">${escapeHtml(log[field])}</textarea>
+      </label>
+    `;
+  }
+  return practicalInput(field, log[field], field === "timeSpentMinutes" ? "number" : "text");
+}
+
+function practicalInput(field, value, type = "text") {
+  const extra = type === "number" ? ` min="0" step="1" inputmode="numeric"` : "";
+  return `
+    <label class="${type === "date" || type === "number" ? "" : "field-wide"}">
+      ${practicalFieldLabels[field]}
+      <input type="${type}" name="${field}" value="${escapeAttribute(value)}"${extra}>
+    </label>
+  `;
+}
+
+function practicalSelect(field, options, value) {
+  return `
+    <label>
+      ${practicalFieldLabels[field]}
+      <select name="${field}">
+        ${options.map((option) => `<option value="${escapeAttribute(option)}" ${option === value ? "selected" : ""}>${escapeHtml(option)}</option>`).join("")}
+      </select>
+    </label>
+  `;
+}
+
+function renderPracticalFilters() {
+  const unitOptions = ["すべて", ...state.units.map((unit) => unit.id)];
+  fillSelect("#practicalTypeFilter", ["すべて", ...PRACTICAL_TYPES], state.practicalFilters.practicalType);
+  fillSelect("#practicalSourceTypeFilter", ["すべて", ...PRACTICAL_SOURCE_TYPES], state.practicalFilters.sourceType);
+  fillSelect("#practicalResultFilter", ["すべて", ...PRACTICE_RESULTS], state.practicalFilters.result);
+  fillSelect("#practicalConfidenceFilter", ["すべて", ...PRACTICE_CONFIDENCE], state.practicalFilters.confidence);
+  fillUnitFilter("#practicalUnitFilter", unitOptions, state.practicalFilters.unitId);
+  fillSelect("#practicalCalculationTypeFilter", ["すべて", ...CALCULATION_TYPES], state.practicalFilters.calculationType);
+  fillSelect("#practicalWeaknessFilter", ["すべて", "弱点タグあり", "弱点タグなし"], state.practicalFilters.weakness);
+  fillSelect("#practicalPriorityFilter", ["すべて", ...PRACTICAL_PRIORITIES], state.practicalFilters.priority);
+  document.querySelector("#practicalSearchInput").value = state.practicalFilters.search;
+  document.querySelector("#practicalRetryOnlyFilter").checked = state.practicalFilters.retryOnly;
+  document.querySelector("#practicalDeclarationOnlyFilter").checked = state.practicalFilters.declarationOnly;
+  document.querySelector("#practicalCalculationOnlyFilter").checked = state.practicalFilters.calculationOnly;
+}
+
+function filteredPracticalLogs() {
+  const keyword = state.practicalFilters.search.trim().toLowerCase();
+  return [...state.practicalLogs].filter((log) => {
+    const hasWeakness = log.weaknessTags.length > 0;
+    const isDeclaration = PRACTICAL_DECLARATION_TYPES.includes(log.practicalType);
+    const isCalculation = PRACTICAL_CALCULATION_TYPES.includes(log.practicalType) || PRACTICAL_CALCULATION_TYPES.includes(`${log.calculationType}計算`) || ["課税価格", "関税額", "消費税", "地方消費税", "按分", "為替換算"].includes(log.calculationType);
+    const haystack = [
+      log.practicalType,
+      log.sourceType,
+      log.sourceName,
+      log.relatedUnitTitle,
+      log.questionRef,
+      log.scoreMemo,
+      log.classificationMemo,
+      log.calculationMemo,
+      log.invoiceMemo,
+      log.exchangeRateMemo,
+      log.taxRateMemo,
+      log.nacssMemo,
+      log.materialReadingMemo,
+      log.mistakeField,
+      log.mistakeReason,
+      log.aiAnalysisMemo
+    ].join(" ").toLowerCase();
+    return (
+      (!keyword || haystack.includes(keyword)) &&
+      (state.practicalFilters.practicalType === "すべて" || log.practicalType === state.practicalFilters.practicalType) &&
+      (state.practicalFilters.sourceType === "すべて" || log.sourceType === state.practicalFilters.sourceType) &&
+      (state.practicalFilters.result === "すべて" || log.result === state.practicalFilters.result) &&
+      (state.practicalFilters.confidence === "すべて" || log.confidence === state.practicalFilters.confidence) &&
+      (state.practicalFilters.unitId === "すべて" || log.relatedUnitId === state.practicalFilters.unitId) &&
+      (state.practicalFilters.calculationType === "すべて" || log.calculationType === state.practicalFilters.calculationType) &&
+      (state.practicalFilters.priority === "すべて" || log.priority === state.practicalFilters.priority) &&
+      (state.practicalFilters.weakness === "すべて" ||
+        (state.practicalFilters.weakness === "弱点タグあり" && hasWeakness) ||
+        (state.practicalFilters.weakness === "弱点タグなし" && !hasWeakness)) &&
+      (!state.practicalFilters.retryOnly || log.retry) &&
+      (!state.practicalFilters.declarationOnly || isDeclaration) &&
+      (!state.practicalFilters.calculationOnly || isCalculation)
+    );
+  }).sort(comparePracticalLogs);
+}
+
+function renderPracticalLogList() {
+  const logs = filteredPracticalLogs();
+  document.querySelector("#practicalResultCount").textContent = `表示中：${logs.length} / ${state.practicalLogs.length}件`;
+  document.querySelector("#practicalLogCards").innerHTML = logs.length
+    ? logs.map((log) => practicalLogCard(log)).join("")
+    : `<div class="panel empty-state"><p class="muted">条件に合う実務ログはありません。</p></div>`;
+}
+
+function comparePracticalLogs(a, b) {
+  const dateDiff = (b.studiedAt || "").localeCompare(a.studiedAt || "");
+  if (dateDiff) return dateDiff;
+  return (b.updatedAt || b.createdAt || "").localeCompare(a.updatedAt || a.createdAt || "");
+}
+
+function practicalLogCard(log) {
+  return `
+    <article class="practice-log-card practical-log-card">
+      <div class="practice-log-top">
+        <div>
+          <p class="eyebrow">${escapeHtml(log.studiedAt || "日付なし")} / ${escapeHtml(log.practicalType || "未設定")}</p>
+          <h3>${escapeHtml(log.mistakeField || log.relatedUnitTitle || log.questionRef || "実務ログ")}</h3>
+        </div>
+        <span class="result-mark ${practiceResultClass(log.result)}">${escapeHtml(log.result)}</span>
+      </div>
+      <div class="card-meta">
+        <span class="badge">${escapeHtml(log.sourceType || "未設定")}</span>
+        <span class="badge">${escapeHtml(log.sourceName || "出典名なし")}</span>
+        <span class="badge">${escapeHtml(log.relatedUnitTitle || "関連単元なし")}</span>
+        <span class="badge">${escapeHtml(log.confidence || "未設定")}</span>
+        <span class="badge">${escapeHtml(log.calculationType || "計算類型なし")}</span>
+        <span class="badge">弱点 ${log.weaknessTags.length}</span>
+        ${log.retry ? `<span class="badge priority">再演習対象</span>` : ""}
+        ${log.priority === "高" ? `<span class="badge priority">優先度 高</span>` : `<span class="badge">優先度 ${escapeHtml(log.priority || "未設定")}</span>`}
+      </div>
+      <dl class="review-facts">
+        <div><dt>問題番号・参照</dt><dd>${escapeHtml(log.questionRef || "未入力")}</dd></div>
+        <div><dt>所要時間</dt><dd>${escapeHtml(log.timeSpentMinutes ? `${log.timeSpentMinutes}分` : "未入力")}</dd></div>
+        <div><dt>ミスした欄・項目</dt><dd>${escapeHtml(log.mistakeField || "未入力")}</dd></div>
+        <div><dt>ミス理由</dt><dd>${escapeHtml(truncateText(log.mistakeReason, 64) || "未入力")}</dd></div>
+      </dl>
+      <div class="card-actions">
+        <button class="ghost-button" type="button" data-ai-practical-log="${escapeAttribute(log.id)}">AI解析</button>
+        <button class="ghost-button" type="button" data-edit-practical-log="${escapeAttribute(log.id)}">編集</button>
+        <button class="danger-button" type="button" data-delete-practical-log="${escapeAttribute(log.id)}">削除</button>
+      </div>
+    </article>
+  `;
+}
+
 function renderAnalysisView() {
   const analysis = buildWeaknessAnalysis();
   document.querySelector("#analysisOverallSummary").innerHTML = renderAnalysisOverall(analysis);
@@ -920,6 +1435,7 @@ function renderAnalysisView() {
   document.querySelector("#analysisWeaknessRanking").innerHTML = renderWeaknessRanking(analysis.weaknessRanking);
   document.querySelector("#analysisUnitRiskRanking").innerHTML = renderUnitRiskRanking(analysis.unitRisks);
   document.querySelector("#analysisPerformance").innerHTML = renderPerformanceAnalysis(analysis.performance);
+  document.querySelector("#analysisPractical").innerHTML = renderPracticalAnalysis(analysis.performance.practical);
   document.querySelector("#analysisRetryTargets").innerHTML = renderRetryTargets(analysis.retryTargets);
   document.querySelector("#analysisAiUsage").innerHTML = renderAiUsage(analysis.aiUsage);
 }
@@ -931,6 +1447,7 @@ function buildWeaknessAnalysis() {
   const normalReviewUnits = state.units.filter((unit) => getReviewStatus(unit).label === "通常復習");
   const practiceStats = getPracticeStats(state.practiceLogs);
   const pastStats = getPastExamStats(state.pastExamLogs);
+  const practicalStats = getPracticalStats(state.practicalLogs);
   const retryTargets = buildRetryTargets();
   const weaknessRanking = buildWeaknessRanking();
   const summary = {
@@ -941,7 +1458,8 @@ function buildWeaknessAnalysis() {
     normalReviewCount: normalReviewUnits.length,
     practiceStats,
     pastStats,
-    retryCount: retryTargets.units.length + retryTargets.practiceLogs.length + retryTargets.pastExamLogs.length,
+    practicalStats,
+    retryCount: retryTargets.units.length + retryTargets.practiceLogs.length + retryTargets.pastExamLogs.length + retryTargets.practicalLogs.length,
     weaknessTotal: weaknessRanking.reduce((sum, item) => sum + item.count, 0),
     aiCount: state.aiAnalyses.length
   };
@@ -951,7 +1469,8 @@ function buildWeaknessAnalysis() {
     reviewCount: summary.reviewCount,
     priorityReviewCount: summary.priorityReviewCount,
     practiceStats,
-    pastStats
+    pastStats,
+    practicalStats
   });
   return {
     summary,
@@ -972,17 +1491,21 @@ function countLevels(units) {
   }, {});
 }
 
-function classifyLearningRisk({ bCount, cCount, reviewCount, priorityReviewCount, practiceStats, pastStats }) {
+function classifyLearningRisk({ bCount, cCount, reviewCount, priorityReviewCount, practiceStats, pastStats, practicalStats }) {
   const practiceAccuracy = practiceStats.accuracyValue;
   const pastAccuracy = pastStats.accuracyValue;
+  const practicalAccuracy = practicalStats?.accuracyValue;
   const hasPracticeData = practiceStats.denominator > 0;
   const hasPastData = pastStats.denominator > 0;
+  const hasPracticalData = practicalStats?.denominator > 0;
   let label = "安定";
   if (
     cCount >= 3 ||
     priorityReviewCount >= 5 ||
     (hasPastData && pastAccuracy < 50) ||
-    (hasPracticeData && practiceAccuracy < 50)
+    (hasPracticeData && practiceAccuracy < 50) ||
+    (hasPracticalData && practicalAccuracy < 50) ||
+    (practicalStats?.wrong || 0) >= 5
   ) {
     label = "最優先改善";
   } else if (
@@ -990,18 +1513,22 @@ function classifyLearningRisk({ bCount, cCount, reviewCount, priorityReviewCount
     bCount + cCount >= 5 ||
     priorityReviewCount >= 1 ||
     (hasPastData && pastAccuracy < 60) ||
-    (hasPracticeData && practiceAccuracy < 60)
+    (hasPracticeData && practiceAccuracy < 60) ||
+    (hasPracticalData && practicalAccuracy < 60) ||
+    (practicalStats?.wrong || 0) >= 1
   ) {
     label = "危険";
   } else if (
     bCount >= 1 ||
     reviewCount >= 1 ||
     (hasPastData && pastAccuracy < 70) ||
-    (hasPracticeData && practiceAccuracy < 70)
+    (hasPracticeData && practiceAccuracy < 70) ||
+    (hasPracticalData && practicalAccuracy < 70) ||
+    (practicalStats?.partial || 0) >= 1
   ) {
     label = "注意";
   }
-  const dataShortage = practiceStats.denominator < 3 && pastStats.denominator < 3;
+  const dataShortage = practiceStats.denominator < 3 && pastStats.denominator < 3 && (practicalStats?.denominator || 0) < 3;
   return { label, className: riskClassName(label), dataShortage };
 }
 
@@ -1017,26 +1544,31 @@ function buildSubjectAnalyses() {
     const units = state.units.filter((unit) => normalizeSubject(unit.subject) === subject);
     const practiceLogs = state.practiceLogs.filter((log) => normalizeSubject(log.subject) === subject);
     const pastExamLogs = state.pastExamLogs.filter((log) => normalizeSubject(log.subject) === subject);
+    const practicalLogs = state.practicalLogs.filter((log) => normalizeSubject(log.subject) === subject);
     const levelCounts = countLevels(units);
     const reviewUnits = units.filter((unit) => getReviewStatus(unit).weight > 0);
     const priorityReviewUnits = units.filter((unit) => getReviewStatus(unit).label === "最優先復習");
     const practiceStats = getPracticeStats(practiceLogs);
     const pastStats = getPastExamStats(pastExamLogs);
+    const practicalStats = getPracticalStats(practicalLogs);
     const tags = countTags([
       ...units.flatMap((unit) => unit.ai?.weaknessTags || []),
       ...practiceLogs.flatMap((log) => log.weaknessTags || []),
-      ...pastExamLogs.flatMap((log) => log.weaknessTags || [])
+      ...pastExamLogs.flatMap((log) => log.weaknessTags || []),
+      ...practicalLogs.flatMap((log) => log.weaknessTags || [])
     ]);
     const retryCount = units.filter((unit) => unit.redoTarget).length +
       practiceLogs.filter((log) => log.retry).length +
-      pastExamLogs.filter((log) => log.retry).length;
+      pastExamLogs.filter((log) => log.retry).length +
+      practicalLogs.filter((log) => log.retry).length;
     const risk = classifyLearningRisk({
       bCount: levelCounts.B || 0,
       cCount: levelCounts.C || 0,
       reviewCount: reviewUnits.length,
       priorityReviewCount: priorityReviewUnits.length,
       practiceStats,
-      pastStats
+      pastStats,
+      practicalStats
     });
     return {
       subject,
@@ -1045,6 +1577,7 @@ function buildSubjectAnalyses() {
       reviewCount: reviewUnits.length,
       practiceStats,
       pastStats,
+      practicalStats,
       retryCount,
       topTags: Object.entries(tags).sort((a, b) => b[1] - a[1]).slice(0, 3),
       risk
@@ -1067,7 +1600,7 @@ function buildWeaknessRanking() {
   const map = new Map();
   const ensure = (tag) => {
     if (!map.has(tag)) {
-      map.set(tag, { tag, count: 0, unitIds: new Set(), practiceLogIds: new Set(), pastExamLogIds: new Set() });
+      map.set(tag, { tag, count: 0, unitIds: new Set(), practiceLogIds: new Set(), pastExamLogIds: new Set(), practicalLogIds: new Set() });
     }
     return map.get(tag);
   };
@@ -1086,13 +1619,19 @@ function buildWeaknessRanking() {
     item.count += 1;
     item.pastExamLogIds.add(log.id);
   }));
+  state.practicalLogs.forEach((log) => (log.weaknessTags || []).forEach((tag) => {
+    const item = ensure(tag);
+    item.count += 1;
+    item.practicalLogIds.add(log.id);
+  }));
   return [...map.values()]
     .map((item) => ({
       tag: item.tag,
       count: item.count,
       unitCount: item.unitIds.size,
       practiceLogCount: item.practiceLogIds.size,
-      pastExamLogCount: item.pastExamLogIds.size
+      pastExamLogCount: item.pastExamLogIds.size,
+      practicalLogCount: item.practicalLogIds.size
     }))
     .sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag, "ja"));
 }
@@ -1133,6 +1672,7 @@ function buildDangerTopics() {
 function scoreUnitRisk(unit) {
   const practiceLogs = getPracticeLogsForUnit(unit.id);
   const pastExamLogs = getPastExamLogsForUnit(unit.id);
+  const practicalLogs = getPracticalLogsForUnit(unit.id);
   const points = [];
   const add = (score, label, count = 1) => {
     if (score <= 0 || count <= 0) return;
@@ -1163,6 +1703,16 @@ function scoreUnitRisk(unit) {
   add(pastPartial * 8, `関連過去問△${pastPartial}件`, pastPartial);
   add(pastRetry * 5, `過去問再演習${pastRetry}件`, pastRetry);
   add(pastHigh * 10, `過去問優先度高${pastHigh}件`, pastHigh);
+  const practicalWrong = practicalLogs.filter((log) => log.result === "×").length;
+  const practicalPartial = practicalLogs.filter((log) => log.result === "△").length;
+  const practicalRetry = practicalLogs.filter((log) => log.retry).length;
+  const practicalHigh = practicalLogs.filter((log) => log.priority === "高").length;
+  const practicalWeakness = practicalLogs.flatMap((log) => log.weaknessTags || []).filter((tag) => PRACTICAL_WEAKNESS_TAGS.includes(tag)).length;
+  add(practicalWrong * 15, `関連実務×${practicalWrong}件`, practicalWrong);
+  add(practicalPartial * 8, `関連実務△${practicalPartial}件`, practicalPartial);
+  add(practicalRetry * 5, `実務再演習${practicalRetry}件`, practicalRetry);
+  add(practicalHigh * 10, `実務優先度高${practicalHigh}件`, practicalHigh);
+  add(practicalWeakness * 5, `実務弱点タグ${practicalWeakness}件`, practicalWeakness);
   const score = points.reduce((sum, item) => sum + item.score, 0);
   const risk = classifyUnitRisk(score);
   return {
@@ -1172,7 +1722,8 @@ function scoreUnitRisk(unit) {
     reasons: points.sort((a, b) => b.score - a.score).map((item) => item.label).slice(0, 5),
     weaknessCount: getWeaknessCount(unit),
     practiceLogCount: practiceLogs.length,
-    pastExamLogCount: pastExamLogs.length
+    pastExamLogCount: pastExamLogs.length,
+    practicalLogCount: practicalLogs.length
   };
 }
 
@@ -1201,6 +1752,13 @@ function buildPerformanceAnalysis() {
       questionTypes: groupAccuracy(state.pastExamLogs, "questionType", "未実施"),
       allCorrectOnly: getPastExamStats(state.pastExamLogs.filter((log) => log.scoreType === "全正解のみ")),
       practical: getPastExamStats(state.pastExamLogs.filter((log) => PRACTICAL_PAST_FORMATS.includes(log.questionType)))
+    },
+    practical: {
+      ...getPracticalStats(state.practicalLogs),
+      practicalTypes: groupAccuracy(state.practicalLogs, "practicalType", "未判定"),
+      calculationTypes: groupAccuracy(state.practicalLogs.filter((log) => log.calculationType && log.calculationType !== "未設定"), "calculationType", "未判定"),
+      weaknessSummary: buildPracticalWeaknessSummary(),
+      dangerousUnits: state.units.map(scoreUnitRisk).filter((item) => item.practicalLogCount > 0).sort(compareUnitRisks).slice(0, 5)
     }
   };
 }
@@ -1248,7 +1806,8 @@ function buildRetryTargets() {
   return {
     units: state.units.filter((unit) => unit.redoTarget).map(scoreUnitRisk).sort(compareUnitRisks),
     practiceLogs: [...state.practiceLogs].filter((log) => log.retry).sort(comparePracticeLogs),
-    pastExamLogs: [...state.pastExamLogs].filter((log) => log.retry).sort(comparePastExamLogs)
+    pastExamLogs: [...state.pastExamLogs].filter((log) => log.retry).sort(comparePastExamLogs),
+    practicalLogs: [...state.practicalLogs].filter((log) => log.retry).sort(comparePracticalLogs)
   };
 }
 
@@ -1279,6 +1838,8 @@ function renderAnalysisOverall(analysis) {
     ["演習正答率", dataAwareAccuracy(summary.practiceStats)],
     ["総過去問ログ数", summary.pastStats.total],
     ["過去問正答率", dataAwareAccuracy(summary.pastStats)],
+    ["総実務ログ数", summary.practicalStats.total],
+    ["実務正答率", dataAwareAccuracy(summary.practicalStats)],
     ["再演習対象数", summary.retryCount],
     ["弱点タグ総数", summary.weaknessTotal],
     ["AI解析履歴数", summary.aiCount]
@@ -1332,6 +1893,7 @@ function renderSubjectAnalysis(subjects) {
             <div><dt>要復習数</dt><dd>${item.reviewCount}</dd></div>
             <div><dt>演習</dt><dd>${item.practiceStats.total}件 / ${dataAwareAccuracy(item.practiceStats)}</dd></div>
             <div><dt>過去問</dt><dd>${item.pastStats.total}件 / ${dataAwareAccuracy(item.pastStats)}</dd></div>
+            <div><dt>実務</dt><dd>${item.practicalStats.total}件 / ${dataAwareAccuracy(item.practicalStats)}</dd></div>
             <div><dt>再演習対象</dt><dd>${item.retryCount}</dd></div>
             <div><dt>主な弱点タグ</dt><dd>${escapeHtml(item.topTags.map(([tag, count]) => `${tag}(${count})`).join(" / ") || "なし")}</dd></div>
           </dl>
@@ -1358,6 +1920,7 @@ function renderWeaknessRanking(items) {
               <div><dt>関連単元数</dt><dd>${item.unitCount}</dd></div>
               <div><dt>関連演習ログ数</dt><dd>${item.practiceLogCount}</dd></div>
               <div><dt>関連過去問ログ数</dt><dd>${item.pastExamLogCount}</dd></div>
+              <div><dt>関連実務ログ数</dt><dd>${item.practicalLogCount}</dd></div>
             </dl>
           </div>
         </article>
@@ -1388,6 +1951,7 @@ function renderUnitRiskRanking(items) {
               <div><dt>弱点タグ数</dt><dd>${item.weaknessCount}</dd></div>
               <div><dt>関連演習ログ数</dt><dd>${item.practiceLogCount}</dd></div>
               <div><dt>関連過去問ログ数</dt><dd>${item.pastExamLogCount}</dd></div>
+              <div><dt>関連実務ログ数</dt><dd>${item.practicalLogCount}</dd></div>
             </dl>
           </div>
         </button>
@@ -1430,6 +1994,35 @@ function renderPerformanceAnalysis(performance) {
   `;
 }
 
+function renderPracticalAnalysis(practical) {
+  const summary = practical.weaknessSummary;
+  return `
+    <div class="analysis-card-grid two-col">
+      <article class="analysis-card">
+        <h4>実務ログ</h4>
+        <dl class="analysis-facts">
+          <div><dt>総数</dt><dd>${practical.total}</dd></div>
+          <div><dt>○/△/×/未判定</dt><dd>${practical.correct}/${practical.partial}/${practical.wrong}/${practical.pending}</dd></div>
+          <div><dt>実務正答率</dt><dd>${dataAwareAccuracy(practical)}</dd></div>
+          <div><dt>実務系再演習対象数</dt><dd>${practical.retry}</dd></div>
+          <div><dt>実務区分別正答率</dt><dd>${escapeHtml(formatAccuracyGroups(practical.practicalTypes))}</dd></div>
+          <div><dt>計算類型別正答率</dt><dd>${escapeHtml(formatAccuracyGroups(practical.calculationTypes))}</dd></div>
+          <div><dt>実務用弱点タグ</dt><dd>${escapeHtml(summary.practicalTagRanking.slice(0, 5).map((item) => `${item.label}(${item.count})`).join(" / ") || "データ不足")}</dd></div>
+        </dl>
+      </article>
+      <article class="analysis-card">
+        <h4>実務で危険な単元 上位5件</h4>
+        ${practical.dangerousUnits.length ? practical.dangerousUnits.map((item) => `
+          <button class="compact-item ghost-button" type="button" data-open-unit="${escapeAttribute(item.unit.id)}">
+            <span>${escapeHtml(item.unit.title)}</span>
+            <span class="badge ${item.risk.className}">${item.score}</span>
+          </button>
+        `).join("") : `<p class="muted">実務データ不足</p>`}
+      </article>
+    </div>
+  `;
+}
+
 function renderRetryTargets(targets) {
   return `
     <div class="analysis-card-grid three-col">
@@ -1459,6 +2052,15 @@ function renderRetryTargets(targets) {
             <span>${escapeHtml(log.result)}</span>
           </button>
         `).join("") : `<p class="muted">対象過去問ログはありません。</p>`}
+      </article>
+      <article class="analysis-card">
+        <h4>再演習対象実務ログ</h4>
+        ${targets.practicalLogs.length ? targets.practicalLogs.slice(0, 10).map((log) => `
+          <button class="compact-item ghost-button" type="button" data-edit-practical-log="${escapeAttribute(log.id)}">
+            <span>${escapeHtml([log.studiedAt, log.practicalType, log.questionRef].filter(Boolean).join(" / ") || "実務ログ")}</span>
+            <span>${escapeHtml(log.result)}</span>
+          </button>
+        `).join("") : `<p class="muted">対象実務ログはありません。</p>`}
       </article>
     </div>
   `;
@@ -1946,7 +2548,7 @@ function renderAiTargetSelect() {
   const label = document.querySelector("#aiTargetSelectLabel");
   const hint = document.querySelector("#aiTargetHint");
   const options = getAiTargetOptions(state.aiForm.targetType);
-  const needsSelect = ["単元", "演習ログ", "過去問ログ"].includes(state.aiForm.targetType);
+  const needsSelect = ["単元", "演習ログ", "過去問ログ", "実務ログ"].includes(state.aiForm.targetType);
   label.classList.toggle("is-hidden", !needsSelect);
   hint.textContent = needsSelect ? "" : state.aiForm.targetType === "復習対象"
     ? "現在の復習対象単元を最大10件まで使います。"
@@ -1979,6 +2581,12 @@ function getAiTargetOptions(targetType) {
     return [...state.pastExamLogs].sort(comparePastExamLogs).map((log) => ({
       value: log.id,
       label: `${log.studiedAt || "日付なし"} / ${log.examRound || "試験回なし"} / ${log.subject || "未設定"} / ${log.questionNo || "問題番号なし"}`
+    }));
+  }
+  if (targetType === "実務ログ") {
+    return [...state.practicalLogs].sort(comparePracticalLogs).map((log) => ({
+      value: log.id,
+      label: `${log.studiedAt || "日付なし"} / ${log.practicalType || "未設定"} / ${log.relatedUnitTitle || "単元なし"} / ${log.questionRef || "参照なし"}`
     }));
   }
   return [];
@@ -2041,7 +2649,9 @@ function generateAiPrompt() {
 }
 
 function buildAiPromptText(promptType, target, additionalConditions) {
-  const points = AI_ANALYSIS_POINTS[promptType] || AI_ANALYSIS_POINTS["総合学習相談"];
+  const points = state.aiForm.targetType === "実務ログ"
+    ? ["申告書作成上のミス原因", "計算過程のどこで崩れたか", "品目分類・資料読み取りの弱点", "NACCS入力項目の理解不足", "時間配分の問題", "次に解くべき実務問題タイプ", "本試験で失点しやすいポイント", "30分でできる実務復習メニュー"]
+    : (AI_ANALYSIS_POINTS[promptType] || AI_ANALYSIS_POINTS["総合学習相談"]);
   const output = AI_OUTPUT_FORMATS[promptType] || AI_OUTPUT_FORMATS.default;
   return [
     "【役割指定】",
@@ -2079,6 +2689,10 @@ function buildAiTargetData() {
   if (state.aiForm.targetType === "過去問ログ") {
     const log = state.pastExamLogs.find((item) => item.id === state.aiForm.targetId) || state.pastExamLogs[0];
     return log ? { id: log.id, title: [log.examRound, log.subject, log.questionNo].filter(Boolean).join(" / ") || "過去問ログ", body: buildPastExamPromptData(log) } : null;
+  }
+  if (state.aiForm.targetType === "実務ログ") {
+    const log = state.practicalLogs.find((item) => item.id === state.aiForm.targetId) || state.practicalLogs[0];
+    return log ? { id: log.id, title: [log.studiedAt, log.practicalType, log.questionRef].filter(Boolean).join(" / ") || "実務ログ", body: buildPracticalPromptData(log) } : null;
   }
   if (state.aiForm.targetType === "復習対象") {
     return { id: "", title: "復習対象", body: buildReviewTargetsPromptData() };
@@ -2170,6 +2784,36 @@ function buildPastExamPromptData(log) {
   ]);
 }
 
+function buildPracticalPromptData(log) {
+  return keyValueLines([
+    ["学習日", log.studiedAt],
+    ["実務区分", log.practicalType],
+    ["出典種別", log.sourceType],
+    ["出典名", log.sourceName],
+    ["関連単元", log.relatedUnitTitle],
+    ["問題番号・参照", log.questionRef],
+    ["結果", log.result],
+    ["得点・配点メモ", log.scoreMemo],
+    ["所要時間", log.timeSpentMinutes ? `${log.timeSpentMinutes}分` : ""],
+    ["自信度", log.confidence],
+    ["申告種別", log.declarationType],
+    ["品目分類メモ", log.classificationMemo],
+    ["計算類型", log.calculationType],
+    ["計算過程メモ", log.calculationMemo],
+    ["インボイス読取メモ", log.invoiceMemo],
+    ["為替換算メモ", log.exchangeRateMemo],
+    ["税率・税額メモ", log.taxRateMemo],
+    ["NACCS入力項目メモ", log.nacssMemo],
+    ["資料読み取りメモ", log.materialReadingMemo],
+    ["ミスした欄・項目", log.mistakeField],
+    ["ミス理由", log.mistakeReason],
+    ["弱点タグ", log.weaknessTags.join(" / ")],
+    ["再演習対象", log.retry ? "対象" : "対象外"],
+    ["優先度", log.priority],
+    ["AI解析メモ", log.aiAnalysisMemo]
+  ]);
+}
+
 function buildReviewTargetsPromptData() {
   const units = state.units.filter((unit) => getReviewStatus(unit).weight > 0).sort(compareReviewUnits).slice(0, 10);
   if (!units.length) return "現在の復習対象単元はありません。";
@@ -2194,6 +2838,7 @@ function buildOverallSummaryPromptData() {
   const reviewUnits = state.units.filter((unit) => getReviewStatus(unit).weight > 0);
   const practiceStats = getPracticeStats(state.practiceLogs);
   const pastStats = getPastExamStats(state.pastExamLogs);
+  const practicalStats = getPracticalStats(state.practicalLogs);
   const subjectAccuracy = PAST_EXAM_SUBJECTS
     .filter((subject) => subject !== "未設定")
     .map((subject) => `${subject}: ${pastStats.subjects[subject]?.accuracy || "0.0%"}`)
@@ -2208,6 +2853,8 @@ function buildOverallSummaryPromptData() {
     ["演習正答率", dataAwareAccuracy(practiceStats)],
     ["過去問ログ総数", pastStats.total],
     ["過去問正答率", dataAwareAccuracy(pastStats)],
+    ["実務ログ総数", practicalStats.total],
+    ["実務正答率", dataAwareAccuracy(practicalStats)],
     ["科目別過去問正答率", subjectAccuracy],
     ["再演習対象数", analysis.summary.retryCount],
     ["多い弱点タグ上位", getTopWeaknessTags().join(" / ")],
@@ -2215,7 +2862,8 @@ function buildOverallSummaryPromptData() {
     ["科目別危険度", analysis.subjects.map((item) => `${item.subject}:${item.risk.label}`).join(" / ")],
     ["本試験で危険な論点", analysis.dangerTopics.map((item) => `${item.subject} ${item.topic}（×${item.wrong} / △${item.partial} / 高優先度${item.high} / 再演習${item.retry}）`).join("\n") || "未記録"],
     ["直近の×演習ログ", summarizeRecentWrongPracticeLogs()],
-    ["直近の×過去問ログ", summarizeRecentWrongPastExamLogs()]
+    ["直近の×過去問ログ", summarizeRecentWrongPastExamLogs()],
+    ["直近の×実務ログ", summarizeRecentWrongPracticalLogs()]
   ]);
 }
 
@@ -2224,6 +2872,7 @@ function getTopWeaknessTags() {
   state.units.forEach((unit) => unit.ai.weaknessTags.forEach((tag) => counts[tag] = (counts[tag] || 0) + 1));
   state.practiceLogs.forEach((log) => log.weaknessTags.forEach((tag) => counts[tag] = (counts[tag] || 0) + 1));
   state.pastExamLogs.forEach((log) => log.weaknessTags.forEach((tag) => counts[tag] = (counts[tag] || 0) + 1));
+  state.practicalLogs.forEach((log) => log.weaknessTags.forEach((tag) => counts[tag] = (counts[tag] || 0) + 1));
   return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([tag, count]) => `${tag}(${count})`);
 }
 
@@ -2235,6 +2884,11 @@ function summarizeRecentWrongPracticeLogs() {
 function summarizeRecentWrongPastExamLogs() {
   const logs = [...state.pastExamLogs].filter((log) => log.result === "×").sort(comparePastExamLogs).slice(0, 3);
   return logs.length ? logs.map((log) => `${log.studiedAt || "日付なし"} ${log.examRound || ""} ${log.subject || ""} ${log.questionNo || ""} 論点:${log.topic || "未入力"} ミス理由:${log.mistakeReason || "未入力"}`).join("\n") : "なし";
+}
+
+function summarizeRecentWrongPracticalLogs() {
+  const logs = [...state.practicalLogs].filter((log) => log.result === "×").sort(comparePracticalLogs).slice(0, 3);
+  return logs.length ? logs.map((log) => `${log.studiedAt || "日付なし"} ${log.practicalType || ""} ${log.relatedUnitTitle || "単元なし"} ${log.questionRef || ""} ミス欄:${log.mistakeField || "未入力"} ミス理由:${log.mistakeReason || "未入力"}`).join("\n") : "なし";
 }
 
 function keyValueLines(rows) {
@@ -2578,6 +3232,25 @@ function renderTabForm(unit, tab) {
       ])}
     `;
   }
+  if (tab === "practical") {
+    const relatedLogs = getPracticalLogsForUnit(unit.id).sort(comparePracticalLogs);
+    return `
+      <section class="related-log-panel field-wide">
+        <h4>関連実務ログ</h4>
+        ${relatedLogs.length ? `
+          <div class="mini-list">
+            ${relatedLogs.map((log) => `
+              <div class="mini-item">
+                <span>${escapeHtml(log.studiedAt || "日付なし")} / ${escapeHtml(log.practicalType || "未設定")} / ${escapeHtml(log.sourceName || "出典名なし")} / ${escapeHtml(log.questionRef || "参照なし")}</span>
+                <small>結果 ${escapeHtml(log.result || "未判定")} / ミス欄 ${escapeHtml(log.mistakeField || "なし")} / 再演習 ${log.retry ? "対象" : "なし"}</small>
+                <small>${escapeHtml(truncateText(log.mistakeReason, 72) || "ミス理由なし")}</small>
+              </div>
+            `).join("")}
+          </div>
+        ` : `<p class="muted">この単元に紐づく実務ログはまだありません。</p>`}
+      </section>
+    `;
+  }
   if (tab === "weakness") {
     return `
       ${textArea("ai.analysisMemo", "AI解析メモ", unit.ai.analysisMemo)}
@@ -2865,6 +3538,97 @@ function deletePastExamLog(logId) {
   showToast("削除しました。");
 }
 
+function collectPracticalForm() {
+  const form = document.querySelector("#practicalLogForm");
+  const formData = new FormData(form);
+  const unit = state.units.find((item) => item.id === String(formData.get("relatedUnitId") || ""));
+  return {
+    studiedAt: String(formData.get("studiedAt") || todayString()),
+    practicalType: String(formData.get("practicalType") || "未設定"),
+    sourceType: String(formData.get("sourceType") || "その他"),
+    sourceName: String(formData.get("sourceName") || "").trim(),
+    subject: "通関実務",
+    relatedUnitId: unit?.id || "",
+    relatedUnitTitle: unit?.title || "",
+    questionRef: String(formData.get("questionRef") || "").trim(),
+    result: String(formData.get("result") || "未判定"),
+    scoreMemo: String(formData.get("scoreMemo") || "").trim(),
+    timeSpentMinutes: String(formData.get("timeSpentMinutes") || "").trim(),
+    confidence: String(formData.get("confidence") || "未設定"),
+    declarationType: String(formData.get("declarationType") || "未設定"),
+    classificationMemo: String(formData.get("classificationMemo") || "").trim(),
+    calculationType: String(formData.get("calculationType") || "未設定"),
+    calculationMemo: String(formData.get("calculationMemo") || "").trim(),
+    invoiceMemo: String(formData.get("invoiceMemo") || "").trim(),
+    exchangeRateMemo: String(formData.get("exchangeRateMemo") || "").trim(),
+    taxRateMemo: String(formData.get("taxRateMemo") || "").trim(),
+    nacssMemo: String(formData.get("nacssMemo") || "").trim(),
+    materialReadingMemo: String(formData.get("materialReadingMemo") || "").trim(),
+    mistakeField: String(formData.get("mistakeField") || "").trim(),
+    mistakeReason: String(formData.get("mistakeReason") || "").trim(),
+    weaknessTags: formData.getAll("weaknessTags").map(String),
+    retry: formData.get("retry") === "on",
+    priority: String(formData.get("priority") || "未設定"),
+    aiAnalysisMemo: String(formData.get("aiAnalysisMemo") || "").trim()
+  };
+}
+
+function savePracticalLogFromForm() {
+  const now = new Date().toISOString();
+  const values = collectPracticalForm();
+  if (state.editingPracticalLogId) {
+    const index = state.practicalLogs.findIndex((log) => log.id === state.editingPracticalLogId);
+    if (index >= 0) {
+      state.practicalLogs[index] = normalizePracticalLog({
+        ...state.practicalLogs[index],
+        ...values,
+        updatedAt: now
+      });
+    }
+    state.editingPracticalLogId = null;
+    state.practicalFormMessage = "更新しました。";
+    showToast("更新しました。");
+  } else {
+    state.practicalLogs.unshift(normalizePracticalLog({
+      ...values,
+      id: makePracticalLogId(),
+      createdAt: now,
+      updatedAt: now
+    }));
+    state.practicalFormMessage = "保存しました。";
+    showToast("保存しました。");
+  }
+  saveUnits();
+  render();
+}
+
+function editPracticalLog(logId) {
+  state.editingPracticalLogId = logId;
+  state.practicalFormMessage = "";
+  renderPracticalView();
+  switchView("practical");
+  document.querySelector("#practicalFormTitle").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function cancelPracticalEdit() {
+  state.editingPracticalLogId = null;
+  state.practicalFormMessage = "";
+  renderPracticalView();
+}
+
+function deletePracticalLog(logId) {
+  const target = state.practicalLogs.find((log) => log.id === logId);
+  if (!target) return;
+  const confirmed = window.confirm("この実務ログを削除します。よろしいですか？");
+  if (!confirmed) return;
+  state.practicalLogs = state.practicalLogs.filter((log) => log.id !== logId);
+  if (state.editingPracticalLogId === logId) state.editingPracticalLogId = null;
+  state.practicalFormMessage = "";
+  saveUnits();
+  render();
+  showToast("削除しました。");
+}
+
 function renderSettings() {
   const saved = localStorage.getItem(STORAGE_KEYS.units);
   const backupJson = JSON.stringify(makeBackupPayload());
@@ -2875,6 +3639,7 @@ function renderSettings() {
     <div><dt>保存中の単元数</dt><dd>${state.units.length}単元</dd></div>
     <div><dt>保存中の演習ログ数</dt><dd>${state.practiceLogs.length}件</dd></div>
     <div><dt>保存中の過去問ログ数</dt><dd>${state.pastExamLogs.length}件</dd></div>
+    <div><dt>保存中の実務ログ数</dt><dd>${state.practicalLogs.length}件</dd></div>
     <div><dt>保存中のAI履歴数</dt><dd>${state.aiAnalyses.length}件</dd></div>
     <div><dt>最終更新単元</dt><dd>${escapeHtml(last?.title || "未保存")}</dd></div>
     <div><dt>最終更新日</dt><dd>${escapeHtml(last?.updatedAt || "未保存")}</dd></div>
@@ -2896,6 +3661,7 @@ function makeBackupPayload() {
     units: state.units,
     practiceLogs: state.practiceLogs,
     pastExamLogs: state.pastExamLogs,
+    practicalLogs: state.practicalLogs,
     aiAnalyses: state.aiAnalyses
   };
 }
@@ -2941,6 +3707,7 @@ function importBackup(file) {
       state.units = parsed.units.map(normalizeUnit);
       state.practiceLogs = normalizeArray(parsed.practiceLogs).map(normalizePracticeLog);
       state.pastExamLogs = normalizeArray(parsed.pastExamLogs).map(normalizePastExamLog);
+      state.practicalLogs = normalizeArray(parsed.practicalLogs).map(normalizePracticalLog);
       state.aiAnalyses = normalizeArray(parsed.aiAnalyses).map(normalizeAiAnalysis);
       closeDetail();
       saveUnits();
@@ -3137,6 +3904,58 @@ function attachEvents() {
     state.pastExamFilters.practicalOnly = event.target.checked;
     renderPastExamLogList();
   });
+  document.querySelector("#practicalLogForm").addEventListener("submit", (event) => {
+    event.preventDefault();
+    savePracticalLogFromForm();
+  });
+  document.querySelector("#practicalSearchInput").addEventListener("input", (event) => {
+    state.practicalFilters.search = event.target.value;
+    renderPracticalLogList();
+  });
+  document.querySelector("#practicalTypeFilter").addEventListener("change", (event) => {
+    state.practicalFilters.practicalType = event.target.value;
+    renderPracticalLogList();
+  });
+  document.querySelector("#practicalSourceTypeFilter").addEventListener("change", (event) => {
+    state.practicalFilters.sourceType = event.target.value;
+    renderPracticalLogList();
+  });
+  document.querySelector("#practicalResultFilter").addEventListener("change", (event) => {
+    state.practicalFilters.result = event.target.value;
+    renderPracticalLogList();
+  });
+  document.querySelector("#practicalConfidenceFilter").addEventListener("change", (event) => {
+    state.practicalFilters.confidence = event.target.value;
+    renderPracticalLogList();
+  });
+  document.querySelector("#practicalUnitFilter").addEventListener("change", (event) => {
+    state.practicalFilters.unitId = event.target.value;
+    renderPracticalLogList();
+  });
+  document.querySelector("#practicalCalculationTypeFilter").addEventListener("change", (event) => {
+    state.practicalFilters.calculationType = event.target.value;
+    renderPracticalLogList();
+  });
+  document.querySelector("#practicalWeaknessFilter").addEventListener("change", (event) => {
+    state.practicalFilters.weakness = event.target.value;
+    renderPracticalLogList();
+  });
+  document.querySelector("#practicalPriorityFilter").addEventListener("change", (event) => {
+    state.practicalFilters.priority = event.target.value;
+    renderPracticalLogList();
+  });
+  document.querySelector("#practicalRetryOnlyFilter").addEventListener("change", (event) => {
+    state.practicalFilters.retryOnly = event.target.checked;
+    renderPracticalLogList();
+  });
+  document.querySelector("#practicalDeclarationOnlyFilter").addEventListener("change", (event) => {
+    state.practicalFilters.declarationOnly = event.target.checked;
+    renderPracticalLogList();
+  });
+  document.querySelector("#practicalCalculationOnlyFilter").addEventListener("change", (event) => {
+    state.practicalFilters.calculationOnly = event.target.checked;
+    renderPracticalLogList();
+  });
   document.querySelector("#aiPromptTypeSelect").addEventListener("change", (event) => {
     state.aiForm.promptType = event.target.value;
   });
@@ -3181,6 +4000,11 @@ function attachEvents() {
     const aiPastExamButton = event.target.closest("[data-ai-past-exam-log]");
     if (aiPastExamButton) {
       openAiForTarget("過去問ログ", aiPastExamButton.dataset.aiPastExamLog, "過去問分析");
+      return;
+    }
+    const aiPracticalButton = event.target.closest("[data-ai-practical-log]");
+    if (aiPracticalButton) {
+      openAiForTarget("実務ログ", aiPracticalButton.dataset.aiPracticalLog, "誤答分析");
       return;
     }
     const aiUnitButton = event.target.closest("[data-ai-unit]");
@@ -3233,6 +4057,20 @@ function attachEvents() {
       cancelPastExamEdit();
       return;
     }
+    const editPracticalButton = event.target.closest("[data-edit-practical-log]");
+    if (editPracticalButton) {
+      editPracticalLog(editPracticalButton.dataset.editPracticalLog);
+      return;
+    }
+    const deletePracticalButton = event.target.closest("[data-delete-practical-log]");
+    if (deletePracticalButton) {
+      deletePracticalLog(deletePracticalButton.dataset.deletePracticalLog);
+      return;
+    }
+    if (event.target.closest("#cancelPracticalEditButton")) {
+      cancelPracticalEdit();
+      return;
+    }
     const opener = event.target.closest("[data-open-unit]");
     if (opener) {
       openUnit(opener.dataset.openUnit);
@@ -3265,13 +4103,19 @@ function attachEvents() {
     localStorage.removeItem(STORAGE_KEYS.units);
     localStorage.removeItem(STORAGE_KEYS.practiceLogs);
     localStorage.removeItem(STORAGE_KEYS.pastExamLogs);
+    localStorage.removeItem(STORAGE_KEYS.practicalLogs);
     localStorage.removeItem(STORAGE_KEYS.aiAnalyses);
     state.units = makeInitialUnits();
     state.practiceLogs = [];
     state.pastExamLogs = [];
+    state.practicalLogs = [];
     state.aiAnalyses = [];
     state.editingPracticeLogId = null;
     state.editingPastExamLogId = null;
+    state.editingPracticalLogId = null;
+    state.practiceFormMessage = "";
+    state.pastExamFormMessage = "";
+    state.practicalFormMessage = "";
     closeDetail();
     saveUnits();
     render();
