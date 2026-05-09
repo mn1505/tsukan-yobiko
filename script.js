@@ -1,4 +1,4 @@
-const APP_VERSION = "v0.2";
+const APP_VERSION = "v0.3";
 const STORAGE_KEYS = {
   units: "tsukanYobiko.units",
   version: "tsukanYobiko.version",
@@ -12,6 +12,11 @@ const IMPORTANCE = ["高", "中", "低"];
 const PAST_FORMATS = ["未設定", "空欄補充", "正誤選択", "すべて選択", "申告書作成", "品目分類", "計算", "資料読み取り"];
 const RESULTS = ["未実施", "○", "△", "×"];
 const SCORE_RESULTS = ["未採点", "○", "△", "×"];
+const PRACTICE_SOURCE_TYPES = ["アプリ内例題", "青問題集", "0からの申告書", "計算ドリル", "過去問", "自作問題", "その他"];
+const PRACTICE_SUBJECTS = ["通関業法", "関税法等", "通関実務", "共通", "未設定"];
+const PRACTICE_QUESTION_TYPES = ["未設定", "空欄補充", "正誤選択", "すべて選択", "申告書作成", "品目分類", "計算", "資料読み取り", "記述メモ", "その他"];
+const PRACTICE_RESULTS = ["未判定", "○", "△", "×"];
+const PRACTICE_CONFIDENCE = ["未設定", "自信あり", "迷った", "当てた", "分からなかった"];
 const WEAKNESS_TAGS = [
   "制度趣旨",
   "全体像理解",
@@ -56,8 +61,75 @@ const state = {
     importance: "すべて",
     weakness: "すべて",
     redoOnly: false
-  }
+  },
+  practiceFilters: {
+    search: "",
+    subject: "すべて",
+    sourceType: "すべて",
+    questionType: "すべて",
+    result: "すべて",
+    confidence: "すべて",
+    unitId: "すべて",
+    weakness: "すべて",
+    retryOnly: false
+  },
+  editingPracticeLogId: null,
+  practiceFormMessage: ""
 };
+
+const blankPracticeLog = {
+  id: "",
+  studiedAt: "",
+  sourceType: "その他",
+  sourceName: "",
+  subject: "未設定",
+  unitId: "",
+  unitTitle: "",
+  questionRef: "",
+  questionType: "未設定",
+  result: "未判定",
+  confidence: "未設定",
+  answerMemo: "",
+  correctAnswerMemo: "",
+  mistakeReason: "",
+  weaknessTags: [],
+  retry: false,
+  aiAnalysisMemo: "",
+  createdAt: "",
+  updatedAt: ""
+};
+
+const practiceFieldLabels = {
+  studiedAt: "学習日",
+  sourceType: "出典種別",
+  sourceName: "出典名",
+  subject: "科目",
+  unitId: "関連単元",
+  questionType: "問題形式",
+  questionRef: "問題番号・参照",
+  answerMemo: "自分の回答メモ",
+  correctAnswerMemo: "正答・解説メモ",
+  result: "結果",
+  confidence: "自信度",
+  mistakeReason: "ミス理由",
+  retry: "再演習対象",
+  aiAnalysisMemo: "AI解析メモ"
+};
+
+const practiceFieldsets = [
+  {
+    title: "基本情報",
+    fields: ["studiedAt", "sourceType", "sourceName", "subject", "unitId", "questionRef"]
+  },
+  {
+    title: "問題情報",
+    fields: ["questionType", "answerMemo", "correctAnswerMemo"]
+  },
+  {
+    title: "結果・弱点",
+    fields: ["result", "confidence", "mistakeReason", "weaknessTags", "retry", "aiAnalysisMemo"]
+  }
+];
 
 const tabDefinitions = [
   { id: "basic", label: "基本" },
@@ -146,7 +218,7 @@ function makeInitialUnits() {
 function loadState() {
   const savedUnits = readJson(STORAGE_KEYS.units);
   state.units = Array.isArray(savedUnits) ? savedUnits.map(normalizeUnit) : makeInitialUnits();
-  state.practiceLogs = normalizeArray(readJson(STORAGE_KEYS.practiceLogs));
+  state.practiceLogs = normalizeArray(readJson(STORAGE_KEYS.practiceLogs)).map(normalizePracticeLog);
   state.pastExamLogs = normalizeArray(readJson(STORAGE_KEYS.pastExamLogs));
   state.aiAnalyses = normalizeArray(readJson(STORAGE_KEYS.aiAnalyses));
   localStorage.setItem(STORAGE_KEYS.version, APP_VERSION);
@@ -180,6 +252,24 @@ function normalizeUnit(unit) {
       weaknessTags: Array.isArray(unit?.ai?.weaknessTags) ? unit.ai.weaknessTags : []
     }
   };
+}
+
+function normalizePracticeLog(log) {
+  const normalized = {
+    ...blankPracticeLog,
+    ...(log || {}),
+    weaknessTags: Array.isArray(log?.weaknessTags) ? log.weaknessTags : []
+  };
+  if (!normalized.id) normalized.id = makePracticeLogId();
+  if (!normalized.studiedAt) normalized.studiedAt = todayString();
+  if (!normalized.sourceType) normalized.sourceType = "その他";
+  if (!normalized.subject) normalized.subject = "未設定";
+  if (!normalized.questionType) normalized.questionType = "未設定";
+  if (!normalized.result) normalized.result = "未判定";
+  if (!normalized.confidence) normalized.confidence = "未設定";
+  const unit = state.units.find((item) => item.id === normalized.unitId);
+  if (unit) normalized.unitTitle = unit.title;
+  return normalized;
 }
 
 function makeBlankUnit() {
@@ -263,12 +353,25 @@ function todayString() {
   return new Date().toISOString().slice(0, 10);
 }
 
+function makePracticeLogId() {
+  const random = Math.random().toString(36).slice(2, 10);
+  return `log-${Date.now().toString(36)}-${random}`;
+}
+
 function getReviewStatus(unit) {
   const reasons = getReviewReasons(unit);
-  if (unit.level === "C" || reasons.includes("例題に×あり") || reasons.includes("過去問が×")) {
+  if (unit.level === "C" || reasons.includes("例題に×あり") || reasons.includes("過去問が×") || reasons.includes("関連演習ログに×あり")) {
     return { label: "最優先復習", weight: 2, className: "priority" };
   }
-  if (unit.level === "B" || reasons.includes("例題に△あり") || unit.reviewTarget || unit.pastExam.result === "△" || getWeaknessCount(unit) > 0) {
+  if (
+    unit.level === "B" ||
+    reasons.includes("例題に△あり") ||
+    unit.reviewTarget ||
+    unit.pastExam.result === "△" ||
+    reasons.includes("関連演習ログに△あり") ||
+    reasons.includes("関連演習ログに再演習対象あり") ||
+    getWeaknessCount(unit) > 0
+  ) {
     return { label: "通常復習", weight: 1, className: "normal" };
   }
   return { label: "復習不要", weight: 0, className: "ok" };
@@ -282,9 +385,17 @@ function getReviewReasons(unit) {
   if (unit.exercises.some((exercise) => exercise.result === "△")) reasons.push("例題に△あり");
   if (unit.pastExam.result === "×") reasons.push("過去問が×");
   if (unit.pastExam.result === "△") reasons.push("過去問が△");
+  const logs = getPracticeLogsForUnit(unit.id);
+  if (logs.some((log) => log.result === "×")) reasons.push("関連演習ログに×あり");
+  if (logs.some((log) => log.result === "△")) reasons.push("関連演習ログに△あり");
+  if (logs.some((log) => log.retry)) reasons.push("関連演習ログに再演習対象あり");
   if (unit.reviewTarget) reasons.push("復習対象チェックあり");
   if (getWeaknessCount(unit) > 0) reasons.push("弱点タグあり");
   return reasons;
+}
+
+function getPracticeLogsForUnit(unitId) {
+  return state.practiceLogs.filter((log) => log.unitId === unitId);
 }
 
 function getWeaknessCount(unit) {
@@ -295,6 +406,7 @@ function render() {
   renderDashboard();
   renderFilters();
   renderUnitList();
+  renderPracticeView();
   renderReviewList();
   renderSettings();
   if (state.activeUnitId) {
@@ -332,6 +444,30 @@ function renderDashboard() {
   document.querySelector("#recommendedReviews").innerHTML = recommendations.length
     ? recommendations.map((unit) => compactUnitButton(unit)).join("")
     : `<p class="muted">現在の条件では復習対象はありません。</p>`;
+
+  const practiceStats = getPracticeStats(state.practiceLogs);
+  const recentDate = getRecentPracticeDate();
+  const recentWrongLogs = [...state.practiceLogs]
+    .filter((log) => log.result === "×")
+    .sort(comparePracticeLogs)
+    .slice(0, 3);
+  document.querySelector("#homePracticeSummary").innerHTML = `
+    <dl class="summary-list">
+      <div><dt>総演習数</dt><dd>${practiceStats.total}</dd></div>
+      <div><dt>正答率</dt><dd>${practiceStats.accuracy}</dd></div>
+      <div><dt>再演習対象数</dt><dd>${practiceStats.retry}</dd></div>
+      <div><dt>最近の演習日</dt><dd>${escapeHtml(recentDate || "未記録")}</dd></div>
+    </dl>
+    <div class="mini-list">
+      <p class="muted mini-list-title">直近の×ログ</p>
+      ${recentWrongLogs.length ? recentWrongLogs.map((log) => `
+        <div class="mini-item">
+          <span>${escapeHtml(log.studiedAt || "日付なし")} / ${escapeHtml(log.unitTitle || "単元未設定")}</span>
+          <small>${escapeHtml([log.sourceName, log.questionRef].filter(Boolean).join(" / ") || "参照未設定")}</small>
+        </div>
+      `).join("") : `<p class="muted">×の演習ログはありません。</p>`}
+    </div>
+  `;
 }
 
 function renderFilters() {
@@ -401,6 +537,267 @@ function renderUnitList() {
   document.querySelector("#unitCards").innerHTML = units.length
     ? units.map((unit) => unitCard(unit)).join("")
     : `<div class="panel empty-state"><p class="muted">条件に合う単元はありません。</p></div>`;
+}
+
+function renderPracticeView() {
+  renderPracticeStats();
+  renderPracticeForm();
+  renderPracticeFilters();
+  renderPracticeLogList();
+}
+
+function renderPracticeStats() {
+  const stats = getPracticeStats(state.practiceLogs);
+  const rows = [
+    ["総演習数", stats.total],
+    ["○", stats.correct],
+    ["△", stats.partial],
+    ["×", stats.wrong],
+    ["未判定", stats.pending],
+    ["再演習対象", stats.retry],
+    ["正答率", stats.accuracy]
+  ];
+  document.querySelector("#practiceStats").innerHTML = rows
+    .map(([label, value]) => `<div class="stat-card"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`)
+    .join("");
+}
+
+function getPracticeStats(logs) {
+  const correct = logs.filter((log) => log.result === "○").length;
+  const partial = logs.filter((log) => log.result === "△").length;
+  const wrong = logs.filter((log) => log.result === "×").length;
+  const pending = logs.filter((log) => log.result === "未判定").length;
+  const retry = logs.filter((log) => log.retry).length;
+  const denominator = correct + partial + wrong;
+  const accuracy = denominator ? `${((correct / denominator) * 100).toFixed(1)}%` : "0.0%";
+  return { total: logs.length, correct, partial, wrong, pending, retry, accuracy };
+}
+
+function getRecentPracticeDate() {
+  return state.practiceLogs
+    .map((log) => log.studiedAt)
+    .filter(Boolean)
+    .sort((a, b) => b.localeCompare(a))[0];
+}
+
+function renderPracticeForm() {
+  const editingLog = state.practiceLogs.find((log) => log.id === state.editingPracticeLogId);
+  const log = editingLog || { ...blankPracticeLog, studiedAt: todayString(), sourceType: "その他" };
+  document.querySelector("#practiceFormTitle").textContent = editingLog ? "演習ログを編集" : "演習ログを追加";
+  document.querySelector("#practiceLogForm").innerHTML = `
+    ${practiceFieldsets.map((fieldset) => `
+      <fieldset class="practice-fieldset">
+        <legend>${escapeHtml(fieldset.title)}</legend>
+        <div class="form-grid">
+          ${fieldset.fields.map((field) => renderPracticeField(field, log)).join("")}
+        </div>
+      </fieldset>
+    `).join("")}
+    <div class="form-actions">
+      <button class="primary-button" type="submit">${editingLog ? "演習ログを更新" : "演習ログを保存"}</button>
+      ${editingLog ? `<button id="cancelPracticeEditButton" class="ghost-button" type="button">キャンセル</button>` : ""}
+    </div>
+  `;
+  document.querySelector("#practiceFormMessage").textContent = state.practiceFormMessage;
+}
+
+function renderPracticeField(field, log) {
+  if (field === "studiedAt") {
+    return practiceInput(field, log[field], "date");
+  }
+  if (field === "sourceType") {
+    return practiceSelect(field, uniqueOptions(PRACTICE_SOURCE_TYPES, log[field]), log[field]);
+  }
+  if (field === "subject") {
+    return practiceSelect(field, uniqueOptions(PRACTICE_SUBJECTS, log[field]), log[field]);
+  }
+  if (field === "unitId") {
+    const options = [{ value: "", label: "未設定" }, ...state.units.map((unit) => ({ value: unit.id, label: `${unit.subject} / ${unit.title}` }))];
+    return `
+      <label class="field-wide">
+        ${practiceFieldLabels[field]}
+        <select name="${field}">
+          ${options.map((option) => `<option value="${escapeAttribute(option.value)}" ${option.value === log.unitId ? "selected" : ""}>${escapeHtml(option.label)}</option>`).join("")}
+        </select>
+      </label>
+    `;
+  }
+  if (field === "questionType") {
+    return practiceSelect(field, uniqueOptions(PRACTICE_QUESTION_TYPES, log[field]), log[field]);
+  }
+  if (field === "result") {
+    return practiceSelect(field, PRACTICE_RESULTS, log[field]);
+  }
+  if (field === "confidence") {
+    return practiceSelect(field, PRACTICE_CONFIDENCE, log[field]);
+  }
+  if (field === "weaknessTags") {
+    return `
+      <div class="field-wide">
+        <div class="field-label">弱点タグ</div>
+        <div class="check-row practice-tag-row">
+          ${WEAKNESS_TAGS.map((tag) => `
+            <label class="check-card">
+              <input type="checkbox" name="weaknessTags" value="${escapeAttribute(tag)}" ${log.weaknessTags.includes(tag) ? "checked" : ""}>
+              ${escapeHtml(tag)}
+            </label>
+          `).join("")}
+        </div>
+      </div>
+    `;
+  }
+  if (field === "retry") {
+    return `
+      <label class="check-card field-wide">
+        <input type="checkbox" name="${field}" ${log.retry ? "checked" : ""}>
+        ${practiceFieldLabels[field]}
+      </label>
+    `;
+  }
+  if (["answerMemo", "correctAnswerMemo", "mistakeReason", "aiAnalysisMemo"].includes(field)) {
+    return `
+      <label class="field-wide">
+        ${practiceFieldLabels[field]}
+        <textarea name="${field}">${escapeHtml(log[field])}</textarea>
+      </label>
+    `;
+  }
+  return practiceInput(field, log[field]);
+}
+
+function practiceInput(field, value, type = "text") {
+  return `
+    <label class="${type === "date" ? "" : "field-wide"}">
+      ${practiceFieldLabels[field]}
+      <input type="${type}" name="${field}" value="${escapeAttribute(value)}">
+    </label>
+  `;
+}
+
+function practiceSelect(field, options, value) {
+  return `
+    <label>
+      ${practiceFieldLabels[field]}
+      <select name="${field}">
+        ${options.map((option) => `<option value="${escapeAttribute(option)}" ${option === value ? "selected" : ""}>${escapeHtml(option)}</option>`).join("")}
+      </select>
+    </label>
+  `;
+}
+
+function uniqueOptions(options, current) {
+  return current && !options.includes(current) ? [...options, current] : options;
+}
+
+function renderPracticeFilters() {
+  const unitOptions = ["すべて", ...state.units.map((unit) => unit.id)];
+  fillSelect("#practiceSubjectFilter", ["すべて", ...PRACTICE_SUBJECTS], state.practiceFilters.subject);
+  fillSelect("#practiceSourceTypeFilter", ["すべて", ...PRACTICE_SOURCE_TYPES], state.practiceFilters.sourceType);
+  fillSelect("#practiceQuestionTypeFilter", ["すべて", ...PRACTICE_QUESTION_TYPES], state.practiceFilters.questionType);
+  fillSelect("#practiceResultFilter", ["すべて", ...PRACTICE_RESULTS], state.practiceFilters.result);
+  fillSelect("#practiceConfidenceFilter", ["すべて", ...PRACTICE_CONFIDENCE], state.practiceFilters.confidence);
+  fillUnitFilter("#practiceUnitFilter", unitOptions, state.practiceFilters.unitId);
+  fillSelect("#practiceWeaknessFilter", ["すべて", "弱点タグあり", "弱点タグなし"], state.practiceFilters.weakness);
+  document.querySelector("#practiceSearchInput").value = state.practiceFilters.search;
+  document.querySelector("#practiceRetryOnlyFilter").checked = state.practiceFilters.retryOnly;
+}
+
+function fillUnitFilter(selector, options, selected) {
+  const element = document.querySelector(selector);
+  element.innerHTML = options.map((option) => {
+    const label = option === "すべて" ? "すべて" : state.units.find((unit) => unit.id === option)?.title || "未設定";
+    return `<option value="${escapeAttribute(option)}">${escapeHtml(label)}</option>`;
+  }).join("");
+  element.value = selected;
+}
+
+function filteredPracticeLogs() {
+  const keyword = state.practiceFilters.search.trim().toLowerCase();
+  return [...state.practiceLogs]
+    .filter((log) => {
+      const hasWeakness = log.weaknessTags.length > 0;
+      const haystack = [
+        log.sourceName,
+        log.subject,
+        log.unitTitle,
+        log.questionRef,
+        log.questionType,
+        log.answerMemo,
+        log.correctAnswerMemo,
+        log.mistakeReason,
+        log.aiAnalysisMemo
+      ].join(" ").toLowerCase();
+      return (
+        (!keyword || haystack.includes(keyword)) &&
+        (state.practiceFilters.subject === "すべて" || log.subject === state.practiceFilters.subject) &&
+        (state.practiceFilters.sourceType === "すべて" || log.sourceType === state.practiceFilters.sourceType) &&
+        (state.practiceFilters.questionType === "すべて" || log.questionType === state.practiceFilters.questionType) &&
+        (state.practiceFilters.result === "すべて" || log.result === state.practiceFilters.result) &&
+        (state.practiceFilters.confidence === "すべて" || log.confidence === state.practiceFilters.confidence) &&
+        (state.practiceFilters.unitId === "すべて" || log.unitId === state.practiceFilters.unitId) &&
+        (state.practiceFilters.weakness === "すべて" ||
+          (state.practiceFilters.weakness === "弱点タグあり" && hasWeakness) ||
+          (state.practiceFilters.weakness === "弱点タグなし" && !hasWeakness)) &&
+        (!state.practiceFilters.retryOnly || log.retry)
+      );
+    })
+    .sort(comparePracticeLogs);
+}
+
+function renderPracticeLogList() {
+  const logs = filteredPracticeLogs();
+  document.querySelector("#practiceResultCount").textContent = `表示中：${logs.length} / ${state.practiceLogs.length}件`;
+  document.querySelector("#practiceLogCards").innerHTML = logs.length
+    ? logs.map((log) => practiceLogCard(log)).join("")
+    : `<div class="panel empty-state"><p class="muted">条件に合う演習ログはありません。</p></div>`;
+}
+
+function comparePracticeLogs(a, b) {
+  const dateDiff = (b.studiedAt || "").localeCompare(a.studiedAt || "");
+  if (dateDiff) return dateDiff;
+  return (b.updatedAt || b.createdAt || "").localeCompare(a.updatedAt || a.createdAt || "");
+}
+
+function practiceLogCard(log) {
+  return `
+    <article class="practice-log-card">
+      <div class="practice-log-top">
+        <div>
+          <p class="eyebrow">${escapeHtml(log.studiedAt || "日付なし")} / ${escapeHtml(log.subject || "未設定")}</p>
+          <h3>${escapeHtml(log.unitTitle || "関連単元なし")}</h3>
+        </div>
+        <span class="result-mark ${practiceResultClass(log.result)}">${escapeHtml(log.result)}</span>
+      </div>
+      <div class="card-meta">
+        <span class="badge">${escapeHtml(log.sourceType || "未設定")}</span>
+        <span class="badge">${escapeHtml(log.sourceName || "出典名なし")}</span>
+        <span class="badge">${escapeHtml(log.questionType || "未設定")}</span>
+        <span class="badge">${escapeHtml(log.confidence || "未設定")}</span>
+        <span class="badge">弱点 ${log.weaknessTags.length}</span>
+        ${log.retry ? `<span class="badge priority">再演習対象</span>` : ""}
+      </div>
+      <dl class="review-facts">
+        <div><dt>問題番号・参照</dt><dd>${escapeHtml(log.questionRef || "未入力")}</dd></div>
+        <div><dt>ミス理由</dt><dd>${escapeHtml(truncateText(log.mistakeReason, 64) || "未入力")}</dd></div>
+      </dl>
+      <div class="card-actions">
+        <button class="ghost-button" type="button" data-edit-practice-log="${escapeAttribute(log.id)}">編集</button>
+        <button class="danger-button" type="button" data-delete-practice-log="${escapeAttribute(log.id)}">削除</button>
+      </div>
+    </article>
+  `;
+}
+
+function practiceResultClass(result) {
+  if (result === "○") return "is-correct";
+  if (result === "△") return "is-partial";
+  if (result === "×") return "is-wrong";
+  return "is-pending";
+}
+
+function truncateText(value, length) {
+  const text = String(value || "");
+  return text.length > length ? `${text.slice(0, length)}...` : text;
 }
 
 function renderReviewList() {
@@ -704,6 +1101,86 @@ function switchView(view, closeUnitDetail = true) {
   }
 }
 
+function collectPracticeForm() {
+  const form = document.querySelector("#practiceLogForm");
+  const formData = new FormData(form);
+  const unit = state.units.find((item) => item.id === String(formData.get("unitId") || ""));
+  return {
+    studiedAt: String(formData.get("studiedAt") || todayString()),
+    sourceType: String(formData.get("sourceType") || "その他"),
+    sourceName: String(formData.get("sourceName") || "").trim(),
+    subject: String(formData.get("subject") || "未設定"),
+    unitId: unit?.id || "",
+    unitTitle: unit?.title || "",
+    questionRef: String(formData.get("questionRef") || "").trim(),
+    questionType: String(formData.get("questionType") || "未設定"),
+    result: String(formData.get("result") || "未判定"),
+    confidence: String(formData.get("confidence") || "未設定"),
+    answerMemo: String(formData.get("answerMemo") || "").trim(),
+    correctAnswerMemo: String(formData.get("correctAnswerMemo") || "").trim(),
+    mistakeReason: String(formData.get("mistakeReason") || "").trim(),
+    weaknessTags: formData.getAll("weaknessTags").map(String),
+    retry: formData.get("retry") === "on",
+    aiAnalysisMemo: String(formData.get("aiAnalysisMemo") || "").trim()
+  };
+}
+
+function savePracticeLogFromForm() {
+  const now = new Date().toISOString();
+  const values = collectPracticeForm();
+  if (state.editingPracticeLogId) {
+    const index = state.practiceLogs.findIndex((log) => log.id === state.editingPracticeLogId);
+    if (index >= 0) {
+      state.practiceLogs[index] = normalizePracticeLog({
+        ...state.practiceLogs[index],
+        ...values,
+        updatedAt: now
+      });
+    }
+    state.editingPracticeLogId = null;
+    state.practiceFormMessage = "更新しました。";
+    showToast("更新しました。");
+  } else {
+    state.practiceLogs.unshift(normalizePracticeLog({
+      ...values,
+      id: makePracticeLogId(),
+      createdAt: now,
+      updatedAt: now
+    }));
+    state.practiceFormMessage = "保存しました。";
+    showToast("保存しました。");
+  }
+  saveUnits();
+  render();
+}
+
+function editPracticeLog(logId) {
+  state.editingPracticeLogId = logId;
+  state.practiceFormMessage = "";
+  renderPracticeView();
+  switchView("practice");
+  document.querySelector("#practiceFormTitle").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function cancelPracticeEdit() {
+  state.editingPracticeLogId = null;
+  state.practiceFormMessage = "";
+  renderPracticeView();
+}
+
+function deletePracticeLog(logId) {
+  const target = state.practiceLogs.find((log) => log.id === logId);
+  if (!target) return;
+  const confirmed = window.confirm("この演習ログを削除します。よろしいですか？");
+  if (!confirmed) return;
+  state.practiceLogs = state.practiceLogs.filter((log) => log.id !== logId);
+  if (state.editingPracticeLogId === logId) state.editingPracticeLogId = null;
+  state.practiceFormMessage = "";
+  saveUnits();
+  render();
+  showToast("削除しました。");
+}
+
 function renderSettings() {
   const saved = localStorage.getItem(STORAGE_KEYS.units);
   const backupJson = JSON.stringify(makeBackupPayload());
@@ -712,6 +1189,7 @@ function renderSettings() {
   document.querySelector("#storageStatus").textContent = `${state.units.length}単元 / 約${sizeKb}KBをこのブラウザに保存`;
   document.querySelector("#storageDetails").innerHTML = `
     <div><dt>保存中の単元数</dt><dd>${state.units.length}単元</dd></div>
+    <div><dt>保存中の演習ログ数</dt><dd>${state.practiceLogs.length}件</dd></div>
     <div><dt>最終更新単元</dt><dd>${escapeHtml(last?.title || "未保存")}</dd></div>
     <div><dt>最終更新日</dt><dd>${escapeHtml(last?.updatedAt || "未保存")}</dd></div>
     <div><dt>おおよその保存サイズ</dt><dd>約${sizeKb}KB</dd></div>
@@ -767,7 +1245,7 @@ function importBackup(file) {
       const confirmed = window.confirm("現在の学習データを、選択したバックアップ内容で上書きします。よろしいですか？");
       if (!confirmed) return;
       state.units = parsed.units.map(normalizeUnit);
-      state.practiceLogs = normalizeArray(parsed.practiceLogs);
+      state.practiceLogs = normalizeArray(parsed.practiceLogs).map(normalizePracticeLog);
       state.pastExamLogs = normalizeArray(parsed.pastExamLogs);
       state.aiAnalyses = normalizeArray(parsed.aiAnalyses);
       closeDetail();
@@ -873,7 +1351,61 @@ function attachEvents() {
     state.reviewFilters.redoOnly = event.target.checked;
     renderReviewList();
   });
+  document.querySelector("#practiceLogForm").addEventListener("submit", (event) => {
+    event.preventDefault();
+    savePracticeLogFromForm();
+  });
+  document.querySelector("#practiceSearchInput").addEventListener("input", (event) => {
+    state.practiceFilters.search = event.target.value;
+    renderPracticeLogList();
+  });
+  document.querySelector("#practiceSubjectFilter").addEventListener("change", (event) => {
+    state.practiceFilters.subject = event.target.value;
+    renderPracticeLogList();
+  });
+  document.querySelector("#practiceSourceTypeFilter").addEventListener("change", (event) => {
+    state.practiceFilters.sourceType = event.target.value;
+    renderPracticeLogList();
+  });
+  document.querySelector("#practiceQuestionTypeFilter").addEventListener("change", (event) => {
+    state.practiceFilters.questionType = event.target.value;
+    renderPracticeLogList();
+  });
+  document.querySelector("#practiceResultFilter").addEventListener("change", (event) => {
+    state.practiceFilters.result = event.target.value;
+    renderPracticeLogList();
+  });
+  document.querySelector("#practiceConfidenceFilter").addEventListener("change", (event) => {
+    state.practiceFilters.confidence = event.target.value;
+    renderPracticeLogList();
+  });
+  document.querySelector("#practiceUnitFilter").addEventListener("change", (event) => {
+    state.practiceFilters.unitId = event.target.value;
+    renderPracticeLogList();
+  });
+  document.querySelector("#practiceWeaknessFilter").addEventListener("change", (event) => {
+    state.practiceFilters.weakness = event.target.value;
+    renderPracticeLogList();
+  });
+  document.querySelector("#practiceRetryOnlyFilter").addEventListener("change", (event) => {
+    state.practiceFilters.retryOnly = event.target.checked;
+    renderPracticeLogList();
+  });
   document.body.addEventListener("click", (event) => {
+    const editPracticeButton = event.target.closest("[data-edit-practice-log]");
+    if (editPracticeButton) {
+      editPracticeLog(editPracticeButton.dataset.editPracticeLog);
+      return;
+    }
+    const deletePracticeButton = event.target.closest("[data-delete-practice-log]");
+    if (deletePracticeButton) {
+      deletePracticeLog(deletePracticeButton.dataset.deletePracticeLog);
+      return;
+    }
+    if (event.target.closest("#cancelPracticeEditButton")) {
+      cancelPracticeEdit();
+      return;
+    }
     const opener = event.target.closest("[data-open-unit]");
     if (opener) {
       openUnit(opener.dataset.openUnit);
@@ -904,7 +1436,10 @@ function attachEvents() {
     const confirmed = window.confirm("保存済みの学習記録を削除し、初期データに戻します。よろしいですか？");
     if (!confirmed) return;
     localStorage.removeItem(STORAGE_KEYS.units);
+    localStorage.removeItem(STORAGE_KEYS.practiceLogs);
     state.units = makeInitialUnits();
+    state.practiceLogs = [];
+    state.editingPracticeLogId = null;
     closeDetail();
     saveUnits();
     render();

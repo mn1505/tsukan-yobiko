@@ -183,6 +183,50 @@ button {
   border-top: 0;
 }
 
+.summary-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 12px;
+}
+
+.summary-list div {
+  display: grid;
+  gap: 2px;
+}
+
+.summary-list dt,
+.mini-list-title {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.summary-list dd {
+  margin: 0;
+  font-weight: 800;
+}
+
+.mini-list {
+  display: grid;
+  gap: 8px;
+}
+
+.mini-list p {
+  margin: 0;
+}
+
+.mini-item {
+  display: grid;
+  gap: 2px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
+.mini-item small {
+  color: var(--muted);
+}
+
 .filters {
   display: grid;
   gap: 12px;
@@ -239,6 +283,124 @@ button:focus-visible {
   display: grid;
   grid-template-columns: 1fr;
   gap: 12px;
+}
+
+.practice-layout {
+  display: grid;
+  gap: 14px;
+}
+
+.practice-form {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+}
+
+.practice-fieldset {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.practice-fieldset legend {
+  margin-bottom: 8px;
+  color: var(--primary-dark);
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.practice-tag-row .check-card {
+  min-height: 48px;
+}
+
+.form-actions,
+.card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.form-actions > button,
+.card-actions > button {
+  flex: 1 1 132px;
+}
+
+.form-message {
+  min-height: 24px;
+  margin: 0;
+  padding: 0 16px 16px;
+  color: var(--ok);
+  font-weight: 800;
+}
+
+.practice-list-area {
+  display: grid;
+  gap: 0;
+}
+
+.practice-log-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.practice-log-card {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.practice-log-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.practice-log-card h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.35;
+}
+
+.result-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  font-size: 1.35rem;
+  font-weight: 900;
+}
+
+.result-mark.is-correct {
+  background: #dceee6;
+  color: var(--ok);
+}
+
+.result-mark.is-partial {
+  background: #fff1ca;
+  color: var(--warn);
+}
+
+.result-mark.is-wrong {
+  background: #fde3dc;
+  color: var(--danger);
+}
+
+.result-mark.is-pending {
+  background: var(--surface-soft);
+  color: var(--muted);
+  font-size: 0.85rem;
 }
 
 .unit-card {
@@ -527,7 +689,7 @@ button:focus-visible {
   left: 0;
   z-index: 30;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 6px;
   padding: 10px 10px calc(10px + env(safe-area-inset-bottom));
   border-top: 1px solid var(--line);
@@ -541,7 +703,7 @@ button:focus-visible {
   border-radius: 8px;
   background: transparent;
   color: var(--muted);
-  font-size: 0.86rem;
+  font-size: 0.78rem;
   font-weight: 800;
 }
 
@@ -596,6 +758,10 @@ button:focus-visible {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .practice-log-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .form-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -628,6 +794,16 @@ button:focus-visible {
 
   .unit-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .practice-layout {
+    grid-template-columns: minmax(320px, 0.88fr) minmax(0, 1.12fr);
+    align-items: start;
+  }
+
+  .practice-form-panel {
+    position: sticky;
+    top: 88px;
   }
 
   .detail-area {

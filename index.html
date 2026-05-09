@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="TSUKAN YOBIKO v0.2 - 通関士試験向けスマホファースト個人予備校アプリ">
+    <meta name="description" content="TSUKAN YOBIKO v0.3 - 通関士試験向けスマホファースト個人予備校アプリ">
     <meta name="theme-color" content="#1f5f5b">
     <title>TSUKAN YOBIKO</title>
     <link rel="stylesheet" href="style.css">
@@ -15,7 +15,7 @@
           <p class="eyebrow">通関士試験 個人予備校</p>
           <h1>TSUKAN YOBIKO</h1>
         </div>
-        <span class="version-pill">v0.2</span>
+        <span class="version-pill">v0.3</span>
       </header>
 
       <main class="app-main">
@@ -38,6 +38,12 @@
               <h3>今日のおすすめ復習</h3>
             </div>
             <div id="recommendedReviews" class="compact-list"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-heading">
+              <h3>演習ログ</h3>
+            </div>
+            <div id="homePracticeSummary" class="compact-list"></div>
           </section>
         </section>
 
@@ -100,6 +106,70 @@
           </article>
         </section>
 
+        <section id="view-practice" class="view" aria-labelledby="practice-title">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Practice</p>
+              <h2 id="practice-title">演習</h2>
+            </div>
+          </div>
+
+          <div id="practiceStats" class="stats-grid"></div>
+
+          <div class="practice-layout">
+            <section class="panel practice-form-panel">
+              <div class="panel-heading">
+                <h3 id="practiceFormTitle">演習ログを追加</h3>
+              </div>
+              <form id="practiceLogForm" class="practice-form"></form>
+              <p id="practiceFormMessage" class="form-message" role="status" aria-live="polite"></p>
+            </section>
+
+            <section class="practice-list-area">
+              <div class="filters panel practice-filters">
+                <label>
+                  検索
+                  <input id="practiceSearchInput" type="search" placeholder="出典名・単元・問題番号・ミス理由を検索">
+                </label>
+                <label>
+                  科目
+                  <select id="practiceSubjectFilter"></select>
+                </label>
+                <label>
+                  出典種別
+                  <select id="practiceSourceTypeFilter"></select>
+                </label>
+                <label>
+                  問題形式
+                  <select id="practiceQuestionTypeFilter"></select>
+                </label>
+                <label>
+                  結果
+                  <select id="practiceResultFilter"></select>
+                </label>
+                <label>
+                  自信度
+                  <select id="practiceConfidenceFilter"></select>
+                </label>
+                <label>
+                  関連単元
+                  <select id="practiceUnitFilter"></select>
+                </label>
+                <label>
+                  弱点タグ
+                  <select id="practiceWeaknessFilter"></select>
+                </label>
+                <label class="check-card filter-check">
+                  <input id="practiceRetryOnlyFilter" type="checkbox">
+                  再演習対象のみ
+                </label>
+              </div>
+              <p id="practiceResultCount" class="result-count" aria-live="polite"></p>
+              <div id="practiceLogCards" class="practice-log-grid"></div>
+            </section>
+          </div>
+        </section>
+
         <section id="view-review" class="view" aria-labelledby="review-title">
           <div class="section-heading">
             <div>
@@ -147,7 +217,7 @@
               </div>
               <dl class="info-list">
                 <div><dt>アプリ名</dt><dd>TSUKAN YOBIKO</dd></div>
-                <div><dt>バージョン</dt><dd>v0.2</dd></div>
+                <div><dt>バージョン</dt><dd>v0.3</dd></div>
                 <div><dt>公開前提</dt><dd>GitHub Pagesで公開して使う静的アプリです。</dd></div>
                 <div><dt>保存方式</dt><dd id="storageStatus">確認中</dd></div>
               </dl>
@@ -200,6 +270,7 @@
       <nav class="bottom-nav" aria-label="メインナビゲーション">
         <button class="nav-button is-active" type="button" data-view="home">ホーム</button>
         <button class="nav-button" type="button" data-view="units">単元</button>
+        <button class="nav-button" type="button" data-view="practice">演習</button>
         <button class="nav-button" type="button" data-view="review">復習</button>
         <button class="nav-button" type="button" data-view="settings">設定</button>
       </nav>
