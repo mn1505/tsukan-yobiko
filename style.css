@@ -42,7 +42,7 @@ button {
 
 .app-shell {
   min-height: 100vh;
-  padding-bottom: 126px;
+  padding-bottom: 148px;
 }
 
 .app-header {
@@ -289,7 +289,8 @@ button:focus-visible {
 .practice-layout,
 .past-exam-layout,
 .practical-layout,
-.ai-layout {
+.ai-layout,
+.today-layout {
   display: grid;
   gap: 14px;
 }
@@ -517,6 +518,143 @@ button:focus-visible {
 .analysis-hero,
 #view-analysis .panel {
   margin-bottom: 14px;
+}
+
+.today-home-panel,
+#view-today .panel {
+  margin-bottom: 14px;
+}
+
+.today-main,
+.today-side,
+.today-card-list,
+.today-log-sections {
+  display: grid;
+  gap: 12px;
+}
+
+.today-summary,
+.today-completion,
+.today-memo,
+.duration-buttons {
+  padding: 16px;
+}
+
+.today-date {
+  color: var(--primary-dark);
+  font-size: 1.08rem;
+  font-weight: 900;
+}
+
+.today-progress {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 10px 0;
+}
+
+.today-progress strong {
+  font-size: 1.35rem;
+  line-height: 1.2;
+}
+
+.today-progress span {
+  color: var(--primary-dark);
+  font-weight: 900;
+}
+
+.progress-bar {
+  height: 12px;
+  overflow: hidden;
+  margin-bottom: 12px;
+  border-radius: 999px;
+  background: var(--surface-soft);
+}
+
+.progress-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--primary);
+}
+
+.duration-buttons {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.duration-button {
+  min-height: 46px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--primary-dark);
+  font-size: 0.88rem;
+  font-weight: 850;
+}
+
+.duration-button.is-active {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: #fff;
+}
+
+.today-menu-card {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px;
+  border-top: 1px solid var(--line);
+}
+
+.today-menu-card:first-child {
+  border-top: 0;
+}
+
+.today-menu-card p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.today-check {
+  display: flex;
+  grid-template-columns: none;
+  align-items: flex-start;
+  gap: 12px;
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.today-check input {
+  width: 26px;
+  min-height: 26px;
+  margin-top: 2px;
+  flex: 0 0 auto;
+}
+
+.today-check strong {
+  display: block;
+  margin-top: 5px;
+  font-size: 1.06rem;
+  line-height: 1.35;
+}
+
+.today-log-sections {
+  padding: 16px;
+}
+
+.today-log-sections h4 {
+  margin: 0 0 8px;
+}
+
+.today-memo {
+  display: grid;
+  gap: 10px;
+}
+
+.today-memo textarea {
+  min-height: 140px;
 }
 
 .practical-weakness-panel {
@@ -965,12 +1103,12 @@ button:focus-visible {
 }
 
 .nav-button {
-  min-height: 42px;
+  min-height: 40px;
   border: 0;
   border-radius: 8px;
   background: transparent;
   color: var(--muted);
-  font-size: 0.64rem;
+  font-size: 0.62rem;
   font-weight: 800;
 }
 
@@ -1065,6 +1203,11 @@ button:focus-visible {
   .settings-grid {
     grid-template-columns: 1.1fr 0.9fr;
   }
+
+  .today-layout {
+    grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
+    align-items: start;
+  }
 }
 
 @media (min-width: 1000px) {
@@ -1111,8 +1254,8 @@ button:focus-visible {
   .bottom-nav {
     right: 50%;
     left: 50%;
-    width: min(860px, calc(100% - 32px));
-    grid-template-columns: repeat(9, minmax(0, 1fr));
+    width: min(960px, calc(100% - 32px));
+    grid-template-columns: repeat(10, minmax(0, 1fr));
     transform: translateX(-50%);
     border: 1px solid var(--line);
     border-bottom: 0;

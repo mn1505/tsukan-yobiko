@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="TSUKAN YOBIKO v0.7 - 通関士試験向けスマホファースト個人予備校アプリ">
+    <meta name="description" content="TSUKAN YOBIKO v0.8 - 通関士試験向けスマホファースト個人予備校アプリ">
     <meta name="theme-color" content="#1f5f5b">
     <title>TSUKAN YOBIKO</title>
     <link rel="stylesheet" href="style.css">
@@ -15,7 +15,7 @@
           <p class="eyebrow">通関士試験 個人予備校</p>
           <h1>TSUKAN YOBIKO</h1>
         </div>
-        <span class="version-pill">v0.7</span>
+        <span class="version-pill">v0.8</span>
       </header>
 
       <main class="app-main">
@@ -27,6 +27,12 @@
             </div>
           </div>
           <div id="dashboardStats" class="stats-grid"></div>
+          <section class="panel today-home-panel">
+            <div class="panel-heading">
+              <h3>今日の学習メニュー</h3>
+            </div>
+            <div id="homeTodaySummary" class="compact-list"></div>
+          </section>
           <section class="panel">
             <div class="panel-heading">
               <h3>最終更新単元</h3>
@@ -69,6 +75,97 @@
             </div>
             <div id="homeRiskSummary" class="compact-list"></div>
           </section>
+        </section>
+
+        <section id="view-today" class="view" aria-labelledby="today-title">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Today</p>
+              <h2 id="today-title">今日</h2>
+            </div>
+          </div>
+
+          <div class="today-layout">
+            <div class="today-main">
+              <section class="panel today-summary-panel">
+                <div class="panel-heading">
+                  <h3>今日の学習サマリー</h3>
+                </div>
+                <div id="todaySummary" class="today-summary"></div>
+              </section>
+
+              <section class="panel">
+                <div class="panel-heading">
+                  <h3>学習時間選択</h3>
+                </div>
+                <div id="durationButtons" class="duration-buttons" role="group" aria-label="今日の学習時間"></div>
+              </section>
+
+              <section class="panel">
+                <div class="panel-heading">
+                  <h3>今日のおすすめメニュー</h3>
+                </div>
+                <div id="todayRecommendedMenu" class="today-card-list"></div>
+              </section>
+
+              <section class="panel">
+                <div class="panel-heading">
+                  <h3>最優先復習メニュー</h3>
+                </div>
+                <div id="todayPriorityMenu" class="today-card-list"></div>
+              </section>
+            </div>
+
+            <aside class="today-side">
+              <section class="panel">
+                <div class="panel-heading">
+                  <h3>演習・過去問・実務メニュー</h3>
+                </div>
+                <div class="today-log-sections">
+                  <section>
+                    <h4>演習メニュー</h4>
+                    <div id="todayPracticeMenu" class="mini-list"></div>
+                  </section>
+                  <section>
+                    <h4>過去問メニュー</h4>
+                    <div id="todayPastExamMenu" class="mini-list"></div>
+                  </section>
+                  <section>
+                    <h4>実務メニュー</h4>
+                    <div id="todayPracticalMenu" class="mini-list"></div>
+                  </section>
+                </div>
+              </section>
+
+              <section class="panel">
+                <div class="panel-heading">
+                  <h3>学習完了チェック</h3>
+                </div>
+                <div id="todayCompletion" class="today-completion"></div>
+              </section>
+
+              <section class="panel">
+                <div class="panel-heading">
+                  <h3>今日のメモ</h3>
+                </div>
+                <div class="today-memo">
+                  <textarea id="todayMemo" placeholder="今日やったこと、気づいた弱点、明日やること、AIに相談したいこと"></textarea>
+                  <button id="saveTodayMemoButton" class="primary-button" type="button">メモを保存</button>
+                  <p id="todayMemoMessage" class="form-message" role="status" aria-live="polite"></p>
+                </div>
+              </section>
+
+              <section class="panel">
+                <div class="analysis-cta">
+                  <div>
+                    <p class="eyebrow">AI Prompt</p>
+                    <h3>今日のメニューをAIに相談</h3>
+                  </div>
+                  <button id="todayAiConsultButton" class="primary-button" type="button">今日のメニューをAIに相談</button>
+                </div>
+              </section>
+            </aside>
+          </div>
         </section>
 
         <section id="view-units" class="view" aria-labelledby="units-title">
@@ -542,10 +639,28 @@
               </div>
               <dl class="info-list">
                 <div><dt>アプリ名</dt><dd>TSUKAN YOBIKO</dd></div>
-                <div><dt>バージョン</dt><dd>v0.7</dd></div>
+                <div><dt>現在のバージョン</dt><dd>v0.8</dd></div>
+                <div><dt>状態</dt><dd>暫定完成版</dd></div>
                 <div><dt>公開前提</dt><dd>GitHub Pagesで公開して使う静的アプリです。</dd></div>
                 <div><dt>保存方式</dt><dd id="storageStatus">確認中</dd></div>
               </dl>
+            </section>
+
+            <section class="panel">
+              <div class="panel-heading">
+                <h3>主な機能一覧</h3>
+              </div>
+              <ul class="note-list">
+                <li>単元管理</li>
+                <li>演習ログ</li>
+                <li>過去問分析</li>
+                <li>実務ログ</li>
+                <li>AI解析プロンプト生成</li>
+                <li>弱点分析</li>
+                <li>復習管理</li>
+                <li>今日の学習メニュー</li>
+                <li>JSONバックアップ/復元</li>
+              </ul>
             </section>
 
             <section class="panel">
@@ -583,9 +698,10 @@
               </div>
               <ul class="note-list">
                 <li>学習記録はこのブラウザのlocalStorageに保存されます。</li>
-                <li>GitHubには個人の学習記録は自動保存されません。</li>
-                <li>スマホとPCのデータは自動同期されません。JSONバックアップ/復元で移行してください。</li>
-                <li>バックアップファイルには演習ログ・過去問ログ・実務ログ・AIプロンプト履歴・AI返答メモを含む学習記録が含まれるため、取り扱いに注意してください。</li>
+                <li>スマホとPCは自動同期されません。</li>
+                <li>定期的にJSONバックアップを取ってください。</li>
+                <li>Publicリポジトリには個人の学習データは保存されません。</li>
+                <li>バックアップファイルには演習ログ・過去問ログ・実務ログ・AIプロンプト履歴・今日のメニュー・AI返答メモを含む学習記録が含まれるため、取り扱いに注意してください。</li>
               </ul>
             </section>
           </div>
@@ -594,6 +710,7 @@
 
       <nav class="bottom-nav" aria-label="メインナビゲーション">
         <button class="nav-button is-active" type="button" data-view="home">ホーム</button>
+        <button class="nav-button" type="button" data-view="today">今日</button>
         <button class="nav-button" type="button" data-view="units">単元</button>
         <button class="nav-button" type="button" data-view="practice">演習</button>
         <button class="nav-button" type="button" data-view="past-exams">過去問</button>

@@ -1,11 +1,12 @@
-const APP_VERSION = "v0.7";
+const APP_VERSION = "v0.8";
 const STORAGE_KEYS = {
   units: "tsukanYobiko.units",
   version: "tsukanYobiko.version",
   practiceLogs: "tsukanYobiko.practiceLogs",
   pastExamLogs: "tsukanYobiko.pastExamLogs",
   practicalLogs: "tsukanYobiko.practicalLogs",
-  aiAnalyses: "tsukanYobiko.aiAnalyses"
+  aiAnalyses: "tsukanYobiko.aiAnalyses",
+  studyPlans: "tsukanYobiko.studyPlans"
 };
 
 const LEVELS = ["未判定", "A", "B", "C"];
@@ -84,6 +85,7 @@ const AI_PROMPT_TYPES = [
   "総合学習相談"
 ];
 const AI_TARGET_TYPES = ["単元", "演習ログ", "過去問ログ", "実務ログ", "復習対象", "全体サマリー"];
+const STUDY_DURATIONS = ["15分", "30分", "1時間", "2時間", "じっくり"];
 const AI_ANALYSIS_POINTS = {
   "回答添削": ["結論は合っているか", "理由づけは正しいか", "用語の使い方は正しいか", "条文・制度理解にズレはないか", "本試験ならどこで失点しそうか", "より良い回答にするにはどう修正すべきか"],
   "誤答分析": ["間違えた直接原因", "背後にある理解不足", "暗記不足か理解不足か", "混同している制度・用語", "次に復習すべき論点", "同じミスを防ぐための注意点"],
@@ -107,6 +109,8 @@ const state = {
   pastExamLogs: [],
   practicalLogs: [],
   aiAnalyses: [],
+  studyPlans: [],
+  todayMenu: null,
   activeView: "home",
   activeUnitId: null,
   activeTab: "basic",
@@ -457,6 +461,7 @@ function loadState() {
   state.pastExamLogs = normalizeArray(readJson(STORAGE_KEYS.pastExamLogs)).map(normalizePastExamLog);
   state.practicalLogs = normalizeArray(readJson(STORAGE_KEYS.practicalLogs)).map(normalizePracticalLog);
   state.aiAnalyses = normalizeArray(readJson(STORAGE_KEYS.aiAnalyses)).map(normalizeAiAnalysis);
+  state.studyPlans = normalizeArray(readJson(STORAGE_KEYS.studyPlans)).map(normalizeStudyPlan);
   localStorage.setItem(STORAGE_KEYS.version, APP_VERSION);
 }
 
@@ -567,6 +572,36 @@ function normalizeAiAnalysis(item) {
   return normalized;
 }
 
+function normalizeStudyPlan(item) {
+  const normalized = {
+    id: "",
+    date: "",
+    selectedDuration: "",
+    generatedAt: "",
+    completedItems: [],
+    manualItems: [],
+    memo: "",
+    createdAt: "",
+    updatedAt: "",
+    ...(item || {})
+  };
+  if (!normalized.id) normalized.id = makeStudyPlanId();
+  if (!normalized.date) normalized.date = todayString();
+  if (!STUDY_DURATIONS.includes(normalized.selectedDuration)) normalized.selectedDuration = "30分";
+  if (!normalized.generatedAt) normalized.generatedAt = new Date().toISOString();
+  if (!normalized.createdAt) normalized.createdAt = normalized.generatedAt;
+  if (!normalized.updatedAt) normalized.updatedAt = normalized.generatedAt;
+  normalized.completedItems = normalizeArray(normalized.completedItems).map((completed) => ({
+    id: String(completed?.id || ""),
+    type: String(completed?.type || ""),
+    title: String(completed?.title || ""),
+    completedAt: completed?.completedAt || new Date().toISOString()
+  })).filter((completed) => completed.id);
+  normalized.manualItems = normalizeArray(normalized.manualItems).map(makeTodayMenuItem).filter((item) => item.id);
+  normalized.memo = String(normalized.memo || "");
+  return normalized;
+}
+
 function makeBlankUnit() {
   return {
     id: "",
@@ -642,11 +677,14 @@ function saveUnits() {
   localStorage.setItem(STORAGE_KEYS.pastExamLogs, JSON.stringify(state.pastExamLogs));
   localStorage.setItem(STORAGE_KEYS.practicalLogs, JSON.stringify(state.practicalLogs));
   localStorage.setItem(STORAGE_KEYS.aiAnalyses, JSON.stringify(state.aiAnalyses));
+  localStorage.setItem(STORAGE_KEYS.studyPlans, JSON.stringify(state.studyPlans));
   localStorage.setItem(STORAGE_KEYS.version, APP_VERSION);
 }
 
 function todayString() {
-  return new Date().toISOString().slice(0, 10);
+  const date = new Date();
+  const pad = (value) => String(value).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
 function makePracticeLogId() {
@@ -667,6 +705,11 @@ function makePracticalLogId() {
 function makeAiAnalysisId() {
   const random = Math.random().toString(36).slice(2, 10);
   return `ai-${Date.now().toString(36)}-${random}`;
+}
+
+function makeStudyPlanId() {
+  const random = Math.random().toString(36).slice(2, 10);
+  return `plan-${Date.now().toString(36)}-${random}`;
 }
 
 function getReviewStatus(unit) {
@@ -744,8 +787,261 @@ function getWeaknessCount(unit) {
   return Array.isArray(unit.ai?.weaknessTags) ? unit.ai.weaknessTags.length : 0;
 }
 
+function getTodayPlan() {
+  const date = todayString();
+  let plan = state.studyPlans.find((item) => item.date === date);
+  if (!plan) {
+    const now = new Date().toISOString();
+    plan = normalizeStudyPlan({
+      id: makeStudyPlanId(),
+      date,
+      selectedDuration: "30分",
+      generatedAt: now,
+      completedItems: [],
+      memo: "",
+      createdAt: now,
+      updatedAt: now
+    });
+    state.studyPlans.push(plan);
+    saveUnits();
+  }
+  return plan;
+}
+
+function updateTodayPlan(updater) {
+  const plan = getTodayPlan();
+  updater(plan);
+  plan.updatedAt = new Date().toISOString();
+  state.studyPlans = state.studyPlans
+    .filter((item, index, array) => array.findIndex((candidate) => candidate.date === item.date) === index)
+    .map((item) => item.date === plan.date ? plan : item);
+  saveUnits();
+}
+
+function getDurationLimits(duration) {
+  const limits = {
+    "15分": { total: 1, priority: 1, practice: 1, past: 1, practical: 1 },
+    "30分": { total: 3, priority: 2, practice: 1, past: 1, practical: 1 },
+    "1時間": { total: 6, priority: 2, practice: 2, past: 2, practical: 1 },
+    "2時間": { total: 9, priority: 3, practice: 3, past: 3, practical: 2 },
+    "じっくり": { total: 14, priority: 5, practice: 5, past: 5, practical: 5 }
+  };
+  return limits[duration] || limits["30分"];
+}
+
+function generateTodayMenu(duration = "30分") {
+  const plan = getTodayPlan();
+  if (plan.selectedDuration !== duration) {
+    updateTodayPlan((current) => {
+      current.selectedDuration = duration;
+      current.generatedAt = new Date().toISOString();
+    });
+  }
+  const limits = getDurationLimits(duration);
+  const unitItems = buildTodayUnitItems();
+  const practiceItems = buildTodayPracticeItems().slice(0, limits.practice);
+  const pastExamItems = buildTodayPastExamItems().slice(0, limits.past);
+  const practicalItems = buildTodayPracticalItems().slice(0, limits.practical);
+  const priorityItems = uniqueTodayItems([
+    ...unitItems.filter((item) => item.priority === "最優先"),
+    ...practiceItems.filter((item) => item.priority === "高"),
+    ...pastExamItems.filter((item) => item.priority === "高"),
+    ...practicalItems.filter((item) => item.priority === "高")
+  ]).slice(0, Math.max(limits.priority, 3));
+  const weaknessItems = buildTodayWeaknessItems().slice(0, duration === "じっくり" ? 3 : duration === "2時間" ? 2 : 0);
+  const manualItems = normalizeArray(plan.manualItems).map(makeTodayMenuItem);
+  const aiItems = duration === "じっくり" ? [makeTodayMenuItem({
+    id: "today-ai-consult",
+    type: "AI相談",
+    title: "今日のメニューをAIに相談",
+    description: "未完了項目と弱点タグを含めて、30分・1時間メニューを相談する。",
+    reason: "じっくり学習では方針確認まで行う",
+    priority: "中",
+    estimatedMinutes: 10
+  })] : [];
+  const recommended = uniqueTodayItems([
+    ...manualItems,
+    ...priorityItems,
+    ...pastExamItems,
+    ...practicalItems,
+    ...practiceItems,
+    ...weaknessItems,
+    ...aiItems,
+    ...unitItems
+  ]).slice(0, limits.total);
+  const allItems = uniqueTodayItems([...recommended, ...manualItems, ...priorityItems, ...practiceItems, ...pastExamItems, ...practicalItems, ...weaknessItems, ...aiItems]);
+  return { duration, date: plan.date, plan, recommended, priorityItems, practiceItems, pastExamItems, practicalItems, weaknessItems, aiItems, manualItems, allItems };
+}
+
+function buildTodayUnitItems() {
+  return state.units.map((unit) => {
+    const scored = scoreUnitRisk(unit);
+    const review = getReviewStatus(unit);
+    const reasons = getReviewReasons(unit);
+    const oldDays = daysSince(unit.updatedAt);
+    let priorityScore = scored.score;
+    if (review.label === "最優先復習") priorityScore += 40;
+    if (unit.level === "C") priorityScore += 30;
+    if (unit.redoTarget) priorityScore += 15;
+    if (oldDays > 30) priorityScore += 10;
+    if (unit.importance === "高") priorityScore += 8;
+    const priority = scored.risk.label === "最優先改善" || review.label === "最優先復習" || unit.level === "C" ? "最優先"
+      : scored.score >= 25 || unit.importance === "高" ? "高"
+      : scored.score >= 10 || review.weight > 0 ? "中"
+      : "低";
+    return makeTodayMenuItem({
+      id: `unit-${unit.id}`,
+      type: "単元復習",
+      title: unit.title,
+      description: `${unit.subject} / 到達判定 ${unit.level} / 危険度 ${scored.risk.label}`,
+      reason: scored.reasons.join(" / ") || reasons.join(" / ") || "重要単元の定期確認",
+      priority,
+      priorityScore,
+      estimatedMinutes: priority === "最優先" ? 20 : 15,
+      relatedUnitId: unit.id
+    });
+  }).sort(compareTodayItems);
+}
+
+function buildTodayPracticeItems() {
+  return state.practiceLogs
+    .filter((log) => log.result === "×" || log.result === "△" || log.retry || ["分からなかった", "当てた"].includes(log.confidence))
+    .map((log) => makeTodayMenuItem({
+      id: `practice-${log.id}`,
+      type: "演習見直し",
+      title: log.unitTitle || log.questionRef || log.sourceName || "演習ログ",
+      description: [log.sourceName, log.questionRef, log.result, log.confidence].filter(Boolean).join(" / "),
+      reason: todayLogReason(log),
+      priority: log.result === "×" || log.confidence === "分からなかった" ? "高" : "中",
+      priorityScore: resultScore(log.result) + (log.retry ? 20 : 0) + (log.confidence === "分からなかった" ? 12 : log.confidence === "当てた" ? 8 : 0),
+      estimatedMinutes: 10,
+      relatedUnitId: log.unitId,
+      relatedLogId: log.id
+    })).sort(compareTodayItems);
+}
+
+function buildTodayPastExamItems() {
+  return state.pastExamLogs
+    .filter((log) => log.result === "×" || log.result === "△" || log.retry || log.priority === "高" || (log.scoreType === "全正解のみ" && ["×", "△"].includes(log.result)))
+    .map((log) => makeTodayMenuItem({
+      id: `past-${log.id}`,
+      type: "過去問見直し",
+      title: [log.examRound, log.subject, log.questionNo].filter(Boolean).join(" / ") || "過去問ログ",
+      description: [log.relatedUnitTitle, log.topic, log.scoreType].filter(Boolean).join(" / "),
+    reason: todayLogReason(log),
+      priority: log.result === "×" || log.priority === "高" ? "高" : "中",
+      priorityScore: resultScore(log.result) + (log.priority === "高" ? 18 : 0) + (log.retry ? 15 : 0) + (log.scoreType === "全正解のみ" ? 8 : 0),
+      estimatedMinutes: 15,
+      relatedUnitId: log.relatedUnitId,
+      relatedLogId: log.id
+    })).sort(compareTodayItems);
+}
+
+function buildTodayPracticalItems() {
+  return state.practicalLogs
+    .filter((log) => log.result === "×" || log.result === "△" || log.retry || log.priority === "高" || (log.weaknessTags || []).some((tag) => PRACTICAL_WEAKNESS_TAGS.includes(tag)))
+    .map((log) => makeTodayMenuItem({
+      id: `practical-${log.id}`,
+      type: "実務見直し",
+      title: [log.practicalType, log.relatedUnitTitle || log.questionRef].filter(Boolean).join(" / ") || "実務ログ",
+      description: [log.mistakeField, log.calculationType, log.timeSpentMinutes ? `${log.timeSpentMinutes}分` : ""].filter(Boolean).join(" / "),
+      reason: todayLogReason(log),
+      priority: log.result === "×" || log.priority === "高" ? "高" : "中",
+      priorityScore: resultScore(log.result) + (log.priority === "高" ? 18 : 0) + (log.retry ? 15 : 0) + ((log.weaknessTags || []).includes("時間不足") ? 10 : 0),
+      estimatedMinutes: 15,
+      relatedUnitId: log.relatedUnitId,
+      relatedLogId: log.id
+    })).sort(compareTodayItems);
+}
+
+function buildTodayWeaknessItems() {
+  return buildWeaknessRanking().slice(0, 5).map((item) => makeTodayMenuItem({
+    id: `weakness-${item.tag}`,
+    type: "弱点確認",
+    title: item.tag,
+    description: `関連 ${item.count}件 / 単元${item.unitCount}・演習${item.practiceLogCount}・過去問${item.pastExamLogCount}・実務${item.practicalLogCount}`,
+    reason: "弱点タグの出現回数が多い",
+    priority: item.count >= 3 ? "高" : "中",
+    priorityScore: item.count * 8,
+    estimatedMinutes: 10
+  }));
+}
+
+function makeTodayMenuItem(item) {
+  return {
+    id: "",
+    type: "",
+    title: "",
+    description: "",
+    reason: "",
+    priority: "中",
+    priorityScore: 0,
+    estimatedMinutes: 10,
+    relatedUnitId: "",
+    relatedLogId: "",
+    ...item
+  };
+}
+
+function uniqueTodayItems(items) {
+  const map = new Map();
+  items.forEach((item) => {
+    if (!item?.id || map.has(item.id)) return;
+    map.set(item.id, item);
+  });
+  return [...map.values()].sort(compareTodayItems);
+}
+
+function compareTodayItems(a, b) {
+  const priorityOrder = { "最優先": 4, "高": 3, "中": 2, "低": 1 };
+  return (priorityOrder[b.priority] || 0) - (priorityOrder[a.priority] || 0) ||
+    (b.priorityScore || 0) - (a.priorityScore || 0) ||
+    a.title.localeCompare(b.title, "ja");
+}
+
+function resultScore(result) {
+  if (result === "×") return 35;
+  if (result === "△") return 20;
+  return 0;
+}
+
+function todayLogReason(log) {
+  return [
+    log.result === "×" ? "結果×" : "",
+    log.result === "△" ? "結果△" : "",
+    log.retry ? "再演習対象" : "",
+    log.priority === "高" ? "優先度高" : "",
+    log.confidence === "分からなかった" ? "自信度:分からなかった" : "",
+    log.confidence === "当てた" ? "自信度:当てた" : "",
+    log.scoreType === "全正解のみ" && log.result !== "○" ? "全正解のみ問題で失点" : "",
+    (log.weaknessTags || []).includes("時間不足") ? "時間不足タグあり" : "",
+    (log.weaknessTags || []).some((tag) => PRACTICAL_WEAKNESS_TAGS.includes(tag)) ? "実務用弱点タグあり" : ""
+  ].filter(Boolean).join(" / ") || "見直し対象";
+}
+
+function daysSince(dateString) {
+  if (!dateString) return 999;
+  const date = new Date(`${dateString}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return 999;
+  return Math.floor((Date.now() - date.getTime()) / 86400000);
+}
+
+function isTodayItemCompleted(itemId) {
+  const plan = getTodayPlan();
+  return plan.completedItems.some((item) => item.id === itemId);
+}
+
+function getTodayCompletion(menu = state.todayMenu || generateTodayMenu(getTodayPlan().selectedDuration)) {
+  const total = menu.recommended.length;
+  const completed = menu.recommended.filter((item) => isTodayItemCompleted(item.id)).length;
+  const rate = total ? Math.round((completed / total) * 100) : 0;
+  return { total, completed, rate };
+}
+
 function render() {
+  state.todayMenu = generateTodayMenu(getTodayPlan().selectedDuration);
   renderDashboard();
+  renderTodayView();
   renderFilters();
   renderUnitList();
   renderPracticeView();
@@ -778,6 +1074,8 @@ function renderDashboard() {
   document.querySelector("#dashboardStats").innerHTML = stats
     .map(([label, value]) => `<div class="stat-card"><span>${escapeHtml(label)}</span><strong>${value}</strong></div>`)
     .join("");
+
+  renderHomeTodaySummary();
 
   const last = [...state.units].filter((unit) => unit.updatedAt).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0];
   document.querySelector("#lastUpdatedUnit").innerHTML = last
@@ -914,6 +1212,120 @@ function renderDashboard() {
       <p>${escapeHtml(subjectSummary || "未記録")}</p>
     </div>
   `;
+}
+
+function renderHomeTodaySummary() {
+  const menu = state.todayMenu || generateTodayMenu(getTodayPlan().selectedDuration);
+  const completion = getTodayCompletion(menu);
+  const topItems = menu.priorityItems.slice(0, 3);
+  document.querySelector("#homeTodaySummary").innerHTML = `
+    <dl class="summary-list">
+      <div><dt>選択時間</dt><dd>${escapeHtml(menu.duration)}</dd></div>
+      <div><dt>メニュー数</dt><dd>${completion.total}</dd></div>
+      <div><dt>完了数</dt><dd>${completion.completed}</dd></div>
+      <div><dt>完了率</dt><dd>${completion.rate}%</dd></div>
+    </dl>
+    <div class="mini-list">
+      <p class="muted mini-list-title">最優先項目 上位3件</p>
+      ${topItems.length ? topItems.map((item) => `
+        <div class="mini-item">
+          <span>${escapeHtml(item.title)}</span>
+          <small>${escapeHtml(item.reason || item.type)}</small>
+        </div>
+      `).join("") : `<p class="muted">最優先項目はありません。</p>`}
+    </div>
+    <div class="form-actions">
+      <button class="primary-button" type="button" data-open-today>今日のメニューを見る</button>
+    </div>
+  `;
+}
+
+function renderTodayView() {
+  const plan = getTodayPlan();
+  const menu = state.todayMenu || generateTodayMenu(plan.selectedDuration);
+  const completion = getTodayCompletion(menu);
+  document.querySelector("#todaySummary").innerHTML = `
+    <div class="today-date">${escapeHtml(formatJapaneseDate(menu.date))}</div>
+    <div class="today-progress">
+      <strong>${completion.completed} / ${completion.total} 完了</strong>
+      <span>${completion.rate}%</span>
+    </div>
+    <div class="progress-bar" aria-label="今日の完了率"><span style="width:${completion.rate}%"></span></div>
+    <dl class="summary-list">
+      <div><dt>選択時間</dt><dd>${escapeHtml(menu.duration)}</dd></div>
+      <div><dt>推定時間</dt><dd>${menu.recommended.reduce((sum, item) => sum + item.estimatedMinutes, 0)}分</dd></div>
+      <div><dt>最優先復習</dt><dd>${menu.priorityItems.length}件</dd></div>
+      <div><dt>ログ見直し</dt><dd>${menu.practiceItems.length + menu.pastExamItems.length + menu.practicalItems.length}件</dd></div>
+    </dl>
+  `;
+  document.querySelector("#durationButtons").innerHTML = STUDY_DURATIONS.map((duration) => `
+    <button class="duration-button ${duration === menu.duration ? "is-active" : ""}" type="button" data-duration="${escapeAttribute(duration)}">${escapeHtml(duration)}</button>
+  `).join("");
+  document.querySelector("#todayRecommendedMenu").innerHTML = menu.recommended.length
+    ? menu.recommended.map(todayMenuCard).join("")
+    : `<div class="empty-state"><p class="muted">今日のメニュー候補はまだありません。単元やログを記録すると自動生成されます。</p></div>`;
+  document.querySelector("#todayPriorityMenu").innerHTML = menu.priorityItems.length
+    ? menu.priorityItems.slice(0, 8).map((item) => todayMenuCard(item, true)).join("")
+    : `<div class="empty-state"><p class="muted">最優先復習はありません。</p></div>`;
+  document.querySelector("#todayPracticeMenu").innerHTML = renderTodayMiniItems(menu.practiceItems);
+  document.querySelector("#todayPastExamMenu").innerHTML = renderTodayMiniItems(menu.pastExamItems);
+  document.querySelector("#todayPracticalMenu").innerHTML = renderTodayMiniItems(menu.practicalItems);
+  document.querySelector("#todayCompletion").innerHTML = `
+    <div class="today-progress">
+      <strong>${completion.completed} / ${completion.total} 完了</strong>
+      <span>${completion.rate}%</span>
+    </div>
+    <p class="muted">チェックした項目は今日のstudyPlanに保存されます。</p>
+  `;
+  document.querySelector("#todayMemo").value = plan.memo || "";
+}
+
+function todayMenuCard(item, compact = false) {
+  const checked = isTodayItemCompleted(item.id) ? "checked" : "";
+  return `
+    <article class="today-menu-card ${compact ? "is-compact" : ""}">
+      <label class="today-check">
+        <input type="checkbox" data-today-complete="${escapeAttribute(item.id)}" ${checked}>
+        <span>
+          <span class="badge ${priorityClass(item.priority)}">${escapeHtml(item.priority)}</span>
+          <strong>${escapeHtml(item.title)}</strong>
+        </span>
+      </label>
+      <p>${escapeHtml(item.description || item.type)}</p>
+      <dl class="review-facts">
+        <div><dt>種別</dt><dd>${escapeHtml(item.type)}</dd></div>
+        <div><dt>理由</dt><dd>${escapeHtml(item.reason || "今日の候補")}</dd></div>
+        <div><dt>危険度</dt><dd>${escapeHtml(item.priority)}</dd></div>
+        <div><dt>推定時間</dt><dd>${item.estimatedMinutes}分</dd></div>
+      </dl>
+      <div class="card-actions">
+        ${item.relatedUnitId ? `<button class="ghost-button" type="button" data-open-unit="${escapeAttribute(item.relatedUnitId)}">開く</button>` : ""}
+        ${item.relatedLogId ? `<button class="ghost-button" type="button" data-open-today-log="${escapeAttribute(item.type)}:${escapeAttribute(item.relatedLogId)}">ログを開く</button>` : ""}
+      </div>
+    </article>
+  `;
+}
+
+function renderTodayMiniItems(items) {
+  return items.length ? items.map((item) => `
+    <div class="mini-item">
+      <span>${escapeHtml(item.title)}</span>
+      <small>${escapeHtml(`${item.reason} / ${item.estimatedMinutes}分`)}</small>
+    </div>
+  `).join("") : `<p class="muted">対象はありません。</p>`;
+}
+
+function priorityClass(priority) {
+  if (priority === "最優先" || priority === "高") return "priority";
+  if (priority === "中") return "normal";
+  return "ok";
+}
+
+function formatJapaneseDate(dateString) {
+  const date = new Date(`${dateString}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return dateString;
+  const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
+  return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日（${weekdays[date.getDay()]}）`;
 }
 
 function renderFilters() {
@@ -1825,6 +2237,10 @@ function buildAiUsage() {
 
 function renderAnalysisOverall(analysis) {
   const summary = analysis.summary;
+  const todayMenu = state.todayMenu || generateTodayMenu(getTodayPlan().selectedDuration);
+  const todayUnitIds = new Set(todayMenu.allItems.map((item) => item.relatedUnitId).filter(Boolean));
+  const todayTags = getTodayMenuWeaknessTags(todayMenu);
+  const todayLogCount = todayMenu.pastExamItems.length + todayMenu.practicalItems.length;
   const rows = [
     ["総単元数", summary.totalUnits],
     ["A判定数", summary.levelCounts.A || 0],
@@ -1842,7 +2258,9 @@ function renderAnalysisOverall(analysis) {
     ["実務正答率", dataAwareAccuracy(summary.practicalStats)],
     ["再演習対象数", summary.retryCount],
     ["弱点タグ総数", summary.weaknessTotal],
-    ["AI解析履歴数", summary.aiCount]
+    ["AI解析履歴数", summary.aiCount],
+    ["今日メニュー反映危険単元数", todayUnitIds.size],
+    ["今日メニュー内の過去問・実務ログ数", todayLogCount]
   ];
   return `
     <div class="risk-summary-card risk-${summary.risk.className}">
@@ -1862,6 +2280,14 @@ function renderAnalysisOverall(analysis) {
       `).join("")}
     </div>
     <div class="analysis-card">
+      <h4>今日のメニュー連動</h4>
+      <dl class="analysis-facts">
+        <div><dt>反映されている危険単元数</dt><dd>${todayUnitIds.size}</dd></div>
+        <div><dt>含まれる弱点タグ</dt><dd>${escapeHtml(todayTags.join(" / ") || "なし")}</dd></div>
+        <div><dt>含まれる過去問・実務ログ数</dt><dd>${todayLogCount}</dd></div>
+      </dl>
+    </div>
+    <div class="analysis-card">
       <h4>本試験で危険な論点</h4>
       ${analysis.dangerTopics.length ? `
         <div class="mini-list">
@@ -1875,6 +2301,20 @@ function renderAnalysisOverall(analysis) {
       ` : `<p class="muted">危険論点を判定できる過去問ログはまだありません。</p>`}
     </div>
   `;
+}
+
+function getTodayMenuWeaknessTags(menu) {
+  const tags = new Set();
+  menu.allItems.forEach((item) => {
+    const unit = state.units.find((candidate) => candidate.id === item.relatedUnitId);
+    (unit?.ai?.weaknessTags || []).forEach((tag) => tags.add(tag));
+    const practice = state.practiceLogs.find((log) => log.id === item.relatedLogId);
+    const past = state.pastExamLogs.find((log) => log.id === item.relatedLogId);
+    const practical = state.practicalLogs.find((log) => log.id === item.relatedLogId);
+    [...(practice?.weaknessTags || []), ...(past?.weaknessTags || []), ...(practical?.weaknessTags || [])].forEach((tag) => tags.add(tag));
+    if (item.type === "弱点確認") tags.add(item.title);
+  });
+  return [...tags].slice(0, 12);
 }
 
 function renderSubjectAnalysis(subjects) {
@@ -1931,6 +2371,7 @@ function renderWeaknessRanking(items) {
 
 function renderUnitRiskRanking(items) {
   if (!items.length) return `<p class="muted">単元データがありません。</p>`;
+  const todayUnitIds = new Set((state.todayMenu || generateTodayMenu(getTodayPlan().selectedDuration)).allItems.map((item) => item.relatedUnitId).filter(Boolean));
   return `
     <div class="ranking-list">
       ${items.map((item, index) => `
@@ -1943,6 +2384,7 @@ function renderUnitRiskRanking(items) {
                 <h4>${escapeHtml(item.unit.title)}</h4>
               </div>
               <span class="badge ${item.risk.className}">${escapeHtml(item.risk.label)}</span>
+              ${todayUnitIds.has(item.unit.id) ? `<span class="badge priority">今日のメニュー候補</span>` : ""}
             </div>
             <dl class="analysis-facts compact">
               <div><dt>スコア</dt><dd>${item.score}</dd></div>
@@ -2552,7 +2994,7 @@ function renderAiTargetSelect() {
   label.classList.toggle("is-hidden", !needsSelect);
   hint.textContent = needsSelect ? "" : state.aiForm.targetType === "復習対象"
     ? "現在の復習対象単元を最大10件まで使います。"
-    : "単元・演習ログ・過去問ログの集計値を使います。";
+    : "単元・演習ログ・過去問ログ・実務ログ・今日のメニューの集計値を使います。";
   if (!needsSelect) {
     select.innerHTML = `<option value="">自動選択</option>`;
     state.aiForm.targetId = "";
@@ -2834,6 +3276,7 @@ function buildReviewTargetsPromptData() {
 
 function buildOverallSummaryPromptData() {
   const analysis = buildWeaknessAnalysis();
+  const todaySummary = buildTodayPromptSummary();
   const counts = LEVELS.reduce((acc, level) => ({ ...acc, [level]: state.units.filter((unit) => unit.level === level).length }), {});
   const reviewUnits = state.units.filter((unit) => getReviewStatus(unit).weight > 0);
   const practiceStats = getPracticeStats(state.practiceLogs);
@@ -2859,11 +3302,26 @@ function buildOverallSummaryPromptData() {
     ["再演習対象数", analysis.summary.retryCount],
     ["多い弱点タグ上位", getTopWeaknessTags().join(" / ")],
     ["危険度上位単元", analysis.unitRisks.slice(0, 5).map((item) => `${item.unit.title}:${item.risk.label}/${item.score}点/${item.reasons.join("・") || "理由なし"}`).join("\n")],
+    ["今日の学習メニュー", todaySummary],
     ["科目別危険度", analysis.subjects.map((item) => `${item.subject}:${item.risk.label}`).join(" / ")],
     ["本試験で危険な論点", analysis.dangerTopics.map((item) => `${item.subject} ${item.topic}（×${item.wrong} / △${item.partial} / 高優先度${item.high} / 再演習${item.retry}）`).join("\n") || "未記録"],
     ["直近の×演習ログ", summarizeRecentWrongPracticeLogs()],
     ["直近の×過去問ログ", summarizeRecentWrongPastExamLogs()],
     ["直近の×実務ログ", summarizeRecentWrongPracticalLogs()]
+  ]);
+}
+
+function buildTodayPromptSummary() {
+  const menu = state.todayMenu || generateTodayMenu(getTodayPlan().selectedDuration);
+  const completion = getTodayCompletion(menu);
+  const incomplete = menu.recommended.filter((item) => !isTodayItemCompleted(item.id));
+  return keyValueLines([
+    ["日付", menu.date],
+    ["選択時間", menu.duration],
+    ["完了状況", `${completion.completed}/${completion.total} 完了（${completion.rate}%）`],
+    ["今日のおすすめ", menu.recommended.map((item) => `${item.type}:${item.title}（${item.priority}/${item.reason}）`).join("\n")],
+    ["未完了項目", incomplete.map((item) => `${item.type}:${item.title}`).join("\n") || "なし"],
+    ["今日のメモ", menu.plan.memo || "未入力"]
   ]);
 }
 
@@ -2988,6 +3446,90 @@ function openAiForAnalysisConsult() {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+function openAiForTodayConsult() {
+  state.aiForm.promptType = "総合学習相談";
+  state.aiForm.targetType = "全体サマリー";
+  state.aiForm.targetId = "";
+  state.aiForm.additionalConditions = "今日の学習メニュー、未完了項目、弱点タグ、過去問・実務の失点状況を踏まえて、次にやるべき学習を30分・1時間のメニューに分けて提案してください。";
+  state.aiForm.promptText = "";
+  state.aiForm.currentAnalysisId = "";
+  switchView("ai");
+  renderAiView();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function toggleTodayCompleted(itemId, checked) {
+  const menu = state.todayMenu || generateTodayMenu(getTodayPlan().selectedDuration);
+  const item = menu.allItems.find((candidate) => candidate.id === itemId) || menu.recommended.find((candidate) => candidate.id === itemId);
+  if (!item) return;
+  updateTodayPlan((plan) => {
+    plan.completedItems = plan.completedItems.filter((completed) => completed.id !== itemId);
+    if (checked) {
+      plan.completedItems.push({
+        id: item.id,
+        type: item.type,
+        title: item.title,
+        completedAt: new Date().toISOString()
+      });
+    }
+  });
+  state.todayMenu = generateTodayMenu(getTodayPlan().selectedDuration);
+  renderTodayView();
+  renderHomeTodaySummary();
+}
+
+function saveTodayMemo() {
+  const memo = document.querySelector("#todayMemo").value;
+  updateTodayPlan((plan) => {
+    plan.memo = memo;
+  });
+  state.todayMenu = generateTodayMenu(getTodayPlan().selectedDuration);
+  document.querySelector("#todayMemoMessage").textContent = "今日のメモを保存しました";
+  renderHomeTodaySummary();
+  showToast("今日のメモを保存しました。");
+}
+
+function addUnitToTodayMenu(unitId) {
+  const unit = state.units.find((item) => item.id === unitId);
+  if (!unit) return;
+  const item = makeTodayMenuItem({
+    id: `unit-${unit.id}`,
+    type: "単元復習",
+    title: unit.title,
+    description: `${unit.subject} / 復習画面から追加`,
+    reason: "復習画面から今日のメニューに追加",
+    priority: getReviewStatus(unit).label === "最優先復習" ? "最優先" : "高",
+    estimatedMinutes: 15,
+    relatedUnitId: unit.id
+  });
+  updateTodayPlan((plan) => {
+    plan.manualItems = normalizeArray(plan.manualItems).filter((manual) => manual.id !== item.id);
+    plan.manualItems.unshift(item);
+    plan.completedItems = plan.completedItems.filter((completed) => completed.id !== item.id);
+  });
+  unit.reviewTarget = true;
+  unit.updatedAt = todayString();
+  state.todayMenu = generateTodayMenu(getTodayPlan().selectedDuration);
+  saveUnits();
+  render();
+  showToast("今日のメニュー候補に追加しました。");
+}
+
+function openTodayLog(target) {
+  const [type, id] = String(target || "").split(":");
+  if (type === "演習見直し") {
+    editPracticeLog(id);
+    return;
+  }
+  if (type === "過去問見直し") {
+    editPastExamLog(id);
+    return;
+  }
+  if (type === "実務見直し") {
+    editPracticalLog(id);
+  }
+}
+
 async function copyAiPrompt() {
   const textarea = document.querySelector("#aiPromptResult");
   const text = textarea.value;
@@ -3084,7 +3626,7 @@ function reviewCard(unit) {
   const importanceClass = unit.importance === "高" ? "high" : unit.importance === "中" ? "medium" : "";
   const tags = (unit.ai?.weaknessTags || []).slice(0, 5).join(" / ");
   return `
-    <button class="unit-card review-card" type="button" data-open-unit="${unit.id}">
+    <article class="unit-card review-card">
       <div>
         <p class="eyebrow">${escapeHtml(unit.subject)}</p>
         <h3>${escapeHtml(unit.title)}</h3>
@@ -3103,7 +3645,11 @@ function reviewCard(unit) {
         <div><dt>復習理由</dt><dd>${escapeHtml(reasons.length ? reasons.join(" / ") : "該当なし")}</dd></div>
         <div><dt>最終更新日</dt><dd>${escapeHtml(unit.updatedAt || "未保存")}</dd></div>
       </dl>
-    </button>
+      <div class="card-actions">
+        <button class="ghost-button" type="button" data-open-unit="${escapeAttribute(unit.id)}">開く</button>
+        <button class="primary-button" type="button" data-add-today-unit="${escapeAttribute(unit.id)}">今日のメニューに追加</button>
+      </div>
+    </article>
   `;
 }
 
@@ -3641,6 +4187,7 @@ function renderSettings() {
     <div><dt>保存中の過去問ログ数</dt><dd>${state.pastExamLogs.length}件</dd></div>
     <div><dt>保存中の実務ログ数</dt><dd>${state.practicalLogs.length}件</dd></div>
     <div><dt>保存中のAI履歴数</dt><dd>${state.aiAnalyses.length}件</dd></div>
+    <div><dt>保存中の学習メニュー数</dt><dd>${state.studyPlans.length}件</dd></div>
     <div><dt>最終更新単元</dt><dd>${escapeHtml(last?.title || "未保存")}</dd></div>
     <div><dt>最終更新日</dt><dd>${escapeHtml(last?.updatedAt || "未保存")}</dd></div>
     <div><dt>おおよその保存サイズ</dt><dd>約${sizeKb}KB</dd></div>
@@ -3662,7 +4209,8 @@ function makeBackupPayload() {
     practiceLogs: state.practiceLogs,
     pastExamLogs: state.pastExamLogs,
     practicalLogs: state.practicalLogs,
-    aiAnalyses: state.aiAnalyses
+    aiAnalyses: state.aiAnalyses,
+    studyPlans: state.studyPlans
   };
 }
 
@@ -3709,6 +4257,7 @@ function importBackup(file) {
       state.pastExamLogs = normalizeArray(parsed.pastExamLogs).map(normalizePastExamLog);
       state.practicalLogs = normalizeArray(parsed.practicalLogs).map(normalizePracticalLog);
       state.aiAnalyses = normalizeArray(parsed.aiAnalyses).map(normalizeAiAnalysis);
+      state.studyPlans = normalizeArray(parsed.studyPlans).map(normalizeStudyPlan);
       closeDetail();
       saveUnits();
       render();
@@ -3982,7 +4531,35 @@ function attachEvents() {
     state.aiForm.promptText = event.target.value;
   });
   document.querySelector("#analysisAiConsultButton").addEventListener("click", openAiForAnalysisConsult);
+  document.querySelector("#todayAiConsultButton").addEventListener("click", openAiForTodayConsult);
+  document.querySelector("#saveTodayMemoButton").addEventListener("click", saveTodayMemo);
+  document.querySelector("#durationButtons").addEventListener("click", (event) => {
+    const button = event.target.closest("[data-duration]");
+    if (!button) return;
+    updateTodayPlan((plan) => {
+      plan.selectedDuration = button.dataset.duration;
+      plan.generatedAt = new Date().toISOString();
+    });
+    state.todayMenu = generateTodayMenu(button.dataset.duration);
+    renderTodayView();
+    renderHomeTodaySummary();
+  });
   document.body.addEventListener("click", (event) => {
+    if (event.target.closest("[data-open-today]")) {
+      switchView("today");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    const todayLogButton = event.target.closest("[data-open-today-log]");
+    if (todayLogButton) {
+      openTodayLog(todayLogButton.dataset.openTodayLog);
+      return;
+    }
+    const addTodayButton = event.target.closest("[data-add-today-unit]");
+    if (addTodayButton) {
+      addUnitToTodayMenu(addTodayButton.dataset.addTodayUnit);
+      return;
+    }
     if (event.target.closest("[data-open-analysis]")) {
       switchView("analysis");
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -4084,6 +4661,11 @@ function attachEvents() {
       renderUnitDetail();
     }
   });
+  document.body.addEventListener("change", (event) => {
+    const complete = event.target.closest("[data-today-complete]");
+    if (!complete) return;
+    toggleTodayCompleted(complete.dataset.todayComplete, complete.checked);
+  });
   document.querySelector("#saveUnitButton").addEventListener("click", () => {
     const unit = getActiveUnit();
     if (!unit) return;
@@ -4105,11 +4687,13 @@ function attachEvents() {
     localStorage.removeItem(STORAGE_KEYS.pastExamLogs);
     localStorage.removeItem(STORAGE_KEYS.practicalLogs);
     localStorage.removeItem(STORAGE_KEYS.aiAnalyses);
+    localStorage.removeItem(STORAGE_KEYS.studyPlans);
     state.units = makeInitialUnits();
     state.practiceLogs = [];
     state.pastExamLogs = [];
     state.practicalLogs = [];
     state.aiAnalyses = [];
+    state.studyPlans = [];
     state.editingPracticeLogId = null;
     state.editingPastExamLogId = null;
     state.editingPracticalLogId = null;
