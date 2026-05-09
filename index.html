@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="TSUKAN YOBIKO v0.1 - 通関士試験向けスマホファースト個人予備校アプリ">
+    <meta name="theme-color" content="#1f5f5b">
+    <title>TSUKAN YOBIKO</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="app-header">
+        <div>
+          <p class="eyebrow">通関士試験 個人予備校</p>
+          <h1>TSUKAN YOBIKO</h1>
+        </div>
+        <span class="version-pill">v0.1</span>
+      </header>
+
+      <main class="app-main">
+        <section id="view-home" class="view is-active" aria-labelledby="home-title">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Dashboard</p>
+              <h2 id="home-title">ホーム</h2>
+            </div>
+          </div>
+          <div id="dashboardStats" class="stats-grid"></div>
+          <section class="panel">
+            <div class="panel-heading">
+              <h3>最終更新単元</h3>
+            </div>
+            <div id="lastUpdatedUnit" class="empty-state"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-heading">
+              <h3>今日のおすすめ復習</h3>
+            </div>
+            <div id="recommendedReviews" class="compact-list"></div>
+          </section>
+        </section>
+
+        <section id="view-units" class="view" aria-labelledby="units-title">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Units</p>
+              <h2 id="units-title">単元</h2>
+            </div>
+            <button id="backToUnitsButton" class="ghost-button is-hidden" type="button">一覧へ</button>
+          </div>
+
+          <div id="unitListArea">
+            <div class="filters panel">
+              <label>
+                検索
+                <input id="searchInput" type="search" placeholder="単元名・科目・メモを検索">
+              </label>
+              <label>
+                科目
+                <select id="subjectFilter"></select>
+              </label>
+              <label>
+                到達判定
+                <select id="levelFilter"></select>
+              </label>
+              <label>
+                復習状態
+                <select id="reviewFilter"></select>
+              </label>
+            </div>
+            <div id="unitCards" class="unit-grid"></div>
+          </div>
+
+          <article id="unitDetailArea" class="detail-area is-hidden" aria-live="polite">
+            <div class="detail-header panel">
+              <div>
+                <p id="detailSubject" class="eyebrow"></p>
+                <h3 id="detailTitle"></h3>
+                <div id="detailBadges" class="badge-row"></div>
+              </div>
+              <button id="saveUnitButton" class="primary-button" type="button">保存</button>
+            </div>
+
+            <div id="detailTabs" class="tab-bar" role="tablist" aria-label="単元詳細タブ"></div>
+            <form id="unitForm" class="detail-form panel"></form>
+          </article>
+        </section>
+
+        <section id="view-review" class="view" aria-labelledby="review-title">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Review</p>
+              <h2 id="review-title">復習</h2>
+            </div>
+          </div>
+          <div id="reviewCards" class="unit-grid"></div>
+        </section>
+
+        <section id="view-settings" class="view" aria-labelledby="settings-title">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Settings</p>
+              <h2 id="settings-title">設定</h2>
+            </div>
+          </div>
+          <div class="settings-grid">
+            <section class="panel">
+              <div class="panel-heading">
+                <h3>アプリ情報</h3>
+              </div>
+              <dl class="info-list">
+                <div><dt>アプリ名</dt><dd>TSUKAN YOBIKO</dd></div>
+                <div><dt>バージョン</dt><dd>v0.1</dd></div>
+                <div><dt>公開前提</dt><dd>GitHub Pagesで公開して使う静的アプリです。</dd></div>
+                <div><dt>保存方式</dt><dd id="storageStatus">確認中</dd></div>
+              </dl>
+            </section>
+
+            <section class="panel">
+              <div class="panel-heading">
+                <h3>初期データ</h3>
+              </div>
+              <p class="muted">保存済みの学習記録を削除し、v0.1の初期単元12件に戻します。</p>
+              <button id="resetButton" class="danger-button" type="button">初期データに戻す</button>
+            </section>
+
+            <section class="panel">
+              <div class="panel-heading">
+                <h3>注意事項</h3>
+              </div>
+              <ul class="note-list">
+                <li>学習記録はこのブラウザのlocalStorageに保存されます。</li>
+                <li>GitHubには個人の学習記録は自動保存されません。</li>
+                <li>スマホとPCのデータは自動同期されません。</li>
+                <li>v0.2以降でJSONバックアップ/復元を追加予定です。</li>
+              </ul>
+            </section>
+          </div>
+        </section>
+      </main>
+
+      <nav class="bottom-nav" aria-label="メインナビゲーション">
+        <button class="nav-button is-active" type="button" data-view="home">ホーム</button>
+        <button class="nav-button" type="button" data-view="units">単元</button>
+        <button class="nav-button" type="button" data-view="review">復習</button>
+        <button class="nav-button" type="button" data-view="settings">設定</button>
+      </nav>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="script.js"></script>
+  </body>
+</html>
