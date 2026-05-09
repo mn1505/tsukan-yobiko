@@ -1,4 +1,4 @@
-const APP_VERSION = "v0.5";
+const APP_VERSION = "v0.6";
 const STORAGE_KEYS = {
   units: "tsukanYobiko.units",
   version: "tsukanYobiko.version",
@@ -27,6 +27,7 @@ const PAST_EXAM_QUESTION_PRESETS = {
   "通関実務": ["第1問 輸出申告", "第2問 輸入申告", "第3問", "第4問", "第5問", "第6問", "第7問", "第8問", "第9問", "第10問", "第11問", "第12問", "第13問", "第14問", "第15問"]
 };
 const PRACTICAL_PAST_FORMATS = ["申告書作成", "品目分類", "計算", "資料読み取り"];
+const ANALYSIS_SUBJECTS = ["通関業法", "関税法等", "通関実務", "共通", "未設定"];
 const WEAKNESS_TAGS = [
   "制度趣旨",
   "全体像理解",
@@ -600,6 +601,7 @@ function render() {
   renderPracticeView();
   renderPastExamView();
   renderAiView();
+  renderAnalysisView();
   renderReviewList();
   renderSettings();
   if (state.activeUnitId) {
@@ -703,6 +705,37 @@ function renderDashboard() {
       </div>
     `).join("")
     : `<p class="muted">AIプロンプト生成履歴はまだありません。</p>`;
+
+  const analysis = buildWeaknessAnalysis();
+  const priorityRisks = analysis.unitRisks.filter((item) => item.risk.label === "最優先改善").slice(0, 3);
+  const topTags = analysis.weaknessRanking.slice(0, 3);
+  const subjectSummary = analysis.subjects
+    .filter((item) => item.unitCount || item.practiceStats.total || item.pastStats.total)
+    .map((item) => `${item.subject}:${item.risk.label}`)
+    .join(" / ");
+  document.querySelector("#homeRiskSummary").innerHTML = `
+    <div class="risk-summary-card risk-${analysis.summary.risk.className}">
+      <div>
+        <p class="eyebrow">総合危険度</p>
+        <strong>${escapeHtml(analysis.summary.risk.label)}</strong>
+        ${analysis.summary.risk.dataShortage ? `<span class="data-note">データ不足</span>` : ""}
+      </div>
+      <button class="primary-button" type="button" data-open-analysis>弱点分析を見る</button>
+    </div>
+    <div class="mini-list">
+      <p class="muted mini-list-title">最優先改善単元 上位3件</p>
+      ${priorityRisks.length ? priorityRisks.map((item) => `
+        <button class="compact-item ghost-button" type="button" data-open-unit="${escapeAttribute(item.unit.id)}">
+          <span>${escapeHtml(item.unit.title)}</span>
+          <span class="badge ${item.risk.className}">${item.score}</span>
+        </button>
+      `).join("") : `<p class="muted">最優先改善単元はまだありません。</p>`}
+      <p class="muted mini-list-title">弱点タグ上位3件</p>
+      <p>${escapeHtml(topTags.map((item) => `${item.tag}(${item.count})`).join(" / ") || "未記録")}</p>
+      <p class="muted mini-list-title">科目別危険度</p>
+      <p>${escapeHtml(subjectSummary || "未記録")}</p>
+    </div>
+  `;
 }
 
 function renderFilters() {
@@ -804,8 +837,9 @@ function getPracticeStats(logs) {
   const pending = logs.filter((log) => log.result === "未判定").length;
   const retry = logs.filter((log) => log.retry).length;
   const denominator = correct + partial + wrong;
-  const accuracy = denominator ? `${((correct / denominator) * 100).toFixed(1)}%` : "0.0%";
-  return { total: logs.length, correct, partial, wrong, pending, retry, accuracy };
+  const accuracyValue = denominator ? (correct / denominator) * 100 : null;
+  const accuracy = accuracyValue === null ? "0.0%" : `${accuracyValue.toFixed(1)}%`;
+  return { total: logs.length, correct, partial, wrong, pending, retry, denominator, accuracyValue, accuracy };
 }
 
 function getRecentPracticeDate() {
@@ -853,7 +887,8 @@ function getPastExamStats(logs) {
   const pending = logs.filter((log) => log.result === "未実施").length;
   const retry = logs.filter((log) => log.retry).length;
   const denominator = correct + partial + wrong;
-  const accuracy = denominator ? `${((correct / denominator) * 100).toFixed(1)}%` : "0.0%";
+  const accuracyValue = denominator ? (correct / denominator) * 100 : null;
+  const accuracy = accuracyValue === null ? "0.0%" : `${accuracyValue.toFixed(1)}%`;
   const subjects = {};
   PAST_EXAM_SUBJECTS.forEach((subject) => {
     const subjectLogs = logs.filter((log) => log.subject === subject);
@@ -863,10 +898,12 @@ function getPastExamStats(logs) {
     const subjectDenominator = subjectCorrect + subjectPartial + subjectWrong;
     subjects[subject] = {
       total: subjectLogs.length,
+      denominator: subjectDenominator,
+      accuracyValue: subjectDenominator ? (subjectCorrect / subjectDenominator) * 100 : null,
       accuracy: subjectDenominator ? `${((subjectCorrect / subjectDenominator) * 100).toFixed(1)}%` : "0.0%"
     };
   });
-  return { total: logs.length, correct, partial, wrong, pending, retry, accuracy, subjects };
+  return { total: logs.length, correct, partial, wrong, pending, retry, denominator, accuracyValue, accuracy, subjects };
 }
 
 function getRecentPastExamDate() {
@@ -874,6 +911,599 @@ function getRecentPastExamDate() {
     .map((log) => log.studiedAt)
     .filter(Boolean)
     .sort((a, b) => b.localeCompare(a))[0];
+}
+
+function renderAnalysisView() {
+  const analysis = buildWeaknessAnalysis();
+  document.querySelector("#analysisOverallSummary").innerHTML = renderAnalysisOverall(analysis);
+  document.querySelector("#analysisSubjectCards").innerHTML = renderSubjectAnalysis(analysis.subjects);
+  document.querySelector("#analysisWeaknessRanking").innerHTML = renderWeaknessRanking(analysis.weaknessRanking);
+  document.querySelector("#analysisUnitRiskRanking").innerHTML = renderUnitRiskRanking(analysis.unitRisks);
+  document.querySelector("#analysisPerformance").innerHTML = renderPerformanceAnalysis(analysis.performance);
+  document.querySelector("#analysisRetryTargets").innerHTML = renderRetryTargets(analysis.retryTargets);
+  document.querySelector("#analysisAiUsage").innerHTML = renderAiUsage(analysis.aiUsage);
+}
+
+function buildWeaknessAnalysis() {
+  const levelCounts = countLevels(state.units);
+  const reviewUnits = state.units.filter((unit) => getReviewStatus(unit).weight > 0);
+  const priorityReviewUnits = state.units.filter((unit) => getReviewStatus(unit).label === "最優先復習");
+  const normalReviewUnits = state.units.filter((unit) => getReviewStatus(unit).label === "通常復習");
+  const practiceStats = getPracticeStats(state.practiceLogs);
+  const pastStats = getPastExamStats(state.pastExamLogs);
+  const retryTargets = buildRetryTargets();
+  const weaknessRanking = buildWeaknessRanking();
+  const summary = {
+    totalUnits: state.units.length,
+    levelCounts,
+    reviewCount: reviewUnits.length,
+    priorityReviewCount: priorityReviewUnits.length,
+    normalReviewCount: normalReviewUnits.length,
+    practiceStats,
+    pastStats,
+    retryCount: retryTargets.units.length + retryTargets.practiceLogs.length + retryTargets.pastExamLogs.length,
+    weaknessTotal: weaknessRanking.reduce((sum, item) => sum + item.count, 0),
+    aiCount: state.aiAnalyses.length
+  };
+  summary.risk = classifyLearningRisk({
+    bCount: levelCounts.B || 0,
+    cCount: levelCounts.C || 0,
+    reviewCount: summary.reviewCount,
+    priorityReviewCount: summary.priorityReviewCount,
+    practiceStats,
+    pastStats
+  });
+  return {
+    summary,
+    subjects: buildSubjectAnalyses(),
+    weaknessRanking,
+    unitRisks: state.units.map(scoreUnitRisk).sort(compareUnitRisks),
+    dangerTopics: buildDangerTopics(),
+    performance: buildPerformanceAnalysis(),
+    retryTargets,
+    aiUsage: buildAiUsage()
+  };
+}
+
+function countLevels(units) {
+  return LEVELS.reduce((acc, level) => {
+    acc[level] = units.filter((unit) => unit.level === level).length;
+    return acc;
+  }, {});
+}
+
+function classifyLearningRisk({ bCount, cCount, reviewCount, priorityReviewCount, practiceStats, pastStats }) {
+  const practiceAccuracy = practiceStats.accuracyValue;
+  const pastAccuracy = pastStats.accuracyValue;
+  const hasPracticeData = practiceStats.denominator > 0;
+  const hasPastData = pastStats.denominator > 0;
+  let label = "安定";
+  if (
+    cCount >= 3 ||
+    priorityReviewCount >= 5 ||
+    (hasPastData && pastAccuracy < 50) ||
+    (hasPracticeData && practiceAccuracy < 50)
+  ) {
+    label = "最優先改善";
+  } else if (
+    cCount >= 1 ||
+    bCount + cCount >= 5 ||
+    priorityReviewCount >= 1 ||
+    (hasPastData && pastAccuracy < 60) ||
+    (hasPracticeData && practiceAccuracy < 60)
+  ) {
+    label = "危険";
+  } else if (
+    bCount >= 1 ||
+    reviewCount >= 1 ||
+    (hasPastData && pastAccuracy < 70) ||
+    (hasPracticeData && practiceAccuracy < 70)
+  ) {
+    label = "注意";
+  }
+  const dataShortage = practiceStats.denominator < 3 && pastStats.denominator < 3;
+  return { label, className: riskClassName(label), dataShortage };
+}
+
+function riskClassName(label) {
+  if (label === "最優先改善") return "priority";
+  if (label === "危険") return "danger";
+  if (label === "注意") return "normal";
+  return "ok";
+}
+
+function buildSubjectAnalyses() {
+  return ANALYSIS_SUBJECTS.map((subject) => {
+    const units = state.units.filter((unit) => normalizeSubject(unit.subject) === subject);
+    const practiceLogs = state.practiceLogs.filter((log) => normalizeSubject(log.subject) === subject);
+    const pastExamLogs = state.pastExamLogs.filter((log) => normalizeSubject(log.subject) === subject);
+    const levelCounts = countLevels(units);
+    const reviewUnits = units.filter((unit) => getReviewStatus(unit).weight > 0);
+    const priorityReviewUnits = units.filter((unit) => getReviewStatus(unit).label === "最優先復習");
+    const practiceStats = getPracticeStats(practiceLogs);
+    const pastStats = getPastExamStats(pastExamLogs);
+    const tags = countTags([
+      ...units.flatMap((unit) => unit.ai?.weaknessTags || []),
+      ...practiceLogs.flatMap((log) => log.weaknessTags || []),
+      ...pastExamLogs.flatMap((log) => log.weaknessTags || [])
+    ]);
+    const retryCount = units.filter((unit) => unit.redoTarget).length +
+      practiceLogs.filter((log) => log.retry).length +
+      pastExamLogs.filter((log) => log.retry).length;
+    const risk = classifyLearningRisk({
+      bCount: levelCounts.B || 0,
+      cCount: levelCounts.C || 0,
+      reviewCount: reviewUnits.length,
+      priorityReviewCount: priorityReviewUnits.length,
+      practiceStats,
+      pastStats
+    });
+    return {
+      subject,
+      unitCount: units.length,
+      levelCounts,
+      reviewCount: reviewUnits.length,
+      practiceStats,
+      pastStats,
+      retryCount,
+      topTags: Object.entries(tags).sort((a, b) => b[1] - a[1]).slice(0, 3),
+      risk
+    };
+  });
+}
+
+function normalizeSubject(value) {
+  return ANALYSIS_SUBJECTS.includes(value) ? value : "未設定";
+}
+
+function countTags(tags) {
+  return tags.reduce((acc, tag) => {
+    if (tag) acc[tag] = (acc[tag] || 0) + 1;
+    return acc;
+  }, {});
+}
+
+function buildWeaknessRanking() {
+  const map = new Map();
+  const ensure = (tag) => {
+    if (!map.has(tag)) {
+      map.set(tag, { tag, count: 0, unitIds: new Set(), practiceLogIds: new Set(), pastExamLogIds: new Set() });
+    }
+    return map.get(tag);
+  };
+  state.units.forEach((unit) => (unit.ai?.weaknessTags || []).forEach((tag) => {
+    const item = ensure(tag);
+    item.count += 1;
+    item.unitIds.add(unit.id);
+  }));
+  state.practiceLogs.forEach((log) => (log.weaknessTags || []).forEach((tag) => {
+    const item = ensure(tag);
+    item.count += 1;
+    item.practiceLogIds.add(log.id);
+  }));
+  state.pastExamLogs.forEach((log) => (log.weaknessTags || []).forEach((tag) => {
+    const item = ensure(tag);
+    item.count += 1;
+    item.pastExamLogIds.add(log.id);
+  }));
+  return [...map.values()]
+    .map((item) => ({
+      tag: item.tag,
+      count: item.count,
+      unitCount: item.unitIds.size,
+      practiceLogCount: item.practiceLogIds.size,
+      pastExamLogCount: item.pastExamLogIds.size
+    }))
+    .sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag, "ja"));
+}
+
+function buildDangerTopics() {
+  const map = new Map();
+  state.pastExamLogs.forEach((log) => {
+    const topic = String(log.topic || log.relatedUnitTitle || log.questionNo || "").trim();
+    if (!topic) return;
+    if (!map.has(topic)) {
+      map.set(topic, { topic, subject: log.subject || "未設定", score: 0, count: 0, wrong: 0, partial: 0, high: 0, retry: 0 });
+    }
+    const item = map.get(topic);
+    item.count += 1;
+    if (log.result === "×") {
+      item.score += 3;
+      item.wrong += 1;
+    }
+    if (log.result === "△") {
+      item.score += 2;
+      item.partial += 1;
+    }
+    if (log.priority === "高") {
+      item.score += 2;
+      item.high += 1;
+    }
+    if (log.retry) {
+      item.score += 1;
+      item.retry += 1;
+    }
+  });
+  return [...map.values()]
+    .filter((item) => item.score > 0)
+    .sort((a, b) => b.score - a.score || b.count - a.count || a.topic.localeCompare(b.topic, "ja"))
+    .slice(0, 5);
+}
+
+function scoreUnitRisk(unit) {
+  const practiceLogs = getPracticeLogsForUnit(unit.id);
+  const pastExamLogs = getPastExamLogsForUnit(unit.id);
+  const points = [];
+  const add = (score, label, count = 1) => {
+    if (score <= 0 || count <= 0) return;
+    points.push({ score, label, count });
+  };
+  add(unit.level === "C" ? 30 : 0, "C判定");
+  add(unit.level === "B" ? 15 : 0, "B判定");
+  add(unit.reviewTarget ? 10 : 0, "復習対象");
+  add(unit.redoTarget ? 10 : 0, "再演習対象");
+  add(getWeaknessCount(unit) * 5, `弱点タグ${getWeaknessCount(unit)}件`, getWeaknessCount(unit));
+  const exerciseWrong = unit.exercises.filter((exercise) => exercise.result === "×").length;
+  const exercisePartial = unit.exercises.filter((exercise) => exercise.result === "△").length;
+  add(exerciseWrong * 15, `例題×${exerciseWrong}件`, exerciseWrong);
+  add(exercisePartial * 8, `例題△${exercisePartial}件`, exercisePartial);
+  add(unit.pastExam.result === "×" ? 15 : 0, "単元過去問×");
+  add(unit.pastExam.result === "△" ? 8 : 0, "単元過去問△");
+  const practiceWrong = practiceLogs.filter((log) => log.result === "×").length;
+  const practicePartial = practiceLogs.filter((log) => log.result === "△").length;
+  const practiceRetry = practiceLogs.filter((log) => log.retry).length;
+  add(practiceWrong * 10, `関連演習×${practiceWrong}件`, practiceWrong);
+  add(practicePartial * 5, `関連演習△${practicePartial}件`, practicePartial);
+  add(practiceRetry * 5, `演習再演習${practiceRetry}件`, practiceRetry);
+  const pastWrong = pastExamLogs.filter((log) => log.result === "×").length;
+  const pastPartial = pastExamLogs.filter((log) => log.result === "△").length;
+  const pastRetry = pastExamLogs.filter((log) => log.retry).length;
+  const pastHigh = pastExamLogs.filter((log) => log.priority === "高").length;
+  add(pastWrong * 15, `関連過去問×${pastWrong}件`, pastWrong);
+  add(pastPartial * 8, `関連過去問△${pastPartial}件`, pastPartial);
+  add(pastRetry * 5, `過去問再演習${pastRetry}件`, pastRetry);
+  add(pastHigh * 10, `過去問優先度高${pastHigh}件`, pastHigh);
+  const score = points.reduce((sum, item) => sum + item.score, 0);
+  const risk = classifyUnitRisk(score);
+  return {
+    unit,
+    score,
+    risk,
+    reasons: points.sort((a, b) => b.score - a.score).map((item) => item.label).slice(0, 5),
+    weaknessCount: getWeaknessCount(unit),
+    practiceLogCount: practiceLogs.length,
+    pastExamLogCount: pastExamLogs.length
+  };
+}
+
+function classifyUnitRisk(score) {
+  if (score >= 50) return { label: "最優先改善", className: "priority" };
+  if (score >= 25) return { label: "危険", className: "danger" };
+  if (score >= 10) return { label: "注意", className: "normal" };
+  return { label: "安定", className: "ok" };
+}
+
+function compareUnitRisks(a, b) {
+  return b.score - a.score || a.unit.title.localeCompare(b.unit.title, "ja");
+}
+
+function buildPerformanceAnalysis() {
+  return {
+    practice: {
+      ...getPracticeStats(state.practiceLogs),
+      confidence: groupCount(state.practiceLogs, "confidence"),
+      sourceTypes: groupCount(state.practiceLogs, "sourceType"),
+      questionTypes: groupAccuracy(state.practiceLogs, "questionType", "未判定")
+    },
+    pastExam: {
+      ...getPastExamStats(state.pastExamLogs),
+      subjects: groupAccuracy(state.pastExamLogs, "subject", "未実施"),
+      questionTypes: groupAccuracy(state.pastExamLogs, "questionType", "未実施"),
+      allCorrectOnly: getPastExamStats(state.pastExamLogs.filter((log) => log.scoreType === "全正解のみ")),
+      practical: getPastExamStats(state.pastExamLogs.filter((log) => PRACTICAL_PAST_FORMATS.includes(log.questionType)))
+    }
+  };
+}
+
+function groupCount(items, key) {
+  return items.reduce((acc, item) => {
+    const value = item[key] || "未設定";
+    acc[value] = (acc[value] || 0) + 1;
+    return acc;
+  }, {});
+}
+
+function groupAccuracy(items, key, pendingValue) {
+  const groups = {};
+  items.forEach((item) => {
+    const value = item[key] || "未設定";
+    if (!groups[value]) groups[value] = [];
+    groups[value].push(item);
+  });
+  return Object.entries(groups)
+    .map(([label, logs]) => ({ label, ...getGenericResultStats(logs, pendingValue) }))
+    .sort((a, b) => b.total - a.total || a.label.localeCompare(b.label, "ja"));
+}
+
+function getGenericResultStats(logs, pendingValue) {
+  const correct = logs.filter((log) => log.result === "○").length;
+  const partial = logs.filter((log) => log.result === "△").length;
+  const wrong = logs.filter((log) => log.result === "×").length;
+  const pending = logs.filter((log) => log.result === pendingValue).length;
+  const denominator = correct + partial + wrong;
+  const accuracyValue = denominator ? (correct / denominator) * 100 : null;
+  return {
+    total: logs.length,
+    correct,
+    partial,
+    wrong,
+    pending,
+    denominator,
+    accuracyValue,
+    accuracy: accuracyValue === null ? "データ不足" : `${accuracyValue.toFixed(1)}%`
+  };
+}
+
+function buildRetryTargets() {
+  return {
+    units: state.units.filter((unit) => unit.redoTarget).map(scoreUnitRisk).sort(compareUnitRisks),
+    practiceLogs: [...state.practiceLogs].filter((log) => log.retry).sort(comparePracticeLogs),
+    pastExamLogs: [...state.pastExamLogs].filter((log) => log.retry).sort(comparePastExamLogs)
+  };
+}
+
+function buildAiUsage() {
+  const sorted = [...state.aiAnalyses].sort(compareAiAnalyses);
+  return {
+    total: sorted.length,
+    promptTypes: groupCount(sorted, "promptType"),
+    targetTypes: groupCount(sorted, "targetType"),
+    resultMemoCount: sorted.filter((item) => String(item.resultMemo || "").trim()).length,
+    recentDate: sorted[0]?.createdAt || "",
+    recentItems: sorted.slice(0, 3)
+  };
+}
+
+function renderAnalysisOverall(analysis) {
+  const summary = analysis.summary;
+  const rows = [
+    ["総単元数", summary.totalUnits],
+    ["A判定数", summary.levelCounts.A || 0],
+    ["B判定数", summary.levelCounts.B || 0],
+    ["C判定数", summary.levelCounts.C || 0],
+    ["未判定数", summary.levelCounts["未判定"] || 0],
+    ["要復習数", summary.reviewCount],
+    ["最優先復習数", summary.priorityReviewCount],
+    ["通常復習数", summary.normalReviewCount],
+    ["総演習数", summary.practiceStats.total],
+    ["演習正答率", dataAwareAccuracy(summary.practiceStats)],
+    ["総過去問ログ数", summary.pastStats.total],
+    ["過去問正答率", dataAwareAccuracy(summary.pastStats)],
+    ["再演習対象数", summary.retryCount],
+    ["弱点タグ総数", summary.weaknessTotal],
+    ["AI解析履歴数", summary.aiCount]
+  ];
+  return `
+    <div class="risk-summary-card risk-${summary.risk.className}">
+      <div>
+        <p class="eyebrow">総合危険度</p>
+        <strong>${escapeHtml(summary.risk.label)}</strong>
+        ${summary.risk.dataShortage ? `<span class="data-note">データ不足</span>` : ""}
+      </div>
+      <button class="ghost-button" type="button" data-analysis-ai-consult>AIに相談</button>
+    </div>
+    <div class="analysis-stat-grid">
+      ${rows.map(([label, value]) => `
+        <div class="analysis-stat">
+          <span>${escapeHtml(label)}</span>
+          <strong>${escapeHtml(value)}</strong>
+        </div>
+      `).join("")}
+    </div>
+    <div class="analysis-card">
+      <h4>本試験で危険な論点</h4>
+      ${analysis.dangerTopics.length ? `
+        <div class="mini-list">
+          ${analysis.dangerTopics.map((item) => `
+            <div class="mini-item">
+              <span>${escapeHtml(item.subject)} / ${escapeHtml(item.topic)}</span>
+              <small>${escapeHtml([`×${item.wrong}`, `△${item.partial}`, `高優先度${item.high}`, `再演習${item.retry}`].join(" / "))}</small>
+            </div>
+          `).join("")}
+        </div>
+      ` : `<p class="muted">危険論点を判定できる過去問ログはまだありません。</p>`}
+    </div>
+  `;
+}
+
+function renderSubjectAnalysis(subjects) {
+  return `
+    <div class="analysis-card-grid">
+      ${subjects.map((item) => `
+        <article class="analysis-card">
+          <div class="analysis-card-top">
+            <h4>${escapeHtml(item.subject)}</h4>
+            <span class="badge ${item.risk.className}">${escapeHtml(item.risk.label)}</span>
+          </div>
+          ${item.risk.dataShortage ? `<p class="muted">データ不足</p>` : ""}
+          <dl class="analysis-facts">
+            <div><dt>単元数</dt><dd>${item.unitCount}</dd></div>
+            <div><dt>A/B/C/未判定</dt><dd>${item.levelCounts.A || 0}/${item.levelCounts.B || 0}/${item.levelCounts.C || 0}/${item.levelCounts["未判定"] || 0}</dd></div>
+            <div><dt>要復習数</dt><dd>${item.reviewCount}</dd></div>
+            <div><dt>演習</dt><dd>${item.practiceStats.total}件 / ${dataAwareAccuracy(item.practiceStats)}</dd></div>
+            <div><dt>過去問</dt><dd>${item.pastStats.total}件 / ${dataAwareAccuracy(item.pastStats)}</dd></div>
+            <div><dt>再演習対象</dt><dd>${item.retryCount}</dd></div>
+            <div><dt>主な弱点タグ</dt><dd>${escapeHtml(item.topTags.map(([tag, count]) => `${tag}(${count})`).join(" / ") || "なし")}</dd></div>
+          </dl>
+        </article>
+      `).join("")}
+    </div>
+  `;
+}
+
+function renderWeaknessRanking(items) {
+  if (!items.length) return `<p class="muted">弱点タグはまだ記録されていません。</p>`;
+  return `
+    <div class="ranking-list">
+      ${items.map((item, index) => `
+        <article class="ranking-card">
+          <div class="rank-number">${index + 1}</div>
+          <div>
+            <div class="analysis-card-top">
+              <h4>${escapeHtml(item.tag)}</h4>
+              ${index < 5 ? `<span class="badge priority">重点弱点</span>` : ""}
+            </div>
+            <dl class="analysis-facts compact">
+              <div><dt>出現回数</dt><dd>${item.count}</dd></div>
+              <div><dt>関連単元数</dt><dd>${item.unitCount}</dd></div>
+              <div><dt>関連演習ログ数</dt><dd>${item.practiceLogCount}</dd></div>
+              <div><dt>関連過去問ログ数</dt><dd>${item.pastExamLogCount}</dd></div>
+            </dl>
+          </div>
+        </article>
+      `).join("")}
+    </div>
+  `;
+}
+
+function renderUnitRiskRanking(items) {
+  if (!items.length) return `<p class="muted">単元データがありません。</p>`;
+  return `
+    <div class="ranking-list">
+      ${items.map((item, index) => `
+        <button class="ranking-card unit-risk-card" type="button" data-open-unit="${escapeAttribute(item.unit.id)}">
+          <div class="rank-number">${index + 1}</div>
+          <div>
+            <div class="analysis-card-top">
+              <div>
+                <p class="eyebrow">${escapeHtml(item.unit.subject)}</p>
+                <h4>${escapeHtml(item.unit.title)}</h4>
+              </div>
+              <span class="badge ${item.risk.className}">${escapeHtml(item.risk.label)}</span>
+            </div>
+            <dl class="analysis-facts compact">
+              <div><dt>スコア</dt><dd>${item.score}</dd></div>
+              <div><dt>到達判定</dt><dd>${escapeHtml(item.unit.level)}</dd></div>
+              <div><dt>主な理由</dt><dd>${escapeHtml(item.reasons.join(" / ") || "該当なし")}</dd></div>
+              <div><dt>弱点タグ数</dt><dd>${item.weaknessCount}</dd></div>
+              <div><dt>関連演習ログ数</dt><dd>${item.practiceLogCount}</dd></div>
+              <div><dt>関連過去問ログ数</dt><dd>${item.pastExamLogCount}</dd></div>
+            </dl>
+          </div>
+        </button>
+      `).join("")}
+    </div>
+  `;
+}
+
+function renderPerformanceAnalysis(performance) {
+  const practice = performance.practice;
+  const past = performance.pastExam;
+  return `
+    <div class="analysis-card-grid two-col">
+      <article class="analysis-card">
+        <h4>演習ログ</h4>
+        <dl class="analysis-facts">
+          <div><dt>総数</dt><dd>${practice.total}</dd></div>
+          <div><dt>○/△/×/未判定</dt><dd>${practice.correct}/${practice.partial}/${practice.wrong}/${practice.pending}</dd></div>
+          <div><dt>正答率</dt><dd>${dataAwareAccuracy(practice)}</dd></div>
+          <div><dt>再演習対象数</dt><dd>${practice.retry}</dd></div>
+          <div><dt>自信度別件数</dt><dd>${escapeHtml(formatGroupCounts(practice.confidence))}</dd></div>
+          <div><dt>出典種別別件数</dt><dd>${escapeHtml(formatGroupCounts(practice.sourceTypes))}</dd></div>
+          <div><dt>問題形式別正答率</dt><dd>${escapeHtml(formatAccuracyGroups(practice.questionTypes))}</dd></div>
+        </dl>
+      </article>
+      <article class="analysis-card">
+        <h4>過去問ログ</h4>
+        <dl class="analysis-facts">
+          <div><dt>総数</dt><dd>${past.total}</dd></div>
+          <div><dt>○/△/×/未実施</dt><dd>${past.correct}/${past.partial}/${past.wrong}/${past.pending}</dd></div>
+          <div><dt>正答率</dt><dd>${dataAwareAccuracy(past)}</dd></div>
+          <div><dt>再演習対象数</dt><dd>${past.retry}</dd></div>
+          <div><dt>科目別正答率</dt><dd>${escapeHtml(formatAccuracyGroups(past.subjects))}</dd></div>
+          <div><dt>出題形式別正答率</dt><dd>${escapeHtml(formatAccuracyGroups(past.questionTypes))}</dd></div>
+          <div><dt>全正解のみ問題</dt><dd>${dataAwareAccuracy(past.allCorrectOnly)}（${past.allCorrectOnly.total}件）</dd></div>
+          <div><dt>実務系問題</dt><dd>${dataAwareAccuracy(past.practical)}（${past.practical.total}件）</dd></div>
+        </dl>
+      </article>
+    </div>
+  `;
+}
+
+function renderRetryTargets(targets) {
+  return `
+    <div class="analysis-card-grid three-col">
+      <article class="analysis-card">
+        <h4>再演習対象単元</h4>
+        ${targets.units.length ? targets.units.slice(0, 10).map((item) => `
+          <button class="compact-item ghost-button" type="button" data-open-unit="${escapeAttribute(item.unit.id)}">
+            <span>${escapeHtml(item.unit.title)}</span>
+            <span class="badge ${item.risk.className}">${item.score}</span>
+          </button>
+        `).join("") : `<p class="muted">対象単元はありません。</p>`}
+      </article>
+      <article class="analysis-card">
+        <h4>再演習対象演習ログ</h4>
+        ${targets.practiceLogs.length ? targets.practiceLogs.slice(0, 10).map((log) => `
+          <button class="compact-item ghost-button" type="button" data-edit-practice-log="${escapeAttribute(log.id)}">
+            <span>${escapeHtml(log.unitTitle || log.questionRef || log.sourceName || "演習ログ")}</span>
+            <span>${escapeHtml(log.result)}</span>
+          </button>
+        `).join("") : `<p class="muted">対象演習ログはありません。</p>`}
+      </article>
+      <article class="analysis-card">
+        <h4>再演習対象過去問ログ</h4>
+        ${targets.pastExamLogs.length ? targets.pastExamLogs.slice(0, 10).map((log) => `
+          <button class="compact-item ghost-button" type="button" data-edit-past-exam-log="${escapeAttribute(log.id)}">
+            <span>${escapeHtml([log.examRound, log.subject, log.questionNo].filter(Boolean).join(" / ") || "過去問ログ")}</span>
+            <span>${escapeHtml(log.result)}</span>
+          </button>
+        `).join("") : `<p class="muted">対象過去問ログはありません。</p>`}
+      </article>
+    </div>
+  `;
+}
+
+function renderAiUsage(usage) {
+  if (!usage.total) return `<p class="muted">AI解析プロンプトはまだ生成されていません。</p>`;
+  return `
+    <div class="analysis-card-grid two-col">
+      <article class="analysis-card">
+        <h4>AI活用集計</h4>
+        <dl class="analysis-facts">
+          <div><dt>AIプロンプト生成数</dt><dd>${usage.total}</dd></div>
+          <div><dt>プロンプト種別別件数</dt><dd>${escapeHtml(formatGroupCounts(usage.promptTypes))}</dd></div>
+          <div><dt>対象種別別件数</dt><dd>${escapeHtml(formatGroupCounts(usage.targetTypes))}</dd></div>
+          <div><dt>AI返答メモあり件数</dt><dd>${usage.resultMemoCount}</dd></div>
+          <div><dt>直近のAI利用日</dt><dd>${escapeHtml(formatDateTime(usage.recentDate))}</dd></div>
+        </dl>
+      </article>
+      <article class="analysis-card">
+        <h4>直近のAI履歴3件</h4>
+        ${usage.recentItems.map((item) => `
+          <div class="mini-item">
+            <span>${escapeHtml(formatDateTime(item.createdAt))} / ${escapeHtml(item.promptType || "種別なし")}</span>
+            <small>${escapeHtml(item.targetTitle || "対象なし")}</small>
+          </div>
+        `).join("")}
+      </article>
+    </div>
+  `;
+}
+
+function dataAwareAccuracy(stats) {
+  return stats.denominator ? stats.accuracy : "データ不足";
+}
+
+function formatGroupCounts(groups) {
+  const entries = Object.entries(groups || {}).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "ja"));
+  return entries.length ? entries.map(([label, count]) => `${label}:${count}`).join(" / ") : "データ不足";
+}
+
+function formatAccuracyGroups(groups) {
+  return (groups || []).length
+    ? groups.map((item) => `${item.label}:${item.accuracy}(${item.total}件)`).join(" / ")
+    : "データ不足";
 }
 
 function renderPastExamForm() {
@@ -1559,6 +2189,7 @@ function buildReviewTargetsPromptData() {
 }
 
 function buildOverallSummaryPromptData() {
+  const analysis = buildWeaknessAnalysis();
   const counts = LEVELS.reduce((acc, level) => ({ ...acc, [level]: state.units.filter((unit) => unit.level === level).length }), {});
   const reviewUnits = state.units.filter((unit) => getReviewStatus(unit).weight > 0);
   const practiceStats = getPracticeStats(state.practiceLogs);
@@ -1568,16 +2199,21 @@ function buildOverallSummaryPromptData() {
     .map((subject) => `${subject}: ${pastStats.subjects[subject]?.accuracy || "0.0%"}`)
     .join(" / ");
   return keyValueLines([
+    ["総合危険度", `${analysis.summary.risk.label}${analysis.summary.risk.dataShortage ? "（データ不足）" : ""}`],
     ["総単元数", state.units.length],
     ["A/B/C/未判定数", `A:${counts.A || 0} / B:${counts.B || 0} / C:${counts.C || 0} / 未判定:${counts["未判定"] || 0}`],
     ["要復習数", reviewUnits.length],
+    ["最優先復習数", analysis.summary.priorityReviewCount],
     ["演習ログ総数", practiceStats.total],
-    ["演習正答率", practiceStats.accuracy],
+    ["演習正答率", dataAwareAccuracy(practiceStats)],
     ["過去問ログ総数", pastStats.total],
-    ["過去問正答率", pastStats.accuracy],
+    ["過去問正答率", dataAwareAccuracy(pastStats)],
     ["科目別過去問正答率", subjectAccuracy],
-    ["再演習対象数", practiceStats.retry + pastStats.retry],
+    ["再演習対象数", analysis.summary.retryCount],
     ["多い弱点タグ上位", getTopWeaknessTags().join(" / ")],
+    ["危険度上位単元", analysis.unitRisks.slice(0, 5).map((item) => `${item.unit.title}:${item.risk.label}/${item.score}点/${item.reasons.join("・") || "理由なし"}`).join("\n")],
+    ["科目別危険度", analysis.subjects.map((item) => `${item.subject}:${item.risk.label}`).join(" / ")],
+    ["本試験で危険な論点", analysis.dangerTopics.map((item) => `${item.subject} ${item.topic}（×${item.wrong} / △${item.partial} / 高優先度${item.high} / 再演習${item.retry}）`).join("\n") || "未記録"],
     ["直近の×演習ログ", summarizeRecentWrongPracticeLogs()],
     ["直近の×過去問ログ", summarizeRecentWrongPastExamLogs()]
   ]);
@@ -1686,6 +2322,18 @@ function openAiForTarget(targetType, targetId, promptType) {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+function openAiForAnalysisConsult() {
+  state.aiForm.promptType = "総合学習相談";
+  state.aiForm.targetType = "全体サマリー";
+  state.aiForm.targetId = "";
+  state.aiForm.additionalConditions = "現在の弱点分析ダッシュボードをもとに、合格可能性を上げるために、今週やるべき学習メニューを優先順位付きで提案してください。";
+  state.aiForm.promptText = "";
+  state.aiForm.currentAnalysisId = "";
+  switchView("ai");
+  renderAiView();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
 async function copyAiPrompt() {
   const textarea = document.querySelector("#aiPromptResult");
   const text = textarea.value;
@@ -1738,6 +2386,8 @@ function filteredReviewUnits() {
 function compareReviewUnits(a, b) {
   const reviewDiff = getReviewStatus(b).weight - getReviewStatus(a).weight;
   if (reviewDiff) return reviewDiff;
+  const riskDiff = scoreUnitRisk(b).score - scoreUnitRisk(a).score;
+  if (riskDiff) return riskDiff;
   const dateA = a.updatedAt || "0000-00-00";
   const dateB = b.updatedAt || "0000-00-00";
   const dateDiff = dateA.localeCompare(dateB);
@@ -1774,9 +2424,11 @@ function unitCard(unit) {
 
 function reviewCard(unit) {
   const review = getReviewStatus(unit);
+  const risk = scoreUnitRisk(unit);
   const reasons = getReviewReasons(unit);
   const levelClass = unit.level === "A" ? "level-a" : unit.level === "B" ? "level-b" : unit.level === "C" ? "level-c" : "";
   const importanceClass = unit.importance === "高" ? "high" : unit.importance === "中" ? "medium" : "";
+  const tags = (unit.ai?.weaknessTags || []).slice(0, 5).join(" / ");
   return `
     <button class="unit-card review-card" type="button" data-open-unit="${unit.id}">
       <div>
@@ -1787,9 +2439,13 @@ function reviewCard(unit) {
         <span class="badge ${importanceClass}">重要度 ${escapeHtml(unit.importance)}</span>
         <span class="badge ${levelClass}">到達 ${escapeHtml(unit.level)}</span>
         <span class="badge ${review.className}">${review.label}</span>
+        <span class="badge ${risk.risk.className}">危険度 ${escapeHtml(risk.risk.label)}</span>
+        <span class="badge">スコア ${risk.score}</span>
         <span class="badge">弱点 ${getWeaknessCount(unit)}</span>
       </div>
       <dl class="review-facts">
+        <div><dt>危険理由</dt><dd>${escapeHtml(risk.reasons.join(" / ") || "該当なし")}</dd></div>
+        <div><dt>主な弱点タグ</dt><dd>${escapeHtml(tags || "なし")}</dd></div>
         <div><dt>復習理由</dt><dd>${escapeHtml(reasons.length ? reasons.join(" / ") : "該当なし")}</dd></div>
         <div><dt>最終更新日</dt><dd>${escapeHtml(unit.updatedAt || "未保存")}</dd></div>
       </dl>
@@ -1811,12 +2467,15 @@ function renderUnitDetail() {
   const unit = getActiveUnit();
   if (!unit) return;
   const review = getReviewStatus(unit);
+  const risk = scoreUnitRisk(unit);
   document.querySelector("#detailSubject").textContent = unit.subject;
   document.querySelector("#detailTitle").textContent = unit.title;
   document.querySelector("#detailBadges").innerHTML = `
     <span class="badge">重要度 ${escapeHtml(unit.importance)}</span>
     <span class="badge">到達 ${escapeHtml(unit.level)}</span>
     <span class="badge ${review.className}">${review.label}</span>
+    <span class="badge ${risk.risk.className}">危険度 ${escapeHtml(risk.risk.label)}</span>
+    <span class="badge">スコア ${risk.score}</span>
   `;
   document.querySelector("#detailTabs").innerHTML = tabDefinitions
     .map((tab) => `<button class="tab-button ${tab.id === state.activeTab ? "is-active" : ""}" type="button" data-tab="${tab.id}" role="tab" aria-selected="${tab.id === state.activeTab}">${tab.label}</button>`)
@@ -1831,7 +2490,15 @@ function renderUnitDetail() {
 
 function renderTabForm(unit, tab) {
   if (tab === "basic") {
+    const risk = scoreUnitRisk(unit);
     return `
+      <section class="risk-detail-panel field-wide">
+        <div>
+          <p class="eyebrow">単元危険度</p>
+          <strong>${escapeHtml(risk.risk.label)} / ${risk.score}点</strong>
+        </div>
+        <p>${escapeHtml(risk.reasons.join(" / ") || "危険理由はまだありません。")}</p>
+      </section>
       <div class="form-grid">
         ${inputField("subject", "科目", unit.subject)}
         ${inputField("title", "単元名", unit.title)}
@@ -2495,7 +3162,17 @@ function attachEvents() {
   document.querySelector("#aiPromptResult").addEventListener("input", (event) => {
     state.aiForm.promptText = event.target.value;
   });
+  document.querySelector("#analysisAiConsultButton").addEventListener("click", openAiForAnalysisConsult);
   document.body.addEventListener("click", (event) => {
+    if (event.target.closest("[data-open-analysis]")) {
+      switchView("analysis");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    if (event.target.closest("[data-analysis-ai-consult]")) {
+      openAiForAnalysisConsult();
+      return;
+    }
     const aiPracticeButton = event.target.closest("[data-ai-practice-log]");
     if (aiPracticeButton) {
       openAiForTarget("演習ログ", aiPracticeButton.dataset.aiPracticeLog, "誤答分析");
