@@ -1,4 +1,4 @@
-const APP_VERSION = "v0.9";
+const APP_VERSION = "v1.0";
 const STORAGE_KEYS = {
   units: "tsukanYobiko.units",
   version: "tsukanYobiko.version",
@@ -85,7 +85,7 @@ const AI_PROMPT_TYPES = [
   "過去問分析",
   "総合学習相談"
 ];
-const AI_TARGET_TYPES = ["単元", "レッスン", "演習ログ", "過去問ログ", "実務ログ", "復習対象", "全体サマリー"];
+const AI_TARGET_TYPES = ["単元", "レッスン", "通関業法カリキュラム", "演習ログ", "過去問ログ", "実務ログ", "復習対象", "全体サマリー"];
 const STUDY_DURATIONS = ["15分", "30分", "1時間", "2時間", "じっくり"];
 const AI_ANALYSIS_POINTS = {
   "回答添削": ["結論は合っているか", "理由づけは正しいか", "用語の使い方は正しいか", "条文・制度理解にズレはないか", "本試験ならどこで失点しそうか", "より良い回答にするにはどう修正すべきか"],
@@ -143,12 +143,25 @@ const CURRICULUM_COURSES = [
     order: 1,
     lessonIds: [
       "lesson-tsukangyoho-purpose",
+      "lesson-tsukangyoho-business-related",
       "lesson-tsukangyoho-permission",
+      "lesson-tsukangyoho-permission-standards",
       "lesson-tsukangyoho-disqualification",
+      "lesson-tsukangyoho-permission-end-cancel",
+      "lesson-tsukangyoho-customs-broker-placement",
+      "lesson-tsukangyoho-customs-broker-confirmation",
       "lesson-tsukangyoho-duties",
+      "lesson-tsukangyoho-name-lending",
+      "lesson-tsukangyoho-confidentiality",
       "lesson-tsukangyoho-credit-penalty-trap",
       "lesson-tsukangyoho-books-notices",
-      "lesson-tsukangyoho-sanctions-penalties"
+      "lesson-tsukangyoho-fee-display",
+      "lesson-tsukangyoho-report-minister",
+      "lesson-tsukangyoho-supervision",
+      "lesson-tsukangyoho-customs-broker-discipline",
+      "lesson-tsukangyoho-penalty-overview",
+      "lesson-tsukangyoho-trap-review",
+      "lesson-tsukangyoho-mini-exam"
     ]
   },
   {
@@ -218,61 +231,139 @@ function makeStandardLesson(id, courseId, subject, title, order, relatedUnitId, 
   });
 }
 
-const CURRICULUM_LESSONS = [
-  makeStandardLesson("lesson-tsukangyoho-purpose", "course-tsukangyoho-basic", "通関業法", "通関業法の目的・定義", 1, "u001", "通関業法の目的と主要な定義", ["通関業務と関連業務を混同する", "通関業者と通関士を同じ主体として読む", "制度趣旨を罰則の話に飛ばす"]),
-  makeStandardLesson("lesson-tsukangyoho-permission", "course-tsukangyoho-basic", "通関業法", "通関業の許可", 2, "u002", "通関業を営むための許可制度", ["許可権者を入れ替える", "営業所ごとの手続と業者全体の許可を混同する", "許可と届出を置き換える"]),
-  makeStandardLesson("lesson-tsukangyoho-disqualification", "course-tsukangyoho-basic", "通関業法", "欠格事由", 3, "u003", "欠格事由の対象者と期間", ["本人と役員の対象範囲をずらす", "期間制限を長短で入れ替える", "許可要件と欠格事由を混同する"]),
-  makeStandardLesson("lesson-tsukangyoho-duties", "course-tsukangyoho-basic", "通関業法", "通関業者・通関士の義務", 4, "u004", "通関業者と通関士に課される義務", ["秘密保持義務と信用失墜行為を混同する", "通関士だけの義務にする", "名義貸し禁止と罰則の関係を雑に読む"]),
+function tLesson(id, title, order, relatedUnitId, focus, traps, keyPoints, weaknessTag) {
+  const procedureTags = /許可|承認|届出|報告|確認|設置|欠格/.test(`${title}${focus}`);
+  const penaltyTags = /罰則|処分|懲戒|名義貸し|秘密|信用/.test(`${title}${focus}`);
+  return makeLesson({
+    id,
+    courseId: "course-tsukangyoho-basic",
+    subject: "通関業法",
+    title,
+    order,
+    level: "基礎",
+    estimatedMinutes: order >= 16 ? 18 : 15,
+    relatedUnitId,
+    intro: `${title}では、条文名の暗記ではなく、誰が、どの手続で、違反すると何が起きるかを整理します。`,
+    goal: `${focus}を説明でき、主体・手続・効果を入れ替えた本試験型の選択肢を判定できる状態を目標にします。`,
+    lecture: `まず結論は、${focus}を「主体」「手続」「効果」の3点で読むことです。通関業法は、通関業者の営業規制、通関士の関与、依頼者保護、税関による監督が重なっているため、語句だけで判断するとひっかけに弱くなります。\n\nなぜ重要かというと、本試験では正しい用語を一部だけ使い、主体や効果をずらした選択肢が出るからです。通関業者、法人役員、通関士、財務大臣、税関長のどれが出ているかを最初に確認します。次に、許可・承認・届出・報告・確認のどの手続なのかを見ます。\n\n試験での問われ方は、義務規定と罰則、監督処分と懲戒処分、許可と届出の混同が中心です。禁止されること、行政処分を受けること、罰金刑になることは同じではありません。選択肢の語尾が「できる」「しなければならない」「罰せられる」のどれかまで見て判断します。`,
+    keyPoints,
+    confusingPoints: [
+      "通関業者と通関士の主体の違い",
+      "許可・承認・届出・報告・確認の違い",
+      "義務規定、監督処分、懲戒処分、罰則の違い",
+      "法人の役員や法定代理人が対象になる場面"
+    ],
+    traps,
+    examTips: [
+      "「すべて」「当然に」「直ちに」「罰金刑」などの断定語を確認する",
+      "主体が通関業者か通関士か、法人役員を含むかを先に見る",
+      "手続名が許可・承認・届出・報告で置き換えられていないか確認する",
+      "処分と刑罰を同じものとして読まない"
+    ],
+    penaltyTips: [
+      procedureTags ? "手続論点では、許可・確認は事前に適法性を認める仕組み、届出・報告は事実を知らせる仕組みとして区別します。" : "この論点でも、手続名を置き換えた選択肢には注意します。",
+      penaltyTags ? "義務違反がある場合でも、監督処分・懲戒処分・罰則のどれに結びつくかは個別に確認します。" : "罰則に見える表現が出ても、刑罰規定に直結するかを別に確認します。"
+    ],
+    miniSummary: `${title}は、${focus}を主体・手続・効果の順に分解すると、すべて選択問題でも落ちにくくなります。`,
+    questions: makeTsukangyohoQuestions(title, focus, traps, weaknessTag)
+  });
+}
+
+function makeTsukangyohoQuestions(title, focus, traps, weaknessTag) {
+  const trapChoices = uniqueOptions([
+    ...traps,
+    "主体・手続・効果を分けて確認する",
+    "義務規定と罰則規定を別に確認する"
+  ], traps[0]).slice(0, 4);
+  return [
+    makeQuestion("q1", `${title}を判断するときは、制度名だけでなく、主体・手続・違反時の効果を分けて確認する必要がある。`, ["正しい", "誤り"], "正しい", `${focus}は、用語暗記だけではなく、誰に何が求められ、違反時に監督処分・懲戒処分・罰則のどれが問題になるかを分ける必要があります。`, "正しい用語だけを見せて、主体や効果を入れ替えるのが本試験の典型です。", weaknessTag, "truefalse"),
+    makeQuestion("q2", `${title}について、本試験で誤り選択肢にされやすい表現はどれか。`, trapChoices, traps[0], `${traps[0]}は、${title}の主体・手続・効果のいずれかをずらす表現です。通関業法では似た語句の置換が多いため、条文効果まで確認します。`, "もっともらしい制度名が入っていても、手続名や効果が違えば誤りです。", weaknessTag, "single"),
+    makeQuestion("q3", `${title}の学習で、義務規定と罰則を同じものとして読んでよい。`, ["正しい", "誤り"], "誤り", "義務があることと、違反が直ちに罰金刑になることは別です。監督処分、懲戒処分、罰則を分けて確認します。", "「義務違反だから罰金」という短絡を狙う選択肢に注意します。", "罰則トラップ", "truefalse")
+  ];
+}
+
+function makeMiniExamLesson() {
+  return makeLesson({
+    id: "lesson-tsukangyoho-mini-exam",
+    courseId: "course-tsukangyoho-basic",
+    subject: "通関業法",
+    title: "通関業法ミニ模試",
+    order: 20,
+    level: "基礎",
+    estimatedMinutes: 25,
+    relatedUnitId: "u004",
+    intro: "通関業法全体から、目的・許可・欠格事由・通関士・義務・処分・罰則を横断して確認します。",
+    goal: "10問を通じて、通関業法の全体像と本試験型ひっかけへの耐性を判定します。",
+    lecture: "まず結論は、通関業法は主体と効果の科目です。通関業者、法人役員、通関士、財務大臣、税関長を見分け、許可・確認・届出・報告・監督処分・懲戒処分・罰則を混同しないことが得点に直結します。\n\nミニ模試では、各レッスンの知識を横断して問います。1問ごとに、問題文の中の主体、手続名、効果、期間・対象者を線で区切るつもりで読みます。B判定以下の場合は、間違えた弱点タグのレッスンに戻ってください。",
+    keyPoints: ["9〜10問正解でA判定", "6〜8問正解でB判定", "0〜5問正解でC判定", "C判定は自動的に復習対象"],
+    confusingPoints: ["許可と届出", "通関業者への監督処分と通関士への懲戒処分", "義務規定と罰則", "法人役員が対象になる場面"],
+    traps: ["税関長の許可だけで通関業を開始できる", "通関士試験合格だけで通関士として業務できる", "信用失墜行為は罰金刑に直結する", "義務違反はすべて同じ処分になる"],
+    examTips: ["問題文の主体を丸で囲む", "手続名を許可・確認・届出・報告に分ける", "刑罰を断定する語尾を特に警戒する"],
+    penaltyTips: ["模試でC判定の場合は、罰則・処分系の誤答を優先して復習します。"],
+    miniSummary: "通関業法は横断比較で得点が安定します。ミニ模試の失点タグを復習順に使ってください。",
+    questions: [
+      makeQuestion("q1", "通関業法は、通関業務の適正かつ迅速な処理などを通じて、通関制度の適正な運営に資することを目的とする。", ["正しい", "誤り"], "正しい", "目的は通関業者の利益保護だけではなく、通関業務の適正・迅速な処理と制度の適正運営にあります。", "「利益保護だけ」「迅速化だけ」と限定する表現に注意します。", "制度趣旨", "truefalse"),
+      makeQuestion("q2", "通関業は、許可ではなく届出だけで開始できる。", ["正しい", "誤り"], "誤り", "通関業は許可制です。届出だけで開始できるという表現は誤りです。", "許可と届出の置換は頻出です。", "許可・承認・届出の混同", "truefalse"),
+      makeQuestion("q3", "欠格事由では、本人だけでなく法人の役員等が問題になる場面がある。", ["正しい", "誤り"], "正しい", "欠格事由は本人だけで完結しない場面があります。法人役員等の扱いを落とすと失点します。", "「本人だけ」と狭める選択肢に注意します。", "欠格事由", "truefalse"),
+      makeQuestion("q4", "通関士試験に合格していれば、確認を受けなくても当然に通関士として通関業務に従事できる。", ["正しい", "誤り"], "誤り", "試験合格と通関士としての確認は別です。確認を受けて通関士として扱われます。", "合格という正しい事実から、確認不要と飛ばすひっかけです。", "手続要件", "truefalse"),
+      makeQuestion("q5", "名義貸し禁止は、許可を受けた通関業者の名義を他人に利用させ、許可制を空洞化させることを防ぐ趣旨がある。", ["正しい", "誤り"], "正しい", "許可は適格性を審査した通関業者に与えられるため、名義貸しは禁止されます。", "信用失墜行為と同じものとして読むと混乱します。", "主体の混同", "truefalse"),
+      makeQuestion("q6", "秘密保持義務は、業務上知った秘密を保護するものであり、義務の主体と例外を確認する必要がある。", ["正しい", "誤り"], "正しい", "秘密保持義務では、誰が秘密を知ったのか、正当な理由等があるのかを確認します。", "退職後は当然に自由、依頼者の許諾があっても常に不可、など極端な表現に注意します。", "義務規定", "truefalse"),
+      makeQuestion("q7", "法人である通関業者の役員が信用又は品位を害する行為をした場合、第20条違反そのものにより直ちに罰金刑に処せられる。", ["正しい", "誤り"], "誤り", "法人役員も信用失墜行為禁止の対象ですが、第20条違反そのものが罰金刑に直結するわけではありません。", "対象者に含まれることと罰則に直結することを混同させています。", "罰則トラップ", "truefalse"),
+      makeQuestion("q8", "通関業者への監督処分と、通関士に対する懲戒処分は、対象が異なる。", ["正しい", "誤り"], "正しい", "監督処分は通関業者、懲戒処分は通関士個人を中心に整理します。", "処分という語だけで同じものとして読ませるひっかけです。", "懲戒処分", "truefalse"),
+      makeQuestion("q9", "記帳・届出・報告は、いずれも許可と同じく事前に営業を認めてもらう手続である。", ["正しい", "誤り"], "誤り", "記帳、届出、報告は許可とは意味が異なります。事実管理や監督のための手続として整理します。", "手続名をまとめて同じ効果にする表現に注意します。", "届出・報告", "truefalse"),
+      makeQuestion("q10", "罰則問題では、禁止規定・義務規定を見つけた後、刑罰規定に結びつくかを別に確認する必要がある。", ["正しい", "誤り"], "正しい", "禁止や義務があることと刑罰があることは別です。罰金刑などを断定する選択肢では、罰則との接続を確認します。", "「禁止されているから罰金」と短絡させる総合ひっかけです。", "罰則", "truefalse")
+    ]
+  });
+}
+
+const TSUKANGYOHO_LESSONS = [
+  tLesson("lesson-tsukangyoho-purpose", "通関業法の目的・定義", 1, "u001", "通関業務の適正・迅速な処理と主要定義", ["通関業法は通関業者の利益保護だけを目的とする", "通関手続の迅速化だけを目的とする", "反復継続性のない代理も当然に通関業になる"], ["目的は適正・迅速な通関と関税の適正徴収を両立させること", "通関業者、通関士、通関業務を別々に定義で押さえる", "単発の手伝いと業として行う代理を混同しない"], "制度趣旨"),
+  tLesson("lesson-tsukangyoho-business-related", "通関業務と関連業務", 2, "u001", "通関業務と関連業務の線引き", ["申告書の作成は関連業務である", "通関前後の作業はすべて通関業務である", "他法令で制限される業務も関連業務として当然に行える"], ["申告、申請、不服申立て等の代理・代行が通関業務の中心", "関連業務は通関業務に付随するが本体とは区別する", "他法令の制限を関連業務の名で突破できない"], "用語混同"),
+  tLesson("lesson-tsukangyoho-permission", "通関業の許可", 3, "u002", "通関業を始めるための許可制度", ["許可権者を税関長とする", "通関業は届出だけで開始できる", "営業所単位だけで許可を受ける"], ["通関業は許可制であり届出制ではない", "許可権者と申請先の表現を分けて読む", "営業所の新設・追加は別途手続論点になる"], "許可・承認・届出の混同"),
+  tLesson("lesson-tsukangyoho-permission-standards", "許可の基準", 4, "u002", "許可を受けるための審査基準", ["許可基準と欠格事由を同じものにする", "十分な能力がなくても試験合格者がいれば足りる", "収支・体制・人的能力を無関係にする"], ["許可基準は業務を適正に遂行できる体制の審査", "人的能力、財産的基礎、業務運営の健全性を総合して見る", "欠格事由は不適格者を排除する別論点"], "手続要件"),
+  tLesson("lesson-tsukangyoho-disqualification", "欠格事由", 5, "u003", "許可を受けられない者と対象範囲", ["期間を誤らせる", "処分の種類を誤らせる", "役員や法定代理人の扱いを落とす", "暴力団員等による支配を対象外にする"], ["本人だけでなく法人役員等に広がる場面を確認する", "刑罰・取消処分・暴力団員等の支配は別々に判断する", "期間制限は数字だけでなく起算点も意識する"], "欠格事由"),
+  tLesson("lesson-tsukangyoho-permission-end-cancel", "許可の消滅・取消し", 6, "u002", "許可がなくなる場面と取消しの違い", ["廃業と取消しを同じ処分にする", "許可消滅をすべて懲戒処分とする", "法人解散後も当然に許可が残る"], ["消滅は事実発生により許可がなくなる場面", "取消しは行政上の監督として許可を失わせる場面", "廃業・死亡・解散等と違反による取消しを分ける"], "処分の混同"),
+  tLesson("lesson-tsukangyoho-customs-broker-placement", "通関士の設置", 7, "u004", "営業所に通関士を置く必要がある場面", ["通関士はすべての営業所に常に必要", "通関士を置かなくても通関業務量が多くてよい", "通関士試験合格者なら設置義務を満たす"], ["通関業務を行う営業所には原則として通関士を置く", "置かなくてよい例外と必要な営業所を混同しない", "試験合格だけで通関士として扱われるわけではない"], "主体の混同"),
+  tLesson("lesson-tsukangyoho-customs-broker-confirmation", "通関士の確認", 8, "u004", "通関士として業務するための確認", ["通関士試験合格だけで通関士として業務できる", "確認権者を財務大臣とする", "確認は通関業者ではなく本人だけが自由に行う"], ["試験合格と通関士としての確認は別", "確認の相手方・権限者を正確に読む", "通関業者の営業所で選任される文脈を押さえる"], "手続要件"),
+  tLesson("lesson-tsukangyoho-duties", "通関業者・通関士の義務", 9, "u004", "通関業者と通関士に課される義務の全体像", ["義務違反はすべて罰金刑になる", "通関業者の義務を通関士だけの義務にする", "名義貸し、秘密保持、信用失墜を同じ条文効果で扱う"], ["義務の主体を通関業者・役員・通関士で分ける", "義務規定と罰則規定を別に読む", "監督処分・懲戒処分・刑罰の入口を分ける"], "罰則"),
+  tLesson("lesson-tsukangyoho-name-lending", "名義貸し禁止", 10, "u004", "許可名義を他人に使わせない規律", ["名義貸しは信用失墜行為と同じ", "許可を持つ者なら他人に名義を使わせてもよい", "名義貸しは通関士だけの問題である"], ["許可はその通関業者に対するもの", "他人に名義を利用させると許可制が空洞化する", "名義貸しは罰則・監督処分との関係も意識する"], "主体の混同"),
+  tLesson("lesson-tsukangyoho-confidentiality", "秘密保持義務", 11, "u004", "業務上知った秘密を守る義務", ["秘密保持義務は退職後には及ばない", "依頼者の許諾があっても常に漏らせない", "秘密保持義務は通関士だけにある"], ["業務上知った秘密は漏らしてはならない", "退職後・業務終了後にも問題になり得る", "正当な理由や本人の承諾の有無を雑に読まない"], "義務規定"),
   makeLesson({
     id: "lesson-tsukangyoho-credit-penalty-trap",
     courseId: "course-tsukangyoho-basic",
     subject: "通関業法",
     title: "信用失墜行為と罰則トラップ",
-    order: 5,
+    order: 12,
     level: "基礎",
     estimatedMinutes: 18,
     relatedUnitId: "u004",
     intro: "信用失墜行為の禁止は、通関業法の義務規定の中でも、罰則との混同を狙われやすい論点です。",
     goal: "第20条の対象者、禁止内容、罰金刑に直結しない点を分けて判断できるようにします。",
-    lecture: "通関業法20条は、信用失墜行為の禁止を定める規定です。対象は、通関業者、法人である通関業者の役員、通関士です。これらの者は、通関業者の信用又は品位を害するような行為をしてはならないとされています。\n\nここで重要なのは、禁止されていることと、直ちに罰金刑に処せられることは別だという点です。第20条違反そのものが罰金刑に直結するわけではありません。本試験では「法人の役員が品位を害する行為をした場合は罰金の刑に処せられることがある」のように、対象者としては含まれる事実と、罰則直結ではない事実を混ぜて誤り選択肢にします。\n\n義務規定、監督処分、懲戒処分、罰則は必ず分けて理解します。信用失墜行為は禁止されていますが、その違反効果を読むときは、通関業者への監督処分、通関士への懲戒処分、刑罰規定の有無を別々に確認します。",
-    keyPoints: [
-      "対象者は通関業者、法人である通関業者の役員、通関士",
-      "禁止内容は信用又は品位を害する行為",
-      "第20条違反そのものは罰金刑に直結しない"
-    ],
-    confusingPoints: [
-      "信用失墜行為",
-      "秘密保持義務",
-      "名義貸し禁止",
-      "監督処分",
-      "懲戒処分",
-      "罰則"
-    ],
-    traps: [
-      "罰金の刑に処せられることがある",
-      "法人の役員は対象外",
-      "通関士だけが対象",
-      "品位ではなく利益を害する行為",
-      "義務規定なら必ず罰則がある"
-    ],
-    examTips: [
-      "対象者として含まれるか、罰則があるかを別々に判定する",
-      "「禁止される」と「罰金刑」は同時に判断しない",
-      "監督処分・懲戒処分・罰則の語を見たら条文上の効果を確認する"
-    ],
-    penaltyTips: [
-      "第20条は義務規定であり、違反そのものが罰金刑に直結する規定ではありません。",
-      "罰則トラップでは、禁止規定を見せてから刑罰を断定する表現が狙われます。"
-    ],
+    lecture: "まず結論から言うと、通関業法20条は信用失墜行為の禁止を定める規定です。対象は、通関業者、法人である通関業者の役員、通関士です。これらの者は、通関業者の信用又は品位を害するような行為をしてはならないとされています。\n\nなぜ重要かというと、本試験では「対象になる」ことと「罰金刑になる」ことを混ぜて聞くからです。第20条違反そのものが罰金刑に直結するわけではありません。禁止されている行為であっても、刑罰があるかどうかは罰則規定を別に確認します。\n\n試験での問われ方は、法人の役員が品位を害する行為をした場合に罰金刑になる、という形です。法人役員は対象者には含まれます。しかし、そこから直ちに罰金刑と判断するのは誤りです。義務規定、監督処分、懲戒処分、罰則を分けて読む必要があります。",
+    keyPoints: ["対象者は通関業者、法人である通関業者の役員、通関士", "禁止内容は信用又は品位を害する行為", "第20条違反そのものは罰金刑に直結しない", "対象になることと刑罰になることは別"],
+    confusingPoints: ["信用失墜行為", "秘密保持義務", "名義貸し禁止", "監督処分", "懲戒処分", "罰則"],
+    traps: ["罰金の刑に処せられることがある", "法人の役員は対象外", "通関士だけが対象", "品位ではなく利益を害する行為", "義務規定なら必ず罰則がある"],
+    examTips: ["対象者として含まれるか、罰則があるかを別々に判定する", "「禁止される」と「罰金刑」は同時に判断しない", "監督処分・懲戒処分・罰則の語を見たら条文上の効果を確認する"],
+    penaltyTips: ["第20条は義務規定であり、違反そのものが罰金刑に直結する規定ではありません。", "罰則トラップでは、禁止規定を見せてから刑罰を断定する表現が狙われます。"],
     miniSummary: "第20条は対象者と禁止内容を押さえたうえで、罰金刑に直結しない点を強く区別します。",
     questions: [
-      makeQuestion("q1", "法人である通関業者の役員が、通関業法第20条に規定する通関業者の品位を害するような行為をした場合は、罰金の刑に処せられることがある。", ["正しい", "誤り"], "誤り", "法人である通関業者の役員も信用失墜行為の禁止の対象にはなります。しかし、第20条違反そのものに罰金刑が直結するわけではありません。試験では、義務規定と罰則を混同させる選択肢に注意します。", "対象者には含まれる、しかし罰金刑直結ではない、という二段階判断を崩すひっかけです。", "罰則", "truefalse"),
+      makeQuestion("q1", "法人である通関業者の役員が、通関業法第20条に規定する通関業者の品位を害するような行為をした場合は、罰金の刑に処せられることがある。", ["正しい", "誤り"], "誤り", "法人である通関業者の役員も信用失墜行為の禁止の対象にはなります。しかし、第20条違反そのものに罰金刑が直結するわけではありません。試験では、義務規定と罰則を混同させる選択肢に注意します。", "対象者には含まれる、しかし罰金刑直結ではない、という二段階判断を崩すひっかけです。", "罰則トラップ", "truefalse"),
       makeQuestion("q2", "通関業法20条の信用失墜行為の禁止の対象に含まれるものとして最も適切な組み合わせはどれか。", ["通関士だけ", "通関業者、法人である通関業者の役員、通関士", "輸入者だけ", "税関職員だけ"], "通関業者、法人である通関業者の役員、通関士", "第20条は通関業者、法人である通関業者の役員、通関士を対象にします。", "「通関士だけ」「役員は対象外」と狭くする表現に注意します。", "主体の混同"),
-      makeQuestion("q3", "信用失墜行為の禁止を学ぶとき、最も危険な読み方はどれか。", ["対象者を確認する", "禁止内容を確認する", "義務規定なら必ず罰金刑があると読む", "監督処分・懲戒処分・罰則を分ける"], "義務規定なら必ず罰金刑があると読む", "義務規定と罰則は別です。禁止されていても、罰金刑が直結するとは限りません。", "「禁止されるなら罰則」と短絡させるのが典型的な罰則トラップです。", "罰則")
+      makeQuestion("q3", "信用失墜行為の禁止を学ぶとき、最も危険な読み方はどれか。", ["対象者を確認する", "禁止内容を確認する", "義務規定なら必ず罰金刑があると読む", "監督処分・懲戒処分・罰則を分ける"], "義務規定なら必ず罰金刑があると読む", "義務規定と罰則は別です。禁止されていても、罰金刑が直結するとは限りません。", "「禁止されるなら罰則」と短絡させるのが典型的な罰則トラップです。", "罰則トラップ")
     ]
   }),
-  makeStandardLesson("lesson-tsukangyoho-books-notices", "course-tsukangyoho-basic", "通関業法", "記帳・届出・報告", 6, "u005", "継続的な記帳、届出、報告義務", ["保存と提出を混同する", "届出と許可を置き換える", "報告徴求と任意のメモを混同する"]),
-  makeStandardLesson("lesson-tsukangyoho-sanctions-penalties", "course-tsukangyoho-basic", "通関業法", "監督処分・懲戒処分・罰則の区別", 7, "u004", "監督処分、懲戒処分、罰則の違い", ["通関業者への監督処分と通関士への懲戒処分を混同する", "行政上の処分と刑罰を同じものとして読む", "処分の主体を入れ替える"]),
+  tLesson("lesson-tsukangyoho-books-notices", "記帳・届出・報告", 13, "u005", "継続的な記帳、届出、報告義務", ["保存と提出を混同する", "届出と許可を置き換える", "報告徴求と任意のメモを混同する"], ["帳簿保存は業務後の検証可能性を確保する制度", "届出は変更等の事実を知らせる手続", "報告徴求は監督のための情報収集として整理する"], "届出・報告"),
+  tLesson("lesson-tsukangyoho-fee-display", "料金の掲示", 14, "u005", "料金を依頼者に見える形で示す義務", ["料金掲示は任意サービスである", "料金掲示義務は通関士個人にだけある", "掲示しないと直ちに懲戒処分だけになる"], ["料金の透明性は依頼者保護と業務の公正に関わる", "主体は通関業者として押さえる", "義務違反の効果は監督処分・罰則と分ける"], "義務規定"),
+  tLesson("lesson-tsukangyoho-report-minister", "財務大臣への報告", 15, "u005", "財務大臣への報告が問題になる場面", ["報告先を常に税関長だけにする", "報告は任意提出メモと同じ", "報告義務違反は信用失墜行為と同じ"], ["報告先・提出時期・対象事項をセットで読む", "届出、報告、許可申請の語を入れ替えない", "報告は監督行政を支える手続として理解する"], "手続要件"),
+  tLesson("lesson-tsukangyoho-supervision", "監督処分", 16, "u004", "通関業者に対する行政上の処分", ["監督処分を通関士への懲戒処分とする", "業務停止と許可取消しを同じ効果にする", "監督処分を刑罰と同じものにする"], ["監督処分の対象は通関業者として整理する", "許可取消し・業務停止等の効果を分ける", "刑罰ではなく行政上の処分として読む"], "監督処分"),
+  tLesson("lesson-tsukangyoho-customs-broker-discipline", "通関士に対する懲戒処分", 17, "u004", "通関士個人に対する処分", ["懲戒処分を通関業者への監督処分とする", "懲戒処分を罰金刑と同じにする", "通関士でない役員にも同じ懲戒処分をする"], ["懲戒処分の対象は通関士個人", "監督処分は通関業者、懲戒処分は通関士で分ける", "刑罰とは別の行政上の制裁として理解する"], "懲戒処分"),
+  tLesson("lesson-tsukangyoho-penalty-overview", "罰則の全体像", 18, "u004", "罰則がある規定とない規定の見分け方", ["義務違反はすべて罰金刑", "監督処分があれば刑罰はない", "法人役員が対象なら必ず両罰規定になる"], ["罰則は刑罰規定に該当するかを別に確認する", "禁止・義務・処分・刑罰を四分割する", "名義貸し、秘密保持、報告違反などは個別に見る"], "罰則"),
+  tLesson("lesson-tsukangyoho-trap-review", "通関業法の頻出ひっかけ総整理", 19, "u004", "本試験で崩されやすい表現の総整理", ["すべて選択で一つだけ主体が違う", "許可・承認・届出・報告が置換される", "対象者に含まれることを罰則直結にする"], ["主体、手続、効果、期間を順番に照合する", "断定語と例外の有無を確認する", "義務規定と罰則規定を同じ行で読まない"], "選択肢読解"),
+  makeMiniExamLesson(),
+];
+
+const CURRICULUM_LESSONS = [
+  ...TSUKANGYOHO_LESSONS,
   makeStandardLesson("lesson-kanzeihou-flow", "course-kanzeihou-intro", "関税法等", "輸出入通関の全体像", 1, "u008", "輸出入通関の流れ", ["申告、審査、検査、納税、許可の順序を混同する", "輸出と輸入の要件を入れ替える", "保税地域との関係を飛ばす"]),
   makeStandardLesson("lesson-kanzeihou-import-declaration", "course-kanzeihou-intro", "関税法等", "輸入申告と輸入の許可", 2, "u008", "輸入申告から許可までの基本", ["申告と許可を同一視する", "納税と許可の関係を単純化する", "必要書類の位置づけをずらす"]),
   makeStandardLesson("lesson-kanzeihou-bonded-area", "course-kanzeihou-intro", "関税法等", "保税地域の基本", 3, "u006", "保税地域の種類と機能", ["保税蔵置場と保税工場を混同する", "外国貨物と内国貨物を混同する", "置く場所と行える作業を入れ替える"]),
@@ -313,6 +404,13 @@ const state = {
     importance: "すべて",
     weakness: "すべて",
     redoOnly: false
+  },
+  lessonFilters: {
+    subject: "すべて",
+    courseId: "すべて",
+    status: "すべて",
+    understanding: "すべて",
+    reviewOnly: false
   },
   practiceFilters: {
     search: "",
@@ -1042,8 +1140,13 @@ function calculateLessonUnderstanding(lesson, progress) {
   const answered = lesson.questions.filter((question) => progress.questionResults.some((result) => result.questionId === question.id));
   if (!answered.length) return "未判定";
   const correct = lesson.questions.filter((question) => progress.questionResults.some((result) => result.questionId === question.id && result.correct)).length;
-  if (correct === 3) return "A";
-  if (correct === 2) return "B";
+  if (lesson.id === "lesson-tsukangyoho-mini-exam") {
+    if (correct >= 9) return "A";
+    if (correct >= 6) return "B";
+    return "C";
+  }
+  if (correct === lesson.questions.length) return "A";
+  if (correct >= Math.ceil(lesson.questions.length * 0.66)) return "B";
   return "C";
 }
 
@@ -1088,14 +1191,19 @@ function getReviewLessons() {
 
 function getLessonReviewReason(lessonId) {
   const progress = getLessonProgress(lessonId);
+  const wrongTags = getWrongLessonTags(lessonId);
   if (progress.understanding === "C") return "C判定のため最優先復習";
   if (progress.understanding === "B") return "B判定のため確認復習";
+  if (wrongTags.some((tag) => /罰則|処分|懲戒|監督|トラップ/.test(tag))) return "罰則トラップで誤答";
+  if (lessonId === "lesson-tsukangyoho-mini-exam" && wrongTags.length) return "ミニ模試で失点";
   if (progress.status === "復習中") return "復習中に設定済み";
   if (progress.reviewNeeded) return "復習対象に設定済み";
   return "定期確認";
 }
 
 function getRecommendedLesson() {
+  const tsukanPriority = getTsukangyohoPriorityLessons()[0];
+  if (tsukanPriority) return tsukanPriority;
   const review = getReviewLessons();
   const cLesson = review.find((item) => item.progress.understanding === "C");
   if (cLesson) return { ...cLesson, type: "レッスン復習" };
@@ -1108,6 +1216,53 @@ function getRecommendedLesson() {
     .map((lesson) => ({ lesson, progress: getLessonProgress(lesson.id), reason: "最終学習日が古いレッスン", type: "レッスン復習" }))
     .sort((a, b) => (a.progress.lastStudiedAt || "").localeCompare(b.progress.lastStudiedAt || ""));
   return old[0] || null;
+}
+
+function getTsukangyohoLessons() {
+  return getLessonsByCourse("course-tsukangyoho-basic");
+}
+
+function getTsukangyohoPriorityLessons() {
+  const lessons = getTsukangyohoLessons();
+  const candidates = [];
+  lessons.forEach((lesson) => {
+    const progress = getLessonProgress(lesson.id);
+    const wrongTags = getWrongLessonTags(lesson.id);
+    const isPenaltyWeakness = wrongTags.some((tag) => /罰則|処分|懲戒|監督|トラップ/.test(tag));
+    if (progress.understanding === "C") {
+      candidates.push({ lesson, progress, reason: "C判定のため復習", type: "レッスン復習", priorityScore: 100 });
+    } else if (progress.reviewNeeded) {
+      candidates.push({ lesson, progress, reason: "復習対象の通関業法レッスン", type: "レッスン復習", priorityScore: 90 });
+    } else if (lesson.id === "lesson-tsukangyoho-mini-exam" && ["B", "C"].includes(progress.understanding)) {
+      candidates.push({ lesson, progress, reason: "ミニ模試がB判定以下", type: "レッスン復習", priorityScore: 85 });
+    } else if (isPenaltyWeakness) {
+      candidates.push({ lesson, progress, reason: "罰則トラップで誤答あり", type: "レッスン復習", priorityScore: 80 });
+    } else if (progress.lastStudiedAt && daysSinceIso(progress.lastStudiedAt) > 21) {
+      candidates.push({ lesson, progress, reason: "最終学習日が古いレッスン", type: "レッスン復習", priorityScore: 55 - Math.min(daysSinceIso(progress.lastStudiedAt), 45) });
+    }
+  });
+  const next = lessons.find((lesson) => getLessonProgress(lesson.id).status === "未着手");
+  if (next) {
+    candidates.push({ lesson: next, progress: getLessonProgress(next.id), reason: "未着手の次レッスン", type: "レッスン学習", priorityScore: 88 });
+  }
+  return candidates.sort((a, b) => (b.priorityScore || 0) - (a.priorityScore || 0) || a.lesson.order - b.lesson.order);
+}
+
+function getWrongLessonTags(lessonId) {
+  const lesson = getLessonById(lessonId);
+  const progress = getLessonProgress(lessonId);
+  if (!lesson) return [];
+  return progress.questionResults
+    .filter((result) => !result.correct)
+    .map((result) => lesson.questions.find((question) => question.id === result.questionId)?.weaknessTag)
+    .filter(Boolean);
+}
+
+function daysSinceIso(isoString) {
+  if (!isoString) return 999;
+  const date = new Date(isoString);
+  if (Number.isNaN(date.getTime())) return 999;
+  return Math.floor((Date.now() - date.getTime()) / 86400000);
 }
 
 function getRecentWrongLessonQuestions() {
@@ -1214,6 +1369,19 @@ function generateTodayMenu(duration = "30分") {
 
 function buildTodayLessonItems() {
   const items = [];
+  const tsukanPriorityItems = getTsukangyohoPriorityLessons().map(({ lesson, progress, reason, type, priorityScore }) => makeTodayMenuItem({
+    id: `lesson-${lesson.id}`,
+    type,
+    title: lesson.title,
+    description: `${lesson.subject} / ${lesson.estimatedMinutes}分 / 理解度 ${progress.understanding}`,
+    reason,
+    priority: progress.understanding === "C" || reason.includes("C判定") ? "最優先" : reason.includes("未着手") ? "中" : "高",
+    priorityScore,
+    estimatedMinutes: lesson.estimatedMinutes,
+    relatedUnitId: lesson.relatedUnitId,
+    relatedLessonId: lesson.id
+  }));
+  items.push(...tsukanPriorityItems);
   const reviewItems = getReviewLessons().map(({ lesson, progress, reason }) => makeTodayMenuItem({
     id: `lesson-${lesson.id}`,
     type: "レッスン復習",
@@ -1765,14 +1933,17 @@ function renderLearningView() {
     .map(renderCourseCard)
     .join("");
 
+  renderLessonFilters();
+  const filtered = filteredLessons();
   document.querySelector("#lessonList").innerHTML = CURRICULUM_COURSES
+    .filter((course) => filtered.some((lesson) => lesson.courseId === course.id))
     .sort((a, b) => a.order - b.order)
     .map((course) => `
       <div class="lesson-course-block">
         <h3>${escapeHtml(course.title)}</h3>
-        ${getLessonsByCourse(course.id).map(renderLessonListCard).join("")}
+        ${filtered.filter((lesson) => lesson.courseId === course.id).sort((a, b) => a.order - b.order).map(renderLessonListCard).join("")}
       </div>
-    `).join("");
+    `).join("") || `<div class="empty-state"><p class="muted">条件に合うレッスンはありません。</p></div>`;
 
   const stats = getCurriculumStats();
   document.querySelector("#learningProgressSummary").innerHTML = `
@@ -1795,6 +1966,35 @@ function renderLearningView() {
       </button>
     `).join("")
     : `<p class="muted">復習対象レッスンはありません。</p>`;
+}
+
+function renderLessonFilters() {
+  const subjects = ["すべて", ...new Set(CURRICULUM_LESSONS.map((lesson) => lesson.subject))];
+  const courses = [{ value: "すべて", label: "すべて" }, ...CURRICULUM_COURSES.map((course) => ({ value: course.id, label: course.title }))];
+  fillSelect("#lessonSubjectFilter", subjects, state.lessonFilters.subject);
+  fillObjectSelect("#lessonCourseFilter", courses, state.lessonFilters.courseId);
+  fillSelect("#lessonStatusFilter", ["すべて", ...CURRICULUM_STATUS], state.lessonFilters.status);
+  fillSelect("#lessonUnderstandingFilter", ["すべて", ...CURRICULUM_UNDERSTANDING], state.lessonFilters.understanding);
+  document.querySelector("#lessonReviewOnlyFilter").checked = state.lessonFilters.reviewOnly;
+}
+
+function fillObjectSelect(selector, options, selected) {
+  const element = document.querySelector(selector);
+  element.innerHTML = options.map((option) => `<option value="${escapeAttribute(option.value)}">${escapeHtml(option.label)}</option>`).join("");
+  element.value = selected;
+}
+
+function filteredLessons() {
+  return CURRICULUM_LESSONS.filter((lesson) => {
+    const progress = getLessonProgress(lesson.id);
+    return (
+      (state.lessonFilters.subject === "すべて" || lesson.subject === state.lessonFilters.subject) &&
+      (state.lessonFilters.courseId === "すべて" || lesson.courseId === state.lessonFilters.courseId) &&
+      (state.lessonFilters.status === "すべて" || progress.status === state.lessonFilters.status) &&
+      (state.lessonFilters.understanding === "すべて" || progress.understanding === state.lessonFilters.understanding) &&
+      (!state.lessonFilters.reviewOnly || progress.reviewNeeded || ["B", "C"].includes(progress.understanding))
+    );
+  });
 }
 
 function renderRecommendedLesson(item) {
@@ -1839,17 +2039,22 @@ function renderLessonListCard(lesson) {
   return `
     <article class="lesson-card">
       <div>
-        <p class="eyebrow">${escapeHtml(lesson.subject)} / ${escapeHtml(lesson.level)}</p>
+        <p class="eyebrow">Lesson ${lesson.order} / ${escapeHtml(lesson.subject)} / ${escapeHtml(lesson.level)}</p>
         <h4>${escapeHtml(lesson.title)}</h4>
         <p>${escapeHtml(lesson.goal)}</p>
         <div class="badge-row">
+          <span class="badge">科目 ${escapeHtml(lesson.subject)}</span>
           <span class="badge">${escapeHtml(progress.status)}</span>
           <span class="badge ${progress.understanding === "C" ? "priority" : progress.understanding === "B" ? "normal" : "ok"}">理解度 ${escapeHtml(progress.understanding)}</span>
           ${progress.reviewNeeded ? `<span class="badge priority">復習対象</span>` : ""}
         </div>
       </div>
       <dl class="review-facts compact">
+        <div><dt>レッスン番号</dt><dd>${lesson.order}</dd></div>
         <div><dt>目安</dt><dd>${lesson.estimatedMinutes}分</dd></div>
+        <div><dt>状態</dt><dd>${escapeHtml(progress.status)}</dd></div>
+        <div><dt>理解度</dt><dd>${escapeHtml(progress.understanding)}</dd></div>
+        <div><dt>復習対象</dt><dd>${progress.reviewNeeded ? "対象" : "対象外"}</dd></div>
         <div><dt>確認問題</dt><dd>${correct}/${lesson.questions.length}</dd></div>
       </dl>
       <div class="card-actions">
@@ -1896,19 +2101,18 @@ function renderLessonDetail() {
         <section class="panel lesson-section">
           <p class="eyebrow">${escapeHtml(lesson.subject)} / ${escapeHtml(lesson.level)}</p>
           <h3>${escapeHtml(lesson.title)}</h3>
-          <h4>学習目標</h4>
-          <p>${escapeHtml(lesson.goal)}</p>
-          <h4>導入</h4>
+          <h4>まず結論</h4>
           <p>${escapeHtml(lesson.intro)}</p>
-          <h4>講義本文</h4>
+          <h4>なぜ重要か</h4>
+          <p>${escapeHtml(lesson.goal)}</p>
+          <h4>試験での問われ方</h4>
           ${lesson.lecture.split("\n").filter(Boolean).map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join("")}
         </section>
         ${renderLessonListSection("重要ポイント", lesson.keyPoints, "key-point-list")}
         ${renderLessonListSection("混同ポイント", lesson.confusingPoints, "confusing-list")}
         ${renderLessonListSection("引っかけ注意", lesson.traps, "trap-list")}
         ${renderLessonListSection("試験で狙われる表現", lesson.examTips, "exam-tip-list")}
-        ${renderLessonListSection("罰則・処分・手続の区別メモ", lesson.penaltyTips, "penalty-list")}
-        <section class="panel lesson-section"><h4>ミニまとめ</h4><p>${escapeHtml(lesson.miniSummary)}</p></section>
+        ${renderLessonListSection("罰則・処分・手続の区別", lesson.penaltyTips, "penalty-list")}
         <section class="panel lesson-section">
           <div class="panel-heading flush"><h3>確認問題</h3></div>
           <div class="question-list">
@@ -1921,9 +2125,10 @@ function renderLessonDetail() {
                 ${CURRICULUM_UNDERSTANDING.map((value) => `<option value="${escapeAttribute(value)}" ${value === progress.understanding ? "selected" : ""}>${escapeHtml(value)}</option>`).join("")}
               </select>
             </label>
-            <p class="muted">3問正解:A / 2問正解:B / 0〜1問正解:C。B/Cは自動で復習対象になります。</p>
+            <p class="muted">${lesson.id === "lesson-tsukangyoho-mini-exam" ? "9〜10問正解:A / 6〜8問正解:B / 0〜5問正解:C。" : "全問正解:A / 約7割正解:B / それ未満:C。"}B/Cは自動で復習対象になります。</p>
           </div>
         </section>
+        <section class="panel lesson-section"><h4>ミニまとめ</h4><p>${escapeHtml(lesson.miniSummary)}</p></section>
       </div>
     </div>
   `;
@@ -2519,6 +2724,7 @@ function renderAnalysisView() {
 
 function renderCurriculumAnalysis() {
   const stats = getCurriculumStats();
+  const tsukan = buildTsukangyohoCurriculumAnalysis();
   const subjectRows = ANALYSIS_SUBJECTS
     .filter((subject) => subject !== "未設定")
     .map((subject) => {
@@ -2535,6 +2741,19 @@ function renderCurriculumAnalysis() {
   return `
     <div class="analysis-card-grid two-col">
       <article class="analysis-card">
+        <h4>通関業法カリキュラム分析</h4>
+        <dl class="analysis-facts">
+          <div><dt>レッスン総数</dt><dd>${tsukan.total}</dd></div>
+          <div><dt>完了数</dt><dd>${tsukan.completed}</dd></div>
+          <div><dt>未着手数</dt><dd>${tsukan.notStarted}</dd></div>
+          <div><dt>復習対象数</dt><dd>${tsukan.reviewCount}</dd></div>
+          <div><dt>A/B/C/未判定</dt><dd>${tsukan.understandingCounts.A || 0}/${tsukan.understandingCounts.B || 0}/${tsukan.understandingCounts.C || 0}/${tsukan.understandingCounts["未判定"] || 0}</dd></div>
+          <div><dt>ミニ模試結果</dt><dd>${escapeHtml(tsukan.miniExamText)}</dd></div>
+          <div><dt>ひっかけ問題正答率</dt><dd>${escapeHtml(tsukan.trapAccuracy)}</dd></div>
+          <div><dt>罰則・処分系正答率</dt><dd>${escapeHtml(tsukan.penaltyAccuracy)}</dd></div>
+        </dl>
+      </article>
+      <article class="analysis-card">
         <h4>カリキュラム進捗</h4>
         <dl class="analysis-facts">
           <div><dt>総レッスン数</dt><dd>${stats.total}</dd></div>
@@ -2544,6 +2763,15 @@ function renderCurriculumAnalysis() {
           <div><dt>復習対象レッスン数</dt><dd>${stats.reviewCount}</dd></div>
           <div><dt>ひっかけ問題の正答率</dt><dd>${trapRate}</dd></div>
         </dl>
+      </article>
+      <article class="analysis-card">
+        <h4>通関業法 苦手レッスン上位</h4>
+        ${tsukan.weakLessons.length ? tsukan.weakLessons.map(({ lesson, progress, correct, reason }) => `
+          <button class="compact-item ghost-button" type="button" data-open-lesson="${escapeAttribute(lesson.id)}">
+            <span>${escapeHtml(lesson.title)}</span>
+            <span>${escapeHtml(`${progress.understanding} / ${correct}/${lesson.questions.length} / ${reason}`)}</span>
+          </button>
+        `).join("") : `<p class="muted">苦手レッスンはありません。</p>`}
       </article>
       <article class="analysis-card">
         <h4>C判定レッスン一覧</h4>
@@ -2568,6 +2796,47 @@ function renderCurriculumAnalysis() {
       </article>
     </div>
   `;
+}
+
+function buildTsukangyohoCurriculumAnalysis() {
+  const lessons = getTsukangyohoLessons();
+  const progresses = lessons.map((lesson) => getLessonProgress(lesson.id));
+  const countByUnderstanding = CURRICULUM_UNDERSTANDING.reduce((acc, value) => {
+    acc[value] = progresses.filter((progress) => progress.understanding === value).length;
+    return acc;
+  }, {});
+  const mini = getLessonById("lesson-tsukangyoho-mini-exam");
+  const miniProgress = getLessonProgress("lesson-tsukangyoho-mini-exam");
+  const miniCorrect = mini ? mini.questions.filter((question) => miniProgress.questionResults.some((result) => result.questionId === question.id && result.correct)).length : 0;
+  const answeredQuestionRows = lessons.flatMap((lesson) => lesson.questions.map((question) => ({
+    lesson,
+    question,
+    result: getLessonQuestionResult(lesson.id, question.id)
+  }))).filter((row) => row.result);
+  const trapRows = answeredQuestionRows.filter((row) => /ひっかけ|トラップ|主体|許可|届出|確認|欠格/.test(`${row.question.weaknessTag}${row.question.trapExplanation}`));
+  const penaltyRows = answeredQuestionRows.filter((row) => /罰則|処分|懲戒|監督|秘密|名義|信用/.test(`${row.question.weaknessTag}${row.lesson.title}${row.question.explanation}`));
+  const rate = (rows) => rows.length ? `${Math.round((rows.filter((row) => row.result.correct).length / rows.length) * 100)}%（${rows.filter((row) => row.result.correct).length}/${rows.length}）` : "未回答";
+  const weakLessons = lessons.map((lesson) => {
+    const progress = getLessonProgress(lesson.id);
+    const correct = lesson.questions.filter((question) => progress.questionResults.some((result) => result.questionId === question.id && result.correct)).length;
+    return { lesson, progress, correct, reason: getLessonReviewReason(lesson.id) };
+  }).filter((item) => item.progress.understanding === "C" || item.progress.reviewNeeded || item.correct < item.lesson.questions.length)
+    .sort((a, b) => {
+      const order = { C: 3, B: 2, "未判定": 1, A: 0 };
+      return (order[b.progress.understanding] || 0) - (order[a.progress.understanding] || 0) || a.correct - b.correct || a.lesson.order - b.lesson.order;
+    })
+    .slice(0, 5);
+  return {
+    total: lessons.length,
+    completed: progresses.filter((progress) => progress.status === "完了").length,
+    notStarted: progresses.filter((progress) => progress.status === "未着手").length,
+    reviewCount: progresses.filter((progress) => progress.reviewNeeded || ["B", "C"].includes(progress.understanding)).length,
+    understandingCounts: countByUnderstanding,
+    miniExamText: mini ? `${miniCorrect}/${mini.questions.length} 正解 / 理解度 ${miniProgress.understanding}` : "未実装",
+    trapAccuracy: rate(trapRows),
+    penaltyAccuracy: rate(penaltyRows),
+    weakLessons
+  };
 }
 
 function buildWeaknessAnalysis() {
@@ -3696,7 +3965,9 @@ function renderAiTargetSelect() {
   const options = getAiTargetOptions(state.aiForm.targetType);
   const needsSelect = ["単元", "レッスン", "演習ログ", "過去問ログ", "実務ログ"].includes(state.aiForm.targetType);
   label.classList.toggle("is-hidden", !needsSelect);
-  hint.textContent = needsSelect ? "" : state.aiForm.targetType === "復習対象"
+  hint.textContent = needsSelect ? "" : state.aiForm.targetType === "通関業法カリキュラム"
+    ? "通関業法20レッスンの進捗、誤答、弱点タグ、ミニ模試、復習対象を使います。"
+    : state.aiForm.targetType === "復習対象"
     ? "現在の復習対象単元を最大10件まで使います。"
     : "単元・演習ログ・過去問ログ・実務ログ・今日のメニューの集計値を使います。";
   if (!needsSelect) {
@@ -3798,7 +4069,9 @@ function generateAiPrompt() {
 }
 
 function buildAiPromptText(promptType, target, additionalConditions) {
-  const points = state.aiForm.targetType === "実務ログ"
+  const points = state.aiForm.targetType === "通関業法カリキュラム"
+    ? ["通関業法レッスン進捗の評価", "A/B/C判定の偏り", "間違えた確認問題から見える弱点", "弱点タグの優先順位", "ミニ模試結果の評価", "復習対象レッスンの優先順位", "罰則・処分系トラップへの耐性", "30分でできる通関業法復習メニュー"]
+    : state.aiForm.targetType === "実務ログ"
     ? ["申告書作成上のミス原因", "計算過程のどこで崩れたか", "品目分類・資料読み取りの弱点", "NACCS入力項目の理解不足", "時間配分の問題", "次に解くべき実務問題タイプ", "本試験で失点しやすいポイント", "30分でできる実務復習メニュー"]
     : (AI_ANALYSIS_POINTS[promptType] || AI_ANALYSIS_POINTS["総合学習相談"]);
   const output = AI_OUTPUT_FORMATS[promptType] || AI_OUTPUT_FORMATS.default;
@@ -3849,6 +4122,9 @@ function buildAiTargetData() {
   }
   if (state.aiForm.targetType === "復習対象") {
     return { id: "", title: "復習対象", body: buildReviewTargetsPromptData() };
+  }
+  if (state.aiForm.targetType === "通関業法カリキュラム") {
+    return { id: "course-tsukangyoho-basic", title: "通関業法カリキュラム", body: buildTsukangyohoPromptData() };
   }
   return { id: "", title: "全体サマリー", body: buildOverallSummaryPromptData() };
 }
@@ -3916,6 +4192,38 @@ function buildLessonPromptData(lesson) {
     ["復習対象かどうか", progress.reviewNeeded ? "復習対象" : "対象外"],
     ["状態", progress.status],
     ["最終学習日", progress.lastStudiedAt]
+  ]);
+}
+
+function buildTsukangyohoPromptData() {
+  const analysis = buildTsukangyohoCurriculumAnalysis();
+  const lessons = getTsukangyohoLessons();
+  const lessonLines = lessons.map((lesson) => {
+    const progress = getLessonProgress(lesson.id);
+    const wrongQuestions = lesson.questions
+      .filter((question) => progress.questionResults.some((result) => result.questionId === question.id && !result.correct))
+      .map((question) => `${question.question} / 正答:${question.answer} / 弱点:${question.weaknessTag}`);
+    const correct = lesson.questions.filter((question) => progress.questionResults.some((result) => result.questionId === question.id && result.correct)).length;
+    return `${lesson.order}. ${lesson.title} / 状態:${progress.status} / 理解度:${progress.understanding} / 正答:${correct}/${lesson.questions.length} / 復習:${progress.reviewNeeded ? "対象" : "対象外"} / 誤答:${wrongQuestions.join(" || ") || "なし"}`;
+  }).join("\n");
+  const wrongTags = lessons.flatMap((lesson) => getWrongLessonTags(lesson.id));
+  const reviewLessons = getReviewLessons()
+    .filter(({ lesson }) => lesson.courseId === "course-tsukangyoho-basic")
+    .map(({ lesson, progress, reason }) => `${lesson.title}:${progress.understanding}/${reason}`)
+    .join("\n") || "なし";
+  return keyValueLines([
+    ["対象", "通関業法カリキュラム"],
+    ["レッスン総数", analysis.total],
+    ["完了数", analysis.completed],
+    ["未着手数", analysis.notStarted],
+    ["復習対象数", analysis.reviewCount],
+    ["A/B/C/未判定", `A:${analysis.understandingCounts.A || 0} / B:${analysis.understandingCounts.B || 0} / C:${analysis.understandingCounts.C || 0} / 未判定:${analysis.understandingCounts["未判定"] || 0}`],
+    ["ミニ模試結果", analysis.miniExamText],
+    ["ひっかけ問題正答率", analysis.trapAccuracy],
+    ["罰則・処分系問題正答率", analysis.penaltyAccuracy],
+    ["間違えた確認問題の弱点タグ", rankFromValues(wrongTags).map((item) => `${item.label}(${item.count})`).join(" / ") || "なし"],
+    ["復習対象レッスン", reviewLessons],
+    ["レッスン別進捗", lessonLines]
   ]);
 }
 
@@ -4363,7 +4671,9 @@ function renderReviewList() {
     : `<div class="panel empty-state"><p class="muted">条件に合う復習単元はありません。</p></div>`;
   const lessons = getReviewLessons();
   document.querySelector("#reviewLessonCards").innerHTML = lessons.length
-    ? lessons.map(({ lesson, progress, reason }) => `
+    ? lessons.map(({ lesson, progress, reason }) => {
+      const correct = lesson.questions.filter((question) => progress.questionResults.some((result) => result.questionId === question.id && result.correct)).length;
+      return `
       <article class="lesson-card">
         <div>
           <p class="eyebrow">${escapeHtml(lesson.subject)}</p>
@@ -4371,6 +4681,7 @@ function renderReviewList() {
           <dl class="review-facts compact">
             <div><dt>理解度</dt><dd>${escapeHtml(progress.understanding)}</dd></div>
             <div><dt>状態</dt><dd>${escapeHtml(progress.status)}</dd></div>
+            <div><dt>正答数</dt><dd>${correct}/${lesson.questions.length}</dd></div>
             <div><dt>最終学習日</dt><dd>${escapeHtml(progress.lastStudiedAt ? formatDateTime(progress.lastStudiedAt) : "未学習")}</dd></div>
             <div><dt>復習理由</dt><dd>${escapeHtml(reason)}</dd></div>
           </dl>
@@ -4379,7 +4690,8 @@ function renderReviewList() {
           <button class="primary-button" type="button" data-open-lesson="${escapeAttribute(lesson.id)}">開く</button>
         </div>
       </article>
-    `).join("")
+    `;
+    }).join("")
     : `<div class="empty-state"><p class="muted">復習対象レッスンはありません。</p></div>`;
 }
 
@@ -5208,6 +5520,26 @@ function attachEvents() {
   document.querySelector("#reviewRedoOnlyFilter").addEventListener("change", (event) => {
     state.reviewFilters.redoOnly = event.target.checked;
     renderReviewList();
+  });
+  document.querySelector("#lessonSubjectFilter").addEventListener("change", (event) => {
+    state.lessonFilters.subject = event.target.value;
+    renderLearningView();
+  });
+  document.querySelector("#lessonCourseFilter").addEventListener("change", (event) => {
+    state.lessonFilters.courseId = event.target.value;
+    renderLearningView();
+  });
+  document.querySelector("#lessonStatusFilter").addEventListener("change", (event) => {
+    state.lessonFilters.status = event.target.value;
+    renderLearningView();
+  });
+  document.querySelector("#lessonUnderstandingFilter").addEventListener("change", (event) => {
+    state.lessonFilters.understanding = event.target.value;
+    renderLearningView();
+  });
+  document.querySelector("#lessonReviewOnlyFilter").addEventListener("change", (event) => {
+    state.lessonFilters.reviewOnly = event.target.checked;
+    renderLearningView();
   });
   document.querySelector("#practiceLogForm").addEventListener("submit", (event) => {
     event.preventDefault();
