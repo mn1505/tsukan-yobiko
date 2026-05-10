@@ -1094,7 +1094,7 @@ button:focus-visible {
   left: 0;
   z-index: 30;
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(8, minmax(0, 1fr));
   gap: 1px;
   padding: 7px 6px calc(7px + env(safe-area-inset-bottom));
   border-top: 1px solid var(--line);
@@ -1255,10 +1255,244 @@ button:focus-visible {
     right: 50%;
     left: 50%;
     width: min(960px, calc(100% - 32px));
-    grid-template-columns: repeat(10, minmax(0, 1fr));
+    grid-template-columns: repeat(8, minmax(0, 1fr));
     transform: translateX(-50%);
     border: 1px solid var(--line);
     border-bottom: 0;
     border-radius: 18px 18px 0 0;
+  }
+}
+
+.learning-home-panel,
+#view-learning .panel,
+.review-lesson-panel {
+  margin-bottom: 14px;
+}
+
+.learning-layout,
+.lesson-reader {
+  display: grid;
+  gap: 14px;
+}
+
+.learning-hero {
+  border-color: rgba(31, 95, 91, 0.35);
+  background: linear-gradient(180deg, #ffffff 0%, #f1f7f4 100%);
+}
+
+.recommended-lesson-card,
+.course-card,
+.lesson-card,
+.record-link {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  text-align: left;
+}
+
+.recommended-lesson-card {
+  border-color: rgba(31, 95, 91, 0.35);
+}
+
+.course-card h3,
+.lesson-card h4,
+.recommended-lesson-card h3,
+.lesson-course-block h3 {
+  margin: 0;
+  line-height: 1.35;
+}
+
+.course-card p,
+.lesson-card p,
+.recommended-lesson-card p {
+  margin: 0;
+}
+
+.curriculum-list,
+.lesson-list,
+.record-links {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px 16px;
+}
+
+.lesson-course-block {
+  display: grid;
+  gap: 8px;
+}
+
+.lesson-course-block + .lesson-course-block {
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.lesson-detail-area {
+  margin-bottom: 20px;
+}
+
+.lesson-section {
+  padding: 16px;
+}
+
+.lesson-section .panel-heading.flush {
+  padding: 0 0 12px;
+}
+
+.lesson-section h3,
+.lesson-section h4 {
+  margin: 0 0 10px;
+  line-height: 1.35;
+}
+
+.lesson-section p {
+  margin: 0 0 12px;
+  line-height: 1.85;
+}
+
+.lesson-point-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 20px;
+}
+
+.confusing-list,
+.trap-list,
+.penalty-list {
+  border-color: rgba(184, 111, 42, 0.38);
+}
+
+.trap-list {
+  background: #fff8f1;
+}
+
+.penalty-list {
+  background: #fffdf5;
+}
+
+.question-list {
+  display: grid;
+  gap: 14px;
+}
+
+.question-card {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfa;
+}
+
+.question-head,
+.choice-list {
+  display: grid;
+  gap: 8px;
+}
+
+.question-head {
+  grid-template-columns: repeat(2, max-content);
+}
+
+.question-text {
+  font-weight: 800;
+}
+
+.choice-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.answer-box {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+}
+
+.answer-box.is-correct {
+  background: #eef8f2;
+  border-color: #b8dec8;
+}
+
+.answer-box.is-wrong {
+  background: #fff0ec;
+  border-color: #efc5ba;
+}
+
+.trap-note {
+  margin: 0;
+  padding: 10px;
+  border-left: 4px solid var(--accent);
+  background: #fff8ec;
+  font-weight: 700;
+}
+
+.understanding-box {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.record-link {
+  color: inherit;
+}
+
+.record-link span {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.log-detail-fields {
+  grid-column: 1 / -1;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  padding: 10px;
+  background: #fbfcfa;
+}
+
+.log-detail-fields summary {
+  cursor: pointer;
+  color: var(--primary-dark);
+  font-weight: 800;
+}
+
+.log-detail-fields .practice-fieldset {
+  margin-top: 10px;
+  border: 0;
+  padding: 0;
+}
+
+@media (min-width: 900px) {
+  .learning-layout {
+    grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
+    align-items: start;
+  }
+
+  .learning-side,
+  .lesson-reader-side {
+    position: sticky;
+    top: 88px;
+  }
+
+  .lesson-reader {
+    grid-template-columns: minmax(260px, 0.32fr) minmax(0, 0.68fr);
+    align-items: start;
+  }
+
+  .curriculum-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }

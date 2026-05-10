@@ -1,4 +1,4 @@
-const APP_VERSION = "v0.8";
+const APP_VERSION = "v0.9";
 const STORAGE_KEYS = {
   units: "tsukanYobiko.units",
   version: "tsukanYobiko.version",
@@ -6,7 +6,8 @@ const STORAGE_KEYS = {
   pastExamLogs: "tsukanYobiko.pastExamLogs",
   practicalLogs: "tsukanYobiko.practicalLogs",
   aiAnalyses: "tsukanYobiko.aiAnalyses",
-  studyPlans: "tsukanYobiko.studyPlans"
+  studyPlans: "tsukanYobiko.studyPlans",
+  curriculumProgress: "tsukanYobiko.curriculumProgress"
 };
 
 const LEVELS = ["未判定", "A", "B", "C"];
@@ -84,7 +85,7 @@ const AI_PROMPT_TYPES = [
   "過去問分析",
   "総合学習相談"
 ];
-const AI_TARGET_TYPES = ["単元", "演習ログ", "過去問ログ", "実務ログ", "復習対象", "全体サマリー"];
+const AI_TARGET_TYPES = ["単元", "レッスン", "演習ログ", "過去問ログ", "実務ログ", "復習対象", "全体サマリー"];
 const STUDY_DURATIONS = ["15分", "30分", "1時間", "2時間", "じっくり"];
 const AI_ANALYSIS_POINTS = {
   "回答添削": ["結論は合っているか", "理由づけは正しいか", "用語の使い方は正しいか", "条文・制度理解にズレはないか", "本試験ならどこで失点しそうか", "より良い回答にするにはどう修正すべきか"],
@@ -103,6 +104,187 @@ const AI_OUTPUT_FORMATS = {
   "復習指示": ["最優先", "通常復習", "余裕があれば", "30分メニュー", "1時間メニュー"]
 };
 
+const CURRICULUM_STATUS = ["未着手", "学習中", "完了", "復習中"];
+const CURRICULUM_UNDERSTANDING = ["未判定", "A", "B", "C"];
+
+function makeQuestion(id, question, choices, answer, explanation, trapExplanation, weaknessTag, type = "single") {
+  return { id, type, question, choices, answer, explanation, trapExplanation, weaknessTag };
+}
+
+function makeLesson({
+  id,
+  courseId,
+  subject,
+  title,
+  order,
+  level = "基礎",
+  estimatedMinutes = 15,
+  relatedUnitId = "",
+  intro,
+  goal,
+  lecture,
+  keyPoints,
+  confusingPoints,
+  traps,
+  examTips,
+  penaltyTips = [],
+  miniSummary,
+  questions
+}) {
+  return { id, courseId, subject, title, order, level, estimatedMinutes, relatedUnitId, intro, goal, lecture, keyPoints, confusingPoints, traps, examTips, penaltyTips, miniSummary, questions };
+}
+
+const CURRICULUM_COURSES = [
+  {
+    id: "course-tsukangyoho-basic",
+    title: "通関業法 基礎編",
+    subject: "通関業法",
+    description: "通関業法の目的、許可、欠格事由、義務、処分・罰則の区別を学ぶ基礎講座",
+    order: 1,
+    lessonIds: [
+      "lesson-tsukangyoho-purpose",
+      "lesson-tsukangyoho-permission",
+      "lesson-tsukangyoho-disqualification",
+      "lesson-tsukangyoho-duties",
+      "lesson-tsukangyoho-credit-penalty-trap",
+      "lesson-tsukangyoho-books-notices",
+      "lesson-tsukangyoho-sanctions-penalties"
+    ]
+  },
+  {
+    id: "course-kanzeihou-intro",
+    title: "関税法等 入門編",
+    subject: "関税法等",
+    description: "輸出入通関、保税、課税価格の入口を、手続の流れと混同ポイントから学ぶ講座",
+    order: 2,
+    lessonIds: [
+      "lesson-kanzeihou-flow",
+      "lesson-kanzeihou-import-declaration",
+      "lesson-kanzeihou-bonded-area",
+      "lesson-kanzeihou-bonded-transport",
+      "lesson-kanzeihou-customs-value"
+    ]
+  },
+  {
+    id: "course-practical-intro",
+    title: "通関実務 入門編",
+    subject: "通関実務",
+    description: "申告書、品目分類、課税価格計算、時間配分を実務問題の入口として学ぶ講座",
+    order: 3,
+    lessonIds: [
+      "lesson-practical-overview",
+      "lesson-practical-declaration",
+      "lesson-practical-classification",
+      "lesson-practical-customs-value",
+      "lesson-practical-time-management"
+    ]
+  }
+];
+
+function makeStandardLesson(id, courseId, subject, title, order, relatedUnitId, focus, traps) {
+  return makeLesson({
+    id,
+    courseId,
+    subject,
+    title,
+    order,
+    relatedUnitId,
+    intro: `${title}では、条文や手続の名前を覚えるだけでなく、誰が、いつ、何をしなければならないかを整理します。`,
+    goal: `${focus}を説明でき、似た制度との違いを選択肢で判断できる状態を目標にします。`,
+    lecture: `${subject}の${title}は、本試験では用語そのものよりも、主体、手続、効果、例外の入れ替えで問われます。まず制度の目的を押さえ、次に義務や手続の発生場面を確認します。許可、承認、届出、報告、罰則、処分は同じ「制限」ではありません。許可は事前に認めてもらう仕組み、承認は個別行為を認めてもらう仕組み、届出や報告は事実を知らせる仕組みです。選択肢では、この区別をずらして誤りにする形が多くなります。`,
+    keyPoints: [
+      `${focus}の主体を先に決める`,
+      "許可・承認・届出・報告を同じものとして扱わない",
+      "禁止や義務と、処分・罰則の有無を分ける"
+    ],
+    confusingPoints: [
+      "主体が通関業者なのか、通関士なのか、税関長なのか",
+      "事前の許可・承認と、事後の届出・報告",
+      "違反時の監督処分・懲戒処分・罰則"
+    ],
+    traps,
+    examTips: [
+      "「必ず」「直ちに」「罰金に処せられる」など断定語を確認する",
+      "似た制度の語句が混ぜられていないか確認する",
+      "手続の相手方と時期をセットで見る"
+    ],
+    penaltyTips: ["義務規定があることと、罰則が直結することは別に判断します。"],
+    miniSummary: `${title}は、制度の名前ではなく、主体・手続・効果の3点セットで読むとひっかけに強くなります。`,
+    questions: [
+      makeQuestion("q1", `${title}では、制度名だけでなく主体と手続時期を確認する必要がある。`, ["正しい", "誤り"], "正しい", "通関士試験では、主体や時期の入れ替えが誤り選択肢になりやすいため正しいです。", "用語暗記だけで判断させる選択肢に注意します。", "主体の混同", "truefalse"),
+      makeQuestion("q2", "許可・承認・届出・報告は、いずれも同じ法的意味を持つため、選択肢では置き換えてよい。", ["正しい", "誤り"], "誤り", "許可、承認、届出、報告は制度上の意味が異なります。置き換えられていたら誤りの可能性があります。", "「手続っぽい語なら同じ」と読ませるひっかけです。", "許可・承認・届出の混同", "truefalse"),
+      makeQuestion("q3", "義務に違反した場合の効果を判断するとき、最初に見るべきものはどれか。", ["問題文の語感", "義務の主体と違反効果", "科目名", "学習した順番"], "義務の主体と違反効果", "義務の主体、違反時の処分・懲戒・罰則のどれに結びつくかを分けて確認します。", "禁止されている行為だから必ず罰則、とは限りません。", "罰則")
+    ]
+  });
+}
+
+const CURRICULUM_LESSONS = [
+  makeStandardLesson("lesson-tsukangyoho-purpose", "course-tsukangyoho-basic", "通関業法", "通関業法の目的・定義", 1, "u001", "通関業法の目的と主要な定義", ["通関業務と関連業務を混同する", "通関業者と通関士を同じ主体として読む", "制度趣旨を罰則の話に飛ばす"]),
+  makeStandardLesson("lesson-tsukangyoho-permission", "course-tsukangyoho-basic", "通関業法", "通関業の許可", 2, "u002", "通関業を営むための許可制度", ["許可権者を入れ替える", "営業所ごとの手続と業者全体の許可を混同する", "許可と届出を置き換える"]),
+  makeStandardLesson("lesson-tsukangyoho-disqualification", "course-tsukangyoho-basic", "通関業法", "欠格事由", 3, "u003", "欠格事由の対象者と期間", ["本人と役員の対象範囲をずらす", "期間制限を長短で入れ替える", "許可要件と欠格事由を混同する"]),
+  makeStandardLesson("lesson-tsukangyoho-duties", "course-tsukangyoho-basic", "通関業法", "通関業者・通関士の義務", 4, "u004", "通関業者と通関士に課される義務", ["秘密保持義務と信用失墜行為を混同する", "通関士だけの義務にする", "名義貸し禁止と罰則の関係を雑に読む"]),
+  makeLesson({
+    id: "lesson-tsukangyoho-credit-penalty-trap",
+    courseId: "course-tsukangyoho-basic",
+    subject: "通関業法",
+    title: "信用失墜行為と罰則トラップ",
+    order: 5,
+    level: "基礎",
+    estimatedMinutes: 18,
+    relatedUnitId: "u004",
+    intro: "信用失墜行為の禁止は、通関業法の義務規定の中でも、罰則との混同を狙われやすい論点です。",
+    goal: "第20条の対象者、禁止内容、罰金刑に直結しない点を分けて判断できるようにします。",
+    lecture: "通関業法20条は、信用失墜行為の禁止を定める規定です。対象は、通関業者、法人である通関業者の役員、通関士です。これらの者は、通関業者の信用又は品位を害するような行為をしてはならないとされています。\n\nここで重要なのは、禁止されていることと、直ちに罰金刑に処せられることは別だという点です。第20条違反そのものが罰金刑に直結するわけではありません。本試験では「法人の役員が品位を害する行為をした場合は罰金の刑に処せられることがある」のように、対象者としては含まれる事実と、罰則直結ではない事実を混ぜて誤り選択肢にします。\n\n義務規定、監督処分、懲戒処分、罰則は必ず分けて理解します。信用失墜行為は禁止されていますが、その違反効果を読むときは、通関業者への監督処分、通関士への懲戒処分、刑罰規定の有無を別々に確認します。",
+    keyPoints: [
+      "対象者は通関業者、法人である通関業者の役員、通関士",
+      "禁止内容は信用又は品位を害する行為",
+      "第20条違反そのものは罰金刑に直結しない"
+    ],
+    confusingPoints: [
+      "信用失墜行為",
+      "秘密保持義務",
+      "名義貸し禁止",
+      "監督処分",
+      "懲戒処分",
+      "罰則"
+    ],
+    traps: [
+      "罰金の刑に処せられることがある",
+      "法人の役員は対象外",
+      "通関士だけが対象",
+      "品位ではなく利益を害する行為",
+      "義務規定なら必ず罰則がある"
+    ],
+    examTips: [
+      "対象者として含まれるか、罰則があるかを別々に判定する",
+      "「禁止される」と「罰金刑」は同時に判断しない",
+      "監督処分・懲戒処分・罰則の語を見たら条文上の効果を確認する"
+    ],
+    penaltyTips: [
+      "第20条は義務規定であり、違反そのものが罰金刑に直結する規定ではありません。",
+      "罰則トラップでは、禁止規定を見せてから刑罰を断定する表現が狙われます。"
+    ],
+    miniSummary: "第20条は対象者と禁止内容を押さえたうえで、罰金刑に直結しない点を強く区別します。",
+    questions: [
+      makeQuestion("q1", "法人である通関業者の役員が、通関業法第20条に規定する通関業者の品位を害するような行為をした場合は、罰金の刑に処せられることがある。", ["正しい", "誤り"], "誤り", "法人である通関業者の役員も信用失墜行為の禁止の対象にはなります。しかし、第20条違反そのものに罰金刑が直結するわけではありません。試験では、義務規定と罰則を混同させる選択肢に注意します。", "対象者には含まれる、しかし罰金刑直結ではない、という二段階判断を崩すひっかけです。", "罰則", "truefalse"),
+      makeQuestion("q2", "通関業法20条の信用失墜行為の禁止の対象に含まれるものとして最も適切な組み合わせはどれか。", ["通関士だけ", "通関業者、法人である通関業者の役員、通関士", "輸入者だけ", "税関職員だけ"], "通関業者、法人である通関業者の役員、通関士", "第20条は通関業者、法人である通関業者の役員、通関士を対象にします。", "「通関士だけ」「役員は対象外」と狭くする表現に注意します。", "主体の混同"),
+      makeQuestion("q3", "信用失墜行為の禁止を学ぶとき、最も危険な読み方はどれか。", ["対象者を確認する", "禁止内容を確認する", "義務規定なら必ず罰金刑があると読む", "監督処分・懲戒処分・罰則を分ける"], "義務規定なら必ず罰金刑があると読む", "義務規定と罰則は別です。禁止されていても、罰金刑が直結するとは限りません。", "「禁止されるなら罰則」と短絡させるのが典型的な罰則トラップです。", "罰則")
+    ]
+  }),
+  makeStandardLesson("lesson-tsukangyoho-books-notices", "course-tsukangyoho-basic", "通関業法", "記帳・届出・報告", 6, "u005", "継続的な記帳、届出、報告義務", ["保存と提出を混同する", "届出と許可を置き換える", "報告徴求と任意のメモを混同する"]),
+  makeStandardLesson("lesson-tsukangyoho-sanctions-penalties", "course-tsukangyoho-basic", "通関業法", "監督処分・懲戒処分・罰則の区別", 7, "u004", "監督処分、懲戒処分、罰則の違い", ["通関業者への監督処分と通関士への懲戒処分を混同する", "行政上の処分と刑罰を同じものとして読む", "処分の主体を入れ替える"]),
+  makeStandardLesson("lesson-kanzeihou-flow", "course-kanzeihou-intro", "関税法等", "輸出入通関の全体像", 1, "u008", "輸出入通関の流れ", ["申告、審査、検査、納税、許可の順序を混同する", "輸出と輸入の要件を入れ替える", "保税地域との関係を飛ばす"]),
+  makeStandardLesson("lesson-kanzeihou-import-declaration", "course-kanzeihou-intro", "関税法等", "輸入申告と輸入の許可", 2, "u008", "輸入申告から許可までの基本", ["申告と許可を同一視する", "納税と許可の関係を単純化する", "必要書類の位置づけをずらす"]),
+  makeStandardLesson("lesson-kanzeihou-bonded-area", "course-kanzeihou-intro", "関税法等", "保税地域の基本", 3, "u006", "保税地域の種類と機能", ["保税蔵置場と保税工場を混同する", "外国貨物と内国貨物を混同する", "置く場所と行える作業を入れ替える"]),
+  makeStandardLesson("lesson-kanzeihou-bonded-transport", "course-kanzeihou-intro", "関税法等", "保税運送の基本", 4, "u007", "保税運送の承認と運送管理", ["承認と届出を置き換える", "運送期間や到着確認を落とす", "外国貨物のまま運ぶ意味を忘れる"]),
+  makeStandardLesson("lesson-kanzeihou-customs-value", "course-kanzeihou-intro", "関税法等", "課税価格の基本", 5, "u010", "課税価格の基本構造", ["現実支払価格と課税価格を完全同一視する", "加算要素と控除要素を入れ替える", "代替評価方法の順序を無視する"]),
+  makeStandardLesson("lesson-practical-overview", "course-practical-intro", "通関実務", "通関実務の全体像", 1, "u012", "実務問題の全体像", ["申告書、分類、計算を別々に解きすぎる", "資料読み取りの前提を飛ばす", "時間配分を記録しない"]),
+  makeStandardLesson("lesson-practical-declaration", "course-practical-intro", "通関実務", "申告書作成の基本", 2, "u012", "申告書欄の意味と入力判断", ["欄の意味を暗記だけで処理する", "インボイス情報の転記ミス", "税額計算とのつながりを切る"]),
+  makeStandardLesson("lesson-practical-classification", "course-practical-intro", "通関実務", "品目分類の基本", 3, "u011", "品目分類の判断手順", ["見た目だけで分類する", "部注・類注・通則の順序を飛ばす", "統計品目番号と税番を雑に扱う"]),
+  makeStandardLesson("lesson-practical-customs-value", "course-practical-intro", "通関実務", "課税価格計算の基本", 4, "u010", "課税価格計算の入口", ["加算要素を落とす", "控除要素を加算する", "為替換算と端数処理を雑に行う"]),
+  makeStandardLesson("lesson-practical-time-management", "course-practical-intro", "通関実務", "実務問題の時間配分", 5, "u012", "実務問題の時間配分", ["難問に時間を使い切る", "見直し時間を確保しない", "分類と計算の順序を固定しすぎる"])
+];
+
 const state = {
   units: [],
   practiceLogs: [],
@@ -110,9 +292,11 @@ const state = {
   practicalLogs: [],
   aiAnalyses: [],
   studyPlans: [],
+  curriculumProgress: [],
   todayMenu: null,
   activeView: "home",
   activeUnitId: null,
+  activeLessonId: null,
   activeTab: "basic",
   filters: {
     search: "",
@@ -462,6 +646,7 @@ function loadState() {
   state.practicalLogs = normalizeArray(readJson(STORAGE_KEYS.practicalLogs)).map(normalizePracticalLog);
   state.aiAnalyses = normalizeArray(readJson(STORAGE_KEYS.aiAnalyses)).map(normalizeAiAnalysis);
   state.studyPlans = normalizeArray(readJson(STORAGE_KEYS.studyPlans)).map(normalizeStudyPlan);
+  state.curriculumProgress = normalizeArray(readJson(STORAGE_KEYS.curriculumProgress)).map(normalizeCurriculumProgress);
   localStorage.setItem(STORAGE_KEYS.version, APP_VERSION);
 }
 
@@ -602,6 +787,31 @@ function normalizeStudyPlan(item) {
   return normalized;
 }
 
+function normalizeCurriculumProgress(item) {
+  const normalized = {
+    lessonId: "",
+    status: "未着手",
+    startedAt: "",
+    completedAt: "",
+    lastStudiedAt: "",
+    questionResults: [],
+    understanding: "未判定",
+    reviewNeeded: false,
+    ...(item || {})
+  };
+  if (!getLessonById(normalized.lessonId)) normalized.lessonId = String(normalized.lessonId || "");
+  if (!CURRICULUM_STATUS.includes(normalized.status)) normalized.status = "未着手";
+  if (!CURRICULUM_UNDERSTANDING.includes(normalized.understanding)) normalized.understanding = "未判定";
+  normalized.questionResults = normalizeArray(normalized.questionResults).map((result) => ({
+    questionId: String(result?.questionId || ""),
+    userAnswer: String(result?.userAnswer || ""),
+    correct: Boolean(result?.correct),
+    answeredAt: result?.answeredAt || ""
+  })).filter((result) => result.questionId);
+  normalized.reviewNeeded = Boolean(normalized.reviewNeeded || ["B", "C"].includes(normalized.understanding));
+  return normalized;
+}
+
 function makeBlankUnit() {
   return {
     id: "",
@@ -678,6 +888,7 @@ function saveUnits() {
   localStorage.setItem(STORAGE_KEYS.practicalLogs, JSON.stringify(state.practicalLogs));
   localStorage.setItem(STORAGE_KEYS.aiAnalyses, JSON.stringify(state.aiAnalyses));
   localStorage.setItem(STORAGE_KEYS.studyPlans, JSON.stringify(state.studyPlans));
+  localStorage.setItem(STORAGE_KEYS.curriculumProgress, JSON.stringify(state.curriculumProgress));
   localStorage.setItem(STORAGE_KEYS.version, APP_VERSION);
 }
 
@@ -787,6 +998,131 @@ function getWeaknessCount(unit) {
   return Array.isArray(unit.ai?.weaknessTags) ? unit.ai.weaknessTags.length : 0;
 }
 
+function getLessonById(lessonId) {
+  return CURRICULUM_LESSONS.find((lesson) => lesson.id === lessonId);
+}
+
+function getCourseById(courseId) {
+  return CURRICULUM_COURSES.find((course) => course.id === courseId);
+}
+
+function getLessonsByCourse(courseId) {
+  const course = getCourseById(courseId);
+  const ids = course?.lessonIds || [];
+  return CURRICULUM_LESSONS
+    .filter((lesson) => lesson.courseId === courseId)
+    .sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id) || a.order - b.order);
+}
+
+function getLessonProgress(lessonId) {
+  let progress = state.curriculumProgress.find((item) => item.lessonId === lessonId);
+  if (!progress) {
+    progress = normalizeCurriculumProgress({ lessonId });
+    state.curriculumProgress.push(progress);
+  }
+  return progress;
+}
+
+function touchLessonProgress(lessonId) {
+  const progress = getLessonProgress(lessonId);
+  const now = new Date().toISOString();
+  if (!progress.startedAt) progress.startedAt = now;
+  if (progress.status === "未着手") progress.status = "学習中";
+  progress.lastStudiedAt = now;
+  saveUnits();
+  return progress;
+}
+
+function getLessonQuestionResult(lessonId, questionId) {
+  const progress = getLessonProgress(lessonId);
+  return progress.questionResults.find((result) => result.questionId === questionId);
+}
+
+function calculateLessonUnderstanding(lesson, progress) {
+  const answered = lesson.questions.filter((question) => progress.questionResults.some((result) => result.questionId === question.id));
+  if (!answered.length) return "未判定";
+  const correct = lesson.questions.filter((question) => progress.questionResults.some((result) => result.questionId === question.id && result.correct)).length;
+  if (correct === 3) return "A";
+  if (correct === 2) return "B";
+  return "C";
+}
+
+function updateLessonUnderstanding(lessonId) {
+  const lesson = getLessonById(lessonId);
+  const progress = getLessonProgress(lessonId);
+  if (!lesson) return progress;
+  progress.understanding = calculateLessonUnderstanding(lesson, progress);
+  progress.reviewNeeded = ["B", "C"].includes(progress.understanding) || progress.reviewNeeded;
+  return progress;
+}
+
+function getCurriculumStats() {
+  const total = CURRICULUM_LESSONS.length;
+  const progresses = CURRICULUM_LESSONS.map((lesson) => getLessonProgress(lesson.id));
+  const countBy = (key, values) => values.reduce((acc, value) => ({ ...acc, [value]: progresses.filter((item) => item[key] === value).length }), {});
+  const completed = progresses.filter((item) => item.status === "完了").length;
+  const reviewLessons = getReviewLessons();
+  return {
+    total,
+    completed,
+    rate: total ? Math.round((completed / total) * 100) : 0,
+    statusCounts: countBy("status", CURRICULUM_STATUS),
+    understandingCounts: countBy("understanding", CURRICULUM_UNDERSTANDING),
+    reviewCount: reviewLessons.length,
+    nextLesson: getRecommendedLesson(),
+    recentWrong: getRecentWrongLessonQuestions()
+  };
+}
+
+function getReviewLessons() {
+  return CURRICULUM_LESSONS
+    .map((lesson) => ({ lesson, progress: getLessonProgress(lesson.id), reason: getLessonReviewReason(lesson.id) }))
+    .filter(({ progress }) => progress.reviewNeeded || ["B", "C"].includes(progress.understanding) || progress.status === "復習中")
+    .sort((a, b) => {
+      const order = { C: 4, B: 3, "未判定": 2, A: 1 };
+      return (order[b.progress.understanding] || 0) - (order[a.progress.understanding] || 0) ||
+        (a.progress.lastStudiedAt || "").localeCompare(b.progress.lastStudiedAt || "") ||
+        a.lesson.order - b.lesson.order;
+    });
+}
+
+function getLessonReviewReason(lessonId) {
+  const progress = getLessonProgress(lessonId);
+  if (progress.understanding === "C") return "C判定のため最優先復習";
+  if (progress.understanding === "B") return "B判定のため確認復習";
+  if (progress.status === "復習中") return "復習中に設定済み";
+  if (progress.reviewNeeded) return "復習対象に設定済み";
+  return "定期確認";
+}
+
+function getRecommendedLesson() {
+  const review = getReviewLessons();
+  const cLesson = review.find((item) => item.progress.understanding === "C");
+  if (cLesson) return { ...cLesson, type: "レッスン復習" };
+  if (review[0]) return { ...review[0], type: "レッスン復習" };
+  const next = CURRICULUM_LESSONS
+    .map((lesson) => ({ lesson, progress: getLessonProgress(lesson.id), reason: "未着手の次レッスン", type: "レッスン学習" }))
+    .find(({ progress }) => progress.status === "未着手");
+  if (next) return next;
+  const old = CURRICULUM_LESSONS
+    .map((lesson) => ({ lesson, progress: getLessonProgress(lesson.id), reason: "最終学習日が古いレッスン", type: "レッスン復習" }))
+    .sort((a, b) => (a.progress.lastStudiedAt || "").localeCompare(b.progress.lastStudiedAt || ""));
+  return old[0] || null;
+}
+
+function getRecentWrongLessonQuestions() {
+  return CURRICULUM_LESSONS.flatMap((lesson) => {
+    const progress = getLessonProgress(lesson.id);
+    return progress.questionResults
+      .filter((result) => !result.correct)
+      .map((result) => ({
+        lesson,
+        result,
+        question: lesson.questions.find((question) => question.id === result.questionId)
+      }));
+  }).sort((a, b) => (b.result.answeredAt || "").localeCompare(a.result.answeredAt || "")).slice(0, 5);
+}
+
 function getTodayPlan() {
   const date = todayString();
   let plan = state.studyPlans.find((item) => item.date === date);
@@ -838,11 +1174,13 @@ function generateTodayMenu(duration = "30分") {
     });
   }
   const limits = getDurationLimits(duration);
+  const lessonItems = buildTodayLessonItems();
   const unitItems = buildTodayUnitItems();
   const practiceItems = buildTodayPracticeItems().slice(0, limits.practice);
   const pastExamItems = buildTodayPastExamItems().slice(0, limits.past);
   const practicalItems = buildTodayPracticalItems().slice(0, limits.practical);
   const priorityItems = uniqueTodayItems([
+    ...lessonItems.filter((item) => item.priority === "最優先"),
     ...unitItems.filter((item) => item.priority === "最優先"),
     ...practiceItems.filter((item) => item.priority === "高"),
     ...pastExamItems.filter((item) => item.priority === "高"),
@@ -862,6 +1200,7 @@ function generateTodayMenu(duration = "30分") {
   const recommended = uniqueTodayItems([
     ...manualItems,
     ...priorityItems,
+    ...lessonItems,
     ...pastExamItems,
     ...practicalItems,
     ...practiceItems,
@@ -869,8 +1208,43 @@ function generateTodayMenu(duration = "30分") {
     ...aiItems,
     ...unitItems
   ]).slice(0, limits.total);
-  const allItems = uniqueTodayItems([...recommended, ...manualItems, ...priorityItems, ...practiceItems, ...pastExamItems, ...practicalItems, ...weaknessItems, ...aiItems]);
-  return { duration, date: plan.date, plan, recommended, priorityItems, practiceItems, pastExamItems, practicalItems, weaknessItems, aiItems, manualItems, allItems };
+  const allItems = uniqueTodayItems([...recommended, ...manualItems, ...priorityItems, ...lessonItems, ...practiceItems, ...pastExamItems, ...practicalItems, ...weaknessItems, ...aiItems]);
+  return { duration, date: plan.date, plan, recommended, priorityItems, lessonItems, practiceItems, pastExamItems, practicalItems, weaknessItems, aiItems, manualItems, allItems };
+}
+
+function buildTodayLessonItems() {
+  const items = [];
+  const reviewItems = getReviewLessons().map(({ lesson, progress, reason }) => makeTodayMenuItem({
+    id: `lesson-${lesson.id}`,
+    type: "レッスン復習",
+    title: lesson.title,
+    description: `${lesson.subject} / ${lesson.estimatedMinutes}分 / 理解度 ${progress.understanding}`,
+    reason,
+    priority: progress.understanding === "C" ? "最優先" : "高",
+    priorityScore: progress.understanding === "C" ? 90 : 70,
+    estimatedMinutes: lesson.estimatedMinutes,
+    relatedUnitId: lesson.relatedUnitId,
+    relatedLessonId: lesson.id
+  }));
+  items.push(...reviewItems);
+  const next = CURRICULUM_LESSONS.find((lesson) => getLessonProgress(lesson.id).status === "未着手");
+  if (next) {
+    const unitRisk = next.relatedUnitId ? scoreUnitRisk(state.units.find((unit) => unit.id === next.relatedUnitId) || makeBlankUnit()).score : 0;
+    const trapBoost = next.traps.some((trap) => /罰則|処分|許可|承認|届出/.test(trap)) ? 12 : 0;
+    items.push(makeTodayMenuItem({
+      id: `lesson-${next.id}`,
+      type: "レッスン学習",
+      title: next.title,
+      description: `${next.subject} / ${next.estimatedMinutes}分 / 理解度 ${getLessonProgress(next.id).understanding}`,
+      reason: unitRisk >= 25 ? "関連単元の危険度が高い未着手レッスン" : trapBoost ? "混同しやすいレッスン" : "未着手の次レッスン",
+      priority: unitRisk >= 25 ? "高" : "中",
+      priorityScore: 50 + unitRisk + trapBoost,
+      estimatedMinutes: next.estimatedMinutes,
+      relatedUnitId: next.relatedUnitId,
+      relatedLessonId: next.id
+    }));
+  }
+  return uniqueTodayItems(items).slice(0, 6);
 }
 
 function buildTodayUnitItems() {
@@ -1042,6 +1416,7 @@ function render() {
   state.todayMenu = generateTodayMenu(getTodayPlan().selectedDuration);
   renderDashboard();
   renderTodayView();
+  renderLearningView();
   renderFilters();
   renderUnitList();
   renderPracticeView();
@@ -1053,6 +1428,9 @@ function render() {
   renderSettings();
   if (state.activeUnitId) {
     renderUnitDetail();
+  }
+  if (state.activeLessonId) {
+    renderLessonDetail();
   }
 }
 
@@ -1076,6 +1454,7 @@ function renderDashboard() {
     .join("");
 
   renderHomeTodaySummary();
+  renderHomeCurriculumSummary();
 
   const last = [...state.units].filter((unit) => unit.updatedAt).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0];
   document.querySelector("#lastUpdatedUnit").innerHTML = last
@@ -1240,6 +1619,39 @@ function renderHomeTodaySummary() {
   `;
 }
 
+function renderHomeCurriculumSummary() {
+  const stats = getCurriculumStats();
+  const next = stats.nextLesson;
+  document.querySelector("#homeCurriculumSummary").innerHTML = `
+    <dl class="summary-list">
+      <div><dt>総レッスン数</dt><dd>${stats.total}</dd></div>
+      <div><dt>完了レッスン数</dt><dd>${stats.completed}</dd></div>
+      <div><dt>進捗率</dt><dd>${stats.rate}%</dd></div>
+      <div><dt>復習対象</dt><dd>${stats.reviewCount}</dd></div>
+    </dl>
+    <div class="progress-bar" aria-label="カリキュラム進捗"><span style="width:${stats.rate}%"></span></div>
+    <div class="mini-list">
+      <p class="muted mini-list-title">次に学ぶレッスン</p>
+      ${next ? `
+        <button class="compact-item ghost-button" type="button" data-open-lesson="${escapeAttribute(next.lesson.id)}">
+          <span>${escapeHtml(next.lesson.title)}</span>
+          <span>${escapeHtml(next.lesson.subject)}</span>
+        </button>
+      ` : `<p class="muted">レッスン候補はありません。</p>`}
+      <p class="muted mini-list-title">最近間違えた確認問題</p>
+      ${stats.recentWrong.length ? stats.recentWrong.slice(0, 3).map((item) => `
+        <div class="mini-item">
+          <span>${escapeHtml(item.lesson.title)}</span>
+          <small>${escapeHtml(item.question?.weaknessTag || "弱点タグなし")}</small>
+        </div>
+      `).join("") : `<p class="muted">確認問題の誤答はありません。</p>`}
+    </div>
+    <div class="form-actions">
+      <button class="primary-button" type="button" data-open-learning>学習を始める</button>
+    </div>
+  `;
+}
+
 function renderTodayView() {
   const plan = getTodayPlan();
   const menu = state.todayMenu || generateTodayMenu(plan.selectedDuration);
@@ -1255,6 +1667,7 @@ function renderTodayView() {
       <div><dt>選択時間</dt><dd>${escapeHtml(menu.duration)}</dd></div>
       <div><dt>推定時間</dt><dd>${menu.recommended.reduce((sum, item) => sum + item.estimatedMinutes, 0)}分</dd></div>
       <div><dt>最優先復習</dt><dd>${menu.priorityItems.length}件</dd></div>
+      <div><dt>レッスン</dt><dd>${menu.lessonItems.length}件</dd></div>
       <div><dt>ログ見直し</dt><dd>${menu.practiceItems.length + menu.pastExamItems.length + menu.practicalItems.length}件</dd></div>
     </dl>
   `;
@@ -1299,6 +1712,7 @@ function todayMenuCard(item, compact = false) {
         <div><dt>推定時間</dt><dd>${item.estimatedMinutes}分</dd></div>
       </dl>
       <div class="card-actions">
+        ${item.relatedLessonId ? `<button class="primary-button" type="button" data-open-lesson="${escapeAttribute(item.relatedLessonId)}">開く</button>` : ""}
         ${item.relatedUnitId ? `<button class="ghost-button" type="button" data-open-unit="${escapeAttribute(item.relatedUnitId)}">開く</button>` : ""}
         ${item.relatedLogId ? `<button class="ghost-button" type="button" data-open-today-log="${escapeAttribute(item.type)}:${escapeAttribute(item.relatedLogId)}">ログを開く</button>` : ""}
       </div>
@@ -1326,6 +1740,245 @@ function formatJapaneseDate(dateString) {
   if (Number.isNaN(date.getTime())) return dateString;
   const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
   return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日（${weekdays[date.getDay()]}）`;
+}
+
+function renderLearningView() {
+  const listArea = document.querySelector("#learningListArea");
+  const detailArea = document.querySelector("#lessonDetailArea");
+  const backButton = document.querySelector("#backToLearningButton");
+  const showingDetail = Boolean(state.activeLessonId);
+  listArea.classList.toggle("is-hidden", showingDetail);
+  detailArea.classList.toggle("is-hidden", !showingDetail);
+  backButton.classList.toggle("is-hidden", !showingDetail);
+  if (showingDetail) {
+    renderLessonDetail();
+    return;
+  }
+
+  const recommended = getRecommendedLesson();
+  document.querySelector("#recommendedLesson").innerHTML = recommended
+    ? renderRecommendedLesson(recommended)
+    : `<p class="muted">おすすめレッスンはありません。</p>`;
+
+  document.querySelector("#curriculumList").innerHTML = CURRICULUM_COURSES
+    .sort((a, b) => a.order - b.order)
+    .map(renderCourseCard)
+    .join("");
+
+  document.querySelector("#lessonList").innerHTML = CURRICULUM_COURSES
+    .sort((a, b) => a.order - b.order)
+    .map((course) => `
+      <div class="lesson-course-block">
+        <h3>${escapeHtml(course.title)}</h3>
+        ${getLessonsByCourse(course.id).map(renderLessonListCard).join("")}
+      </div>
+    `).join("");
+
+  const stats = getCurriculumStats();
+  document.querySelector("#learningProgressSummary").innerHTML = `
+    <dl class="summary-list">
+      <div><dt>総レッスン</dt><dd>${stats.total}</dd></div>
+      <div><dt>完了</dt><dd>${stats.completed}</dd></div>
+      <div><dt>進捗率</dt><dd>${stats.rate}%</dd></div>
+      <div><dt>復習対象</dt><dd>${stats.reviewCount}</dd></div>
+      <div><dt>A/B/C/未判定</dt><dd>${stats.understandingCounts.A || 0}/${stats.understandingCounts.B || 0}/${stats.understandingCounts.C || 0}/${stats.understandingCounts["未判定"] || 0}</dd></div>
+      <div><dt>学習中</dt><dd>${stats.statusCounts["学習中"] || 0}</dd></div>
+    </dl>
+    <div class="progress-bar"><span style="width:${stats.rate}%"></span></div>
+  `;
+  const review = getReviewLessons().slice(0, 6);
+  document.querySelector("#learningReviewLessons").innerHTML = review.length
+    ? review.map(({ lesson, progress, reason }) => `
+      <button class="compact-item ghost-button" type="button" data-open-lesson="${escapeAttribute(lesson.id)}">
+        <span>${escapeHtml(lesson.title)}</span>
+        <span>${escapeHtml(progress.understanding)} / ${escapeHtml(reason)}</span>
+      </button>
+    `).join("")
+    : `<p class="muted">復習対象レッスンはありません。</p>`;
+}
+
+function renderRecommendedLesson(item) {
+  const progress = item.progress;
+  return `
+    <article class="recommended-lesson-card">
+      <div>
+        <p class="eyebrow">${escapeHtml(item.type || "おすすめ")}</p>
+        <h3>${escapeHtml(item.lesson.title)}</h3>
+        <p>${escapeHtml(item.lesson.subject)} / ${item.lesson.estimatedMinutes}分 / 理解度 ${escapeHtml(progress.understanding)}</p>
+        <p class="muted">${escapeHtml(item.reason || getLessonReviewReason(item.lesson.id))}</p>
+      </div>
+      <button class="primary-button" type="button" data-open-lesson="${escapeAttribute(item.lesson.id)}">レッスン開始</button>
+    </article>
+  `;
+}
+
+function renderCourseCard(course) {
+  const lessons = getLessonsByCourse(course.id);
+  const completed = lessons.filter((lesson) => getLessonProgress(lesson.id).status === "完了").length;
+  const rate = lessons.length ? Math.round((completed / lessons.length) * 100) : 0;
+  return `
+    <article class="course-card">
+      <div>
+        <p class="eyebrow">${escapeHtml(course.subject)}</p>
+        <h3>${escapeHtml(course.title)}</h3>
+        <p>${escapeHtml(course.description)}</p>
+      </div>
+      <dl class="review-facts">
+        <div><dt>レッスン数</dt><dd>${lessons.length}</dd></div>
+        <div><dt>完了</dt><dd>${completed}</dd></div>
+        <div><dt>進捗</dt><dd>${rate}%</dd></div>
+      </dl>
+      <div class="progress-bar"><span style="width:${rate}%"></span></div>
+    </article>
+  `;
+}
+
+function renderLessonListCard(lesson) {
+  const progress = getLessonProgress(lesson.id);
+  const correct = lesson.questions.filter((question) => progress.questionResults.some((result) => result.questionId === question.id && result.correct)).length;
+  return `
+    <article class="lesson-card">
+      <div>
+        <p class="eyebrow">${escapeHtml(lesson.subject)} / ${escapeHtml(lesson.level)}</p>
+        <h4>${escapeHtml(lesson.title)}</h4>
+        <p>${escapeHtml(lesson.goal)}</p>
+        <div class="badge-row">
+          <span class="badge">${escapeHtml(progress.status)}</span>
+          <span class="badge ${progress.understanding === "C" ? "priority" : progress.understanding === "B" ? "normal" : "ok"}">理解度 ${escapeHtml(progress.understanding)}</span>
+          ${progress.reviewNeeded ? `<span class="badge priority">復習対象</span>` : ""}
+        </div>
+      </div>
+      <dl class="review-facts compact">
+        <div><dt>目安</dt><dd>${lesson.estimatedMinutes}分</dd></div>
+        <div><dt>確認問題</dt><dd>${correct}/${lesson.questions.length}</dd></div>
+      </dl>
+      <div class="card-actions">
+        <button class="primary-button" type="button" data-open-lesson="${escapeAttribute(lesson.id)}">レッスン開始</button>
+      </div>
+    </article>
+  `;
+}
+
+function renderLessonDetail() {
+  const lesson = getLessonById(state.activeLessonId);
+  const detail = document.querySelector("#lessonDetailArea");
+  if (!lesson) {
+    detail.innerHTML = `<div class="empty-state"><p class="muted">レッスンが見つかりません。</p></div>`;
+    return;
+  }
+  const progress = getLessonProgress(lesson.id);
+  const nextLesson = getNextLesson(lesson.id);
+  const correct = lesson.questions.filter((question) => progress.questionResults.some((result) => result.questionId === question.id && result.correct)).length;
+  detail.innerHTML = `
+    <div class="lesson-reader">
+      <aside class="lesson-reader-side">
+        <section class="panel">
+          <div class="panel-heading"><h3>レッスン情報</h3></div>
+          <div class="compact-list">
+            <p class="eyebrow">${escapeHtml(lesson.subject)}</p>
+            <h3>${escapeHtml(lesson.title)}</h3>
+            <dl class="summary-list">
+              <div><dt>目安時間</dt><dd>${lesson.estimatedMinutes}分</dd></div>
+              <div><dt>状態</dt><dd>${escapeHtml(progress.status)}</dd></div>
+              <div><dt>理解度</dt><dd>${escapeHtml(progress.understanding)}</dd></div>
+              <div><dt>正答</dt><dd>${correct}/${lesson.questions.length}</dd></div>
+            </dl>
+            <div class="form-actions">
+              <button class="primary-button" type="button" data-complete-lesson="${escapeAttribute(lesson.id)}">レッスン完了</button>
+              <button class="ghost-button" type="button" data-review-lesson="${escapeAttribute(lesson.id)}">復習に回す</button>
+              <button class="ghost-button" type="button" data-ai-lesson="${escapeAttribute(lesson.id)}">このレッスンをAIに質問</button>
+              ${nextLesson ? `<button class="ghost-button" type="button" data-open-lesson="${escapeAttribute(nextLesson.id)}">次のレッスンへ進む</button>` : ""}
+            </div>
+          </div>
+        </section>
+      </aside>
+      <div class="lesson-reader-main">
+        <section class="panel lesson-section">
+          <p class="eyebrow">${escapeHtml(lesson.subject)} / ${escapeHtml(lesson.level)}</p>
+          <h3>${escapeHtml(lesson.title)}</h3>
+          <h4>学習目標</h4>
+          <p>${escapeHtml(lesson.goal)}</p>
+          <h4>導入</h4>
+          <p>${escapeHtml(lesson.intro)}</p>
+          <h4>講義本文</h4>
+          ${lesson.lecture.split("\n").filter(Boolean).map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join("")}
+        </section>
+        ${renderLessonListSection("重要ポイント", lesson.keyPoints, "key-point-list")}
+        ${renderLessonListSection("混同ポイント", lesson.confusingPoints, "confusing-list")}
+        ${renderLessonListSection("引っかけ注意", lesson.traps, "trap-list")}
+        ${renderLessonListSection("試験で狙われる表現", lesson.examTips, "exam-tip-list")}
+        ${renderLessonListSection("罰則・処分・手続の区別メモ", lesson.penaltyTips, "penalty-list")}
+        <section class="panel lesson-section"><h4>ミニまとめ</h4><p>${escapeHtml(lesson.miniSummary)}</p></section>
+        <section class="panel lesson-section">
+          <div class="panel-heading flush"><h3>確認問題</h3></div>
+          <div class="question-list">
+            ${lesson.questions.map((question, index) => renderLessonQuestion(lesson, question, index + 1)).join("")}
+          </div>
+          <div class="understanding-box">
+            <label>
+              理解度判定
+              <select data-lesson-understanding="${escapeAttribute(lesson.id)}">
+                ${CURRICULUM_UNDERSTANDING.map((value) => `<option value="${escapeAttribute(value)}" ${value === progress.understanding ? "selected" : ""}>${escapeHtml(value)}</option>`).join("")}
+              </select>
+            </label>
+            <p class="muted">3問正解:A / 2問正解:B / 0〜1問正解:C。B/Cは自動で復習対象になります。</p>
+          </div>
+        </section>
+      </div>
+    </div>
+  `;
+}
+
+function renderLessonListSection(title, items, className) {
+  return `
+    <section class="panel lesson-section ${className}">
+      <h4>${escapeHtml(title)}</h4>
+      <ul class="lesson-point-list">
+        ${items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
+      </ul>
+    </section>
+  `;
+}
+
+function renderLessonQuestion(lesson, question, index) {
+  const result = getLessonQuestionResult(lesson.id, question.id);
+  return `
+    <article class="question-card">
+      <div class="question-head">
+        <span class="badge">問${index}</span>
+        ${result ? `<span class="badge ${result.correct ? "ok" : "priority"}">${result.correct ? "正解" : "不正解"}</span>` : `<span class="badge">未回答</span>`}
+      </div>
+      <p class="question-text">${escapeHtml(question.question)}</p>
+      <div class="choice-list">
+        ${question.choices.map((choice) => `
+          <label class="choice-card">
+            <input type="radio" name="${escapeAttribute(lesson.id)}-${escapeAttribute(question.id)}" value="${escapeAttribute(choice)}" ${result?.userAnswer === choice ? "checked" : ""}>
+            <span>${escapeHtml(choice)}</span>
+          </label>
+        `).join("")}
+      </div>
+      <div class="card-actions">
+        <button class="primary-button" type="button" data-grade-question="${escapeAttribute(lesson.id)}:${escapeAttribute(question.id)}">採点する</button>
+      </div>
+      ${result ? `
+        <div class="answer-box ${result.correct ? "is-correct" : "is-wrong"}">
+          <strong>${result.correct ? "正解" : "不正解"}</strong>
+          <dl class="analysis-facts">
+            <div><dt>正答</dt><dd>${escapeHtml(question.answer)}</dd></div>
+            <div><dt>あなたの回答</dt><dd>${escapeHtml(result.userAnswer)}</dd></div>
+            <div><dt>関連弱点タグ</dt><dd>${escapeHtml(question.weaknessTag)}</dd></div>
+          </dl>
+          <p>${escapeHtml(question.explanation)}</p>
+          <p class="trap-note">${escapeHtml(question.trapExplanation)}</p>
+        </div>
+      ` : ""}
+    </article>
+  `;
+}
+
+function getNextLesson(lessonId) {
+  const index = CURRICULUM_LESSONS.findIndex((lesson) => lesson.id === lessonId);
+  return index >= 0 ? CURRICULUM_LESSONS[index + 1] : null;
 }
 
 function renderFilters() {
@@ -1631,19 +2284,30 @@ function practicalRankingCard(title, items) {
   `;
 }
 
+function renderLogFieldset(fieldset, index, renderField) {
+  const body = `
+    <fieldset class="practice-fieldset ${index > 0 ? "is-secondary" : ""}">
+      <legend>${escapeHtml(fieldset.title)}</legend>
+      <div class="form-grid">
+        ${fieldset.fields.map((field) => renderField(field)).join("")}
+      </div>
+    </fieldset>
+  `;
+  if (index === 0) return body;
+  return `
+    <details class="log-detail-fields">
+      <summary>${escapeHtml(fieldset.title)}を開く</summary>
+      ${body}
+    </details>
+  `;
+}
+
 function renderPracticalForm() {
   const editingLog = state.practicalLogs.find((log) => log.id === state.editingPracticalLogId);
   const log = editingLog || { ...blankPracticalLog, studiedAt: todayString() };
   document.querySelector("#practicalFormTitle").textContent = editingLog ? "実務ログを編集" : "実務ログを追加";
   document.querySelector("#practicalLogForm").innerHTML = `
-    ${practicalFieldsets.map((fieldset) => `
-      <fieldset class="practice-fieldset">
-        <legend>${escapeHtml(fieldset.title)}</legend>
-        <div class="form-grid">
-          ${fieldset.fields.map((field) => renderPracticalField(field, log)).join("")}
-        </div>
-      </fieldset>
-    `).join("")}
+    ${practicalFieldsets.map((fieldset, index) => renderLogFieldset(fieldset, index, (field) => renderPracticalField(field, log))).join("")}
     <div class="form-actions">
       <button class="primary-button" type="submit">${editingLog ? "実務ログを更新" : "実務ログを保存"}</button>
       ${editingLog ? `<button id="cancelPracticalEditButton" class="ghost-button" type="button">キャンセル</button>` : ""}
@@ -1848,8 +2512,62 @@ function renderAnalysisView() {
   document.querySelector("#analysisUnitRiskRanking").innerHTML = renderUnitRiskRanking(analysis.unitRisks);
   document.querySelector("#analysisPerformance").innerHTML = renderPerformanceAnalysis(analysis.performance);
   document.querySelector("#analysisPractical").innerHTML = renderPracticalAnalysis(analysis.performance.practical);
+  document.querySelector("#analysisCurriculum").innerHTML = renderCurriculumAnalysis();
   document.querySelector("#analysisRetryTargets").innerHTML = renderRetryTargets(analysis.retryTargets);
   document.querySelector("#analysisAiUsage").innerHTML = renderAiUsage(analysis.aiUsage);
+}
+
+function renderCurriculumAnalysis() {
+  const stats = getCurriculumStats();
+  const subjectRows = ANALYSIS_SUBJECTS
+    .filter((subject) => subject !== "未設定")
+    .map((subject) => {
+      const lessons = CURRICULUM_LESSONS.filter((lesson) => lesson.subject === subject);
+      const completed = lessons.filter((lesson) => getLessonProgress(lesson.id).status === "完了").length;
+      const cCount = lessons.filter((lesson) => getLessonProgress(lesson.id).understanding === "C").length;
+      return `${subject}:${completed}/${lessons.length}完了 C${cCount}`;
+    });
+  const trapLessons = CURRICULUM_LESSONS.filter((lesson) => lesson.traps.some((trap) => /罰則|処分|許可|承認|届出|主体/.test(trap)));
+  const trapAnswered = trapLessons.flatMap((lesson) => lesson.questions.map((question) => ({ lesson, question, result: getLessonQuestionResult(lesson.id, question.id) }))).filter((item) => item.result);
+  const trapCorrect = trapAnswered.filter((item) => item.result.correct).length;
+  const trapRate = trapAnswered.length ? `${Math.round((trapCorrect / trapAnswered.length) * 100)}%` : "未回答";
+  const cLessons = CURRICULUM_LESSONS.filter((lesson) => getLessonProgress(lesson.id).understanding === "C");
+  return `
+    <div class="analysis-card-grid two-col">
+      <article class="analysis-card">
+        <h4>カリキュラム進捗</h4>
+        <dl class="analysis-facts">
+          <div><dt>総レッスン数</dt><dd>${stats.total}</dd></div>
+          <div><dt>未着手/学習中/完了/復習中</dt><dd>${stats.statusCounts["未着手"] || 0}/${stats.statusCounts["学習中"] || 0}/${stats.statusCounts["完了"] || 0}/${stats.statusCounts["復習中"] || 0}</dd></div>
+          <div><dt>A/B/C/未判定</dt><dd>${stats.understandingCounts.A || 0}/${stats.understandingCounts.B || 0}/${stats.understandingCounts.C || 0}/${stats.understandingCounts["未判定"] || 0}</dd></div>
+          <div><dt>科目別レッスン進捗</dt><dd>${escapeHtml(subjectRows.join(" / "))}</dd></div>
+          <div><dt>復習対象レッスン数</dt><dd>${stats.reviewCount}</dd></div>
+          <div><dt>ひっかけ問題の正答率</dt><dd>${trapRate}</dd></div>
+        </dl>
+      </article>
+      <article class="analysis-card">
+        <h4>C判定レッスン一覧</h4>
+        ${cLessons.length ? cLessons.map((lesson) => `
+          <button class="compact-item ghost-button" type="button" data-open-lesson="${escapeAttribute(lesson.id)}">
+            <span>${escapeHtml(lesson.title)}</span>
+            <span>${escapeHtml(lesson.subject)}</span>
+          </button>
+        `).join("") : `<p class="muted">C判定レッスンはありません。</p>`}
+      </article>
+      <article class="analysis-card">
+        <h4>罰則・処分系レッスンの理解度</h4>
+        ${trapLessons.map((lesson) => {
+          const progress = getLessonProgress(lesson.id);
+          return `
+            <button class="compact-item ghost-button" type="button" data-open-lesson="${escapeAttribute(lesson.id)}">
+              <span>${escapeHtml(lesson.title)}</span>
+              <span>${escapeHtml(progress.understanding)}</span>
+            </button>
+          `;
+        }).join("")}
+      </article>
+    </div>
+  `;
 }
 
 function buildWeaknessAnalysis() {
@@ -2555,14 +3273,7 @@ function renderPastExamForm() {
   const log = editingLog || { ...blankPastExamLog, studiedAt: todayString(), examRound: "第59回" };
   document.querySelector("#pastExamFormTitle").textContent = editingLog ? "過去問ログを編集" : "過去問ログを追加";
   document.querySelector("#pastExamLogForm").innerHTML = `
-    ${pastExamFieldsets.map((fieldset) => `
-      <fieldset class="practice-fieldset">
-        <legend>${escapeHtml(fieldset.title)}</legend>
-        <div class="form-grid">
-          ${fieldset.fields.map((field) => renderPastExamField(field, log)).join("")}
-        </div>
-      </fieldset>
-    `).join("")}
+    ${pastExamFieldsets.map((fieldset, index) => renderLogFieldset(fieldset, index, (field) => renderPastExamField(field, log))).join("")}
     <div class="form-actions">
       <button class="primary-button" type="submit">${editingLog ? "過去問ログを更新" : "過去問ログを保存"}</button>
       ${editingLog ? `<button id="cancelPastExamEditButton" class="ghost-button" type="button">キャンセル</button>` : ""}
@@ -2765,14 +3476,7 @@ function renderPracticeForm() {
   const log = editingLog || { ...blankPracticeLog, studiedAt: todayString(), sourceType: "その他" };
   document.querySelector("#practiceFormTitle").textContent = editingLog ? "演習ログを編集" : "演習ログを追加";
   document.querySelector("#practiceLogForm").innerHTML = `
-    ${practiceFieldsets.map((fieldset) => `
-      <fieldset class="practice-fieldset">
-        <legend>${escapeHtml(fieldset.title)}</legend>
-        <div class="form-grid">
-          ${fieldset.fields.map((field) => renderPracticeField(field, log)).join("")}
-        </div>
-      </fieldset>
-    `).join("")}
+    ${practiceFieldsets.map((fieldset, index) => renderLogFieldset(fieldset, index, (field) => renderPracticeField(field, log))).join("")}
     <div class="form-actions">
       <button class="primary-button" type="submit">${editingLog ? "演習ログを更新" : "演習ログを保存"}</button>
       ${editingLog ? `<button id="cancelPracticeEditButton" class="ghost-button" type="button">キャンセル</button>` : ""}
@@ -2990,7 +3694,7 @@ function renderAiTargetSelect() {
   const label = document.querySelector("#aiTargetSelectLabel");
   const hint = document.querySelector("#aiTargetHint");
   const options = getAiTargetOptions(state.aiForm.targetType);
-  const needsSelect = ["単元", "演習ログ", "過去問ログ", "実務ログ"].includes(state.aiForm.targetType);
+  const needsSelect = ["単元", "レッスン", "演習ログ", "過去問ログ", "実務ログ"].includes(state.aiForm.targetType);
   label.classList.toggle("is-hidden", !needsSelect);
   hint.textContent = needsSelect ? "" : state.aiForm.targetType === "復習対象"
     ? "現在の復習対象単元を最大10件まで使います。"
@@ -3012,6 +3716,9 @@ function renderAiTargetSelect() {
 function getAiTargetOptions(targetType) {
   if (targetType === "単元") {
     return state.units.map((unit) => ({ value: unit.id, label: `${unit.subject} / ${unit.title}` }));
+  }
+  if (targetType === "レッスン") {
+    return CURRICULUM_LESSONS.map((lesson) => ({ value: lesson.id, label: `${lesson.subject} / ${lesson.title}` }));
   }
   if (targetType === "演習ログ") {
     return [...state.practiceLogs].sort(comparePracticeLogs).map((log) => ({
@@ -3124,6 +3831,10 @@ function buildAiTargetData() {
     const unit = state.units.find((item) => item.id === state.aiForm.targetId) || state.units[0];
     return unit ? { id: unit.id, title: unit.title, body: buildUnitPromptData(unit) } : null;
   }
+  if (state.aiForm.targetType === "レッスン") {
+    const lesson = getLessonById(state.aiForm.targetId) || CURRICULUM_LESSONS[0];
+    return lesson ? { id: lesson.id, title: lesson.title, body: buildLessonPromptData(lesson) } : null;
+  }
   if (state.aiForm.targetType === "演習ログ") {
     const log = state.practiceLogs.find((item) => item.id === state.aiForm.targetId) || state.practiceLogs[0];
     return log ? { id: log.id, title: log.unitTitle || log.questionRef || "演習ログ", body: buildPracticePromptData(log) } : null;
@@ -3175,6 +3886,36 @@ function buildUnitPromptData(unit) {
     ["AI解析メモ", unit.ai.analysisMemo],
     ["弱点タグ", unit.ai.weaknessTags.join(" / ")],
     ["自由メモ", unit.freeMemo]
+  ]);
+}
+
+function buildLessonPromptData(lesson) {
+  const progress = getLessonProgress(lesson.id);
+  const results = lesson.questions.map((question) => {
+    const result = progress.questionResults.find((item) => item.questionId === question.id);
+    return [
+      question.question,
+      `正答: ${question.answer}`,
+      `回答: ${result?.userAnswer || "未回答"}`,
+      `結果: ${result ? (result.correct ? "正解" : "不正解") : "未回答"}`,
+      `弱点タグ: ${question.weaknessTag}`
+    ].join(" / ");
+  }).join("\n");
+  return keyValueLines([
+    ["レッスンタイトル", lesson.title],
+    ["科目", lesson.subject],
+    ["学習目標", lesson.goal],
+    ["講義本文の要約", truncateText(lesson.lecture.replaceAll("\n", " "), 420)],
+    ["重要ポイント", lesson.keyPoints.join(" / ")],
+    ["混同ポイント", lesson.confusingPoints.join(" / ")],
+    ["引っかけ注意", lesson.traps.join(" / ")],
+    ["試験で狙われる表現", lesson.examTips.join(" / ")],
+    ["罰則・処分・手続メモ", lesson.penaltyTips.join(" / ")],
+    ["確認問題の結果", results],
+    ["理解度判定", progress.understanding],
+    ["復習対象かどうか", progress.reviewNeeded ? "復習対象" : "対象外"],
+    ["状態", progress.status],
+    ["最終学習日", progress.lastStudiedAt]
   ]);
 }
 
@@ -3434,6 +4175,67 @@ function openAiForTarget(targetType, targetId, promptType) {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+function gradeLessonQuestion(lessonId, questionId) {
+  const lesson = getLessonById(lessonId);
+  const question = lesson?.questions.find((item) => item.id === questionId);
+  if (!lesson || !question) return;
+  const checked = document.querySelector(`input[name="${escapeAttribute(`${lessonId}-${questionId}`)}"]:checked`);
+  if (!checked) {
+    showToast("回答を選択してください。");
+    return;
+  }
+  const progress = getLessonProgress(lessonId);
+  progress.questionResults = progress.questionResults.filter((result) => result.questionId !== questionId);
+  progress.questionResults.push({
+    questionId,
+    userAnswer: checked.value,
+    correct: checked.value === question.answer,
+    answeredAt: new Date().toISOString()
+  });
+  progress.lastStudiedAt = new Date().toISOString();
+  updateLessonUnderstanding(lessonId);
+  saveUnits();
+  renderLessonDetail();
+  showToast("採点しました。");
+}
+
+function completeLesson(lessonId) {
+  const progress = updateLessonUnderstanding(lessonId);
+  const now = new Date().toISOString();
+  progress.status = "完了";
+  progress.completedAt = now;
+  progress.lastStudiedAt = now;
+  progress.reviewNeeded = ["B", "C"].includes(progress.understanding);
+  saveUnits();
+  render();
+  showToast("レッスンを完了しました。");
+}
+
+function markLessonForReview(lessonId) {
+  const progress = getLessonProgress(lessonId);
+  progress.reviewNeeded = true;
+  progress.status = "復習中";
+  progress.lastStudiedAt = new Date().toISOString();
+  saveUnits();
+  render();
+  showToast("復習対象にしました。");
+}
+
+function setLessonUnderstanding(lessonId, understanding) {
+  const progress = getLessonProgress(lessonId);
+  if (!CURRICULUM_UNDERSTANDING.includes(understanding)) return;
+  progress.understanding = understanding;
+  progress.reviewNeeded = ["B", "C"].includes(understanding) || progress.reviewNeeded;
+  progress.lastStudiedAt = new Date().toISOString();
+  saveUnits();
+  renderLessonDetail();
+  renderHomeCurriculumSummary();
+}
+
+function openAiForLesson(lessonId) {
+  openAiForTarget("レッスン", lessonId, "単元理解チェック");
+}
+
 function openAiForAnalysisConsult() {
   state.aiForm.promptType = "総合学習相談";
   state.aiForm.targetType = "全体サマリー";
@@ -3559,6 +4361,26 @@ function renderReviewList() {
   document.querySelector("#reviewCards").innerHTML = units.length
     ? units.map((unit) => reviewCard(unit)).join("")
     : `<div class="panel empty-state"><p class="muted">条件に合う復習単元はありません。</p></div>`;
+  const lessons = getReviewLessons();
+  document.querySelector("#reviewLessonCards").innerHTML = lessons.length
+    ? lessons.map(({ lesson, progress, reason }) => `
+      <article class="lesson-card">
+        <div>
+          <p class="eyebrow">${escapeHtml(lesson.subject)}</p>
+          <h4>${escapeHtml(lesson.title)}</h4>
+          <dl class="review-facts compact">
+            <div><dt>理解度</dt><dd>${escapeHtml(progress.understanding)}</dd></div>
+            <div><dt>状態</dt><dd>${escapeHtml(progress.status)}</dd></div>
+            <div><dt>最終学習日</dt><dd>${escapeHtml(progress.lastStudiedAt ? formatDateTime(progress.lastStudiedAt) : "未学習")}</dd></div>
+            <div><dt>復習理由</dt><dd>${escapeHtml(reason)}</dd></div>
+          </dl>
+        </div>
+        <div class="card-actions">
+          <button class="primary-button" type="button" data-open-lesson="${escapeAttribute(lesson.id)}">開く</button>
+        </div>
+      </article>
+    `).join("")
+    : `<div class="empty-state"><p class="muted">復習対象レッスンはありません。</p></div>`;
 }
 
 function filteredReviewUnits() {
@@ -3892,6 +4714,24 @@ function openUnit(unitId) {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+function openLesson(lessonId) {
+  const lesson = getLessonById(lessonId);
+  if (!lesson) return;
+  state.activeLessonId = lessonId;
+  state.activeView = "learning";
+  touchLessonProgress(lessonId);
+  switchView("learning", false);
+  renderLearningView();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function closeLessonDetail() {
+  state.activeLessonId = null;
+  document.querySelector("#learningListArea").classList.remove("is-hidden");
+  document.querySelector("#lessonDetailArea").classList.add("is-hidden");
+  document.querySelector("#backToLearningButton").classList.add("is-hidden");
+}
+
 function closeDetail() {
   state.activeUnitId = null;
   document.querySelector("#unitListArea").classList.remove("is-hidden");
@@ -3913,6 +4753,9 @@ function switchView(view, closeUnitDetail = true) {
   });
   if (closeUnitDetail && view !== "units") {
     closeDetail();
+  }
+  if (view !== "learning" && state.activeLessonId) {
+    closeLessonDetail();
   }
 }
 
@@ -4180,7 +5023,7 @@ function renderSettings() {
   const backupJson = JSON.stringify(makeBackupPayload());
   const sizeKb = Math.max(1, Math.ceil(backupJson.length / 1024));
   const last = getLastUpdatedUnit();
-  document.querySelector("#storageStatus").textContent = `${state.units.length}単元 / 約${sizeKb}KBをこのブラウザに保存`;
+  document.querySelector("#storageStatus").textContent = `${state.units.length}単元・${CURRICULUM_LESSONS.length}レッスン / 約${sizeKb}KBをこのブラウザに保存`;
   document.querySelector("#storageDetails").innerHTML = `
     <div><dt>保存中の単元数</dt><dd>${state.units.length}単元</dd></div>
     <div><dt>保存中の演習ログ数</dt><dd>${state.practiceLogs.length}件</dd></div>
@@ -4188,6 +5031,7 @@ function renderSettings() {
     <div><dt>保存中の実務ログ数</dt><dd>${state.practicalLogs.length}件</dd></div>
     <div><dt>保存中のAI履歴数</dt><dd>${state.aiAnalyses.length}件</dd></div>
     <div><dt>保存中の学習メニュー数</dt><dd>${state.studyPlans.length}件</dd></div>
+    <div><dt>保存中のレッスン進捗数</dt><dd>${state.curriculumProgress.length}件</dd></div>
     <div><dt>最終更新単元</dt><dd>${escapeHtml(last?.title || "未保存")}</dd></div>
     <div><dt>最終更新日</dt><dd>${escapeHtml(last?.updatedAt || "未保存")}</dd></div>
     <div><dt>おおよその保存サイズ</dt><dd>約${sizeKb}KB</dd></div>
@@ -4210,7 +5054,8 @@ function makeBackupPayload() {
     pastExamLogs: state.pastExamLogs,
     practicalLogs: state.practicalLogs,
     aiAnalyses: state.aiAnalyses,
-    studyPlans: state.studyPlans
+    studyPlans: state.studyPlans,
+    curriculumProgress: state.curriculumProgress
   };
 }
 
@@ -4258,7 +5103,9 @@ function importBackup(file) {
       state.practicalLogs = normalizeArray(parsed.practicalLogs).map(normalizePracticalLog);
       state.aiAnalyses = normalizeArray(parsed.aiAnalyses).map(normalizeAiAnalysis);
       state.studyPlans = normalizeArray(parsed.studyPlans).map(normalizeStudyPlan);
+      state.curriculumProgress = normalizeArray(parsed.curriculumProgress).map(normalizeCurriculumProgress);
       closeDetail();
+      closeLessonDetail();
       saveUnits();
       render();
       message.textContent = "バックアップから復元しました。";
@@ -4313,6 +5160,7 @@ function attachEvents() {
     button.addEventListener("click", () => switchView(button.dataset.view));
   });
   document.querySelector("#backToUnitsButton").addEventListener("click", closeDetail);
+  document.querySelector("#backToLearningButton").addEventListener("click", closeLessonDetail);
   document.querySelector("#searchInput").addEventListener("input", (event) => {
     state.filters.search = event.target.value;
     renderUnitList();
@@ -4550,6 +5398,43 @@ function attachEvents() {
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
+    if (event.target.closest("[data-open-learning]")) {
+      switchView("learning");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    const shortcut = event.target.closest("[data-view-shortcut]");
+    if (shortcut) {
+      switchView(shortcut.dataset.viewShortcut);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    const lessonButton = event.target.closest("[data-open-lesson]");
+    if (lessonButton) {
+      openLesson(lessonButton.dataset.openLesson);
+      return;
+    }
+    const gradeButton = event.target.closest("[data-grade-question]");
+    if (gradeButton) {
+      const [lessonId, questionId] = gradeButton.dataset.gradeQuestion.split(":");
+      gradeLessonQuestion(lessonId, questionId);
+      return;
+    }
+    const completeLessonButton = event.target.closest("[data-complete-lesson]");
+    if (completeLessonButton) {
+      completeLesson(completeLessonButton.dataset.completeLesson);
+      return;
+    }
+    const reviewLessonButton = event.target.closest("[data-review-lesson]");
+    if (reviewLessonButton) {
+      markLessonForReview(reviewLessonButton.dataset.reviewLesson);
+      return;
+    }
+    const aiLessonButton = event.target.closest("[data-ai-lesson]");
+    if (aiLessonButton) {
+      openAiForLesson(aiLessonButton.dataset.aiLesson);
+      return;
+    }
     const todayLogButton = event.target.closest("[data-open-today-log]");
     if (todayLogButton) {
       openTodayLog(todayLogButton.dataset.openTodayLog);
@@ -4662,6 +5547,11 @@ function attachEvents() {
     }
   });
   document.body.addEventListener("change", (event) => {
+    const understanding = event.target.closest("[data-lesson-understanding]");
+    if (understanding) {
+      setLessonUnderstanding(understanding.dataset.lessonUnderstanding, understanding.value);
+      return;
+    }
     const complete = event.target.closest("[data-today-complete]");
     if (!complete) return;
     toggleTodayCompleted(complete.dataset.todayComplete, complete.checked);
@@ -4688,12 +5578,14 @@ function attachEvents() {
     localStorage.removeItem(STORAGE_KEYS.practicalLogs);
     localStorage.removeItem(STORAGE_KEYS.aiAnalyses);
     localStorage.removeItem(STORAGE_KEYS.studyPlans);
+    localStorage.removeItem(STORAGE_KEYS.curriculumProgress);
     state.units = makeInitialUnits();
     state.practiceLogs = [];
     state.pastExamLogs = [];
     state.practicalLogs = [];
     state.aiAnalyses = [];
     state.studyPlans = [];
+    state.curriculumProgress = [];
     state.editingPracticeLogId = null;
     state.editingPastExamLogId = null;
     state.editingPracticalLogId = null;
