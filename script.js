@@ -1,4 +1,4 @@
-const APP_VERSION = "v1.0";
+const APP_VERSION = "v1.1";
 const STORAGE_KEYS = {
   units: "tsukanYobiko.units",
   version: "tsukanYobiko.version",
@@ -85,7 +85,7 @@ const AI_PROMPT_TYPES = [
   "過去問分析",
   "総合学習相談"
 ];
-const AI_TARGET_TYPES = ["単元", "レッスン", "通関業法カリキュラム", "演習ログ", "過去問ログ", "実務ログ", "復習対象", "全体サマリー"];
+const AI_TARGET_TYPES = ["単元", "レッスン", "通関業法カリキュラム", "関税法等カリキュラム", "演習ログ", "過去問ログ", "実務ログ", "復習対象", "全体サマリー"];
 const STUDY_DURATIONS = ["15分", "30分", "1時間", "2時間", "じっくり"];
 const AI_ANALYSIS_POINTS = {
   "回答添削": ["結論は合っているか", "理由づけは正しいか", "用語の使い方は正しいか", "条文・制度理解にズレはないか", "本試験ならどこで失点しそうか", "より良い回答にするにはどう修正すべきか"],
@@ -128,10 +128,13 @@ function makeLesson({
   traps,
   examTips,
   penaltyTips = [],
+  principleExceptions = [],
+  distinctions = [],
+  timeLimits = [],
   miniSummary,
   questions
 }) {
-  return { id, courseId, subject, title, order, level, estimatedMinutes, relatedUnitId, intro, goal, lecture, keyPoints, confusingPoints, traps, examTips, penaltyTips, miniSummary, questions };
+  return { id, courseId, subject, title, order, level, estimatedMinutes, relatedUnitId, intro, goal, lecture, keyPoints, confusingPoints, traps, examTips, penaltyTips, principleExceptions, distinctions, timeLimits, miniSummary, questions };
 }
 
 const CURRICULUM_COURSES = [
@@ -166,16 +169,41 @@ const CURRICULUM_COURSES = [
   },
   {
     id: "course-kanzeihou-intro",
-    title: "関税法等 入門編",
+    title: "関税法等 基礎編",
     subject: "関税法等",
-    description: "輸出入通関、保税、課税価格の入口を、手続の流れと混同ポイントから学ぶ講座",
+    description: "輸出入申告、保税、納税、課税価格、減免税、罰則までを体系的に学ぶ基礎講座",
     order: 2,
     lessonIds: [
-      "lesson-kanzeihou-flow",
-      "lesson-kanzeihou-import-declaration",
-      "lesson-kanzeihou-bonded-area",
+      "lesson-kanzeihou-overview",
+      "lesson-kanzeihou-clearance-flow",
+      "lesson-kanzeihou-export-declaration",
+      "lesson-kanzeihou-import-permission",
+      "lesson-kanzeihou-special-import",
+      "lesson-kanzeihou-bonded-area-types",
+      "lesson-kanzeihou-foreign-goods-place",
+      "lesson-kanzeihou-bonded-warehouse",
+      "lesson-kanzeihou-bonded-factory-exhibition",
       "lesson-kanzeihou-bonded-transport",
-      "lesson-kanzeihou-customs-value"
+      "lesson-kanzeihou-specified-bonded-transport",
+      "lesson-kanzeihou-detention-storage",
+      "lesson-kanzeihou-prohibited-imports",
+      "lesson-kanzeihou-origin-false",
+      "lesson-kanzeihou-duty-determination",
+      "lesson-kanzeihou-tax-declaration-correction",
+      "lesson-kanzeihou-reassessment-decision",
+      "lesson-kanzeihou-due-date",
+      "lesson-kanzeihou-additional-tax",
+      "lesson-kanzeihou-taxable-goods-timing",
+      "lesson-kanzeihou-taxpayer",
+      "lesson-kanzeihou-customs-value-principle",
+      "lesson-kanzeihou-customs-value-additions",
+      "lesson-kanzeihou-customs-value-exclusions",
+      "lesson-kanzeihou-exemption-reduction",
+      "lesson-kanzeihou-duty-refund",
+      "lesson-kanzeihou-foreign-exchange-law",
+      "lesson-kanzeihou-penalties-confiscation",
+      "lesson-kanzeihou-trap-review",
+      "lesson-kanzeihou-mini-exam"
     ]
   },
   {
@@ -362,13 +390,143 @@ const TSUKANGYOHO_LESSONS = [
   makeMiniExamLesson(),
 ];
 
+const KANZEIHOU_TOPICS = [
+  ["overview", "関税法等の全体像", "u008", "輸出入通関、保税、納税、課税価格、他法令、罰則を一つの流れとして見る", ["関税法等は税額計算だけの科目である", "輸入許可と納税義務を切り離して暗記する", "税関長と財務大臣の主体を混同する"], ["関税法等は貨物の流れと税の流れを同時に規律する", "輸出入申告、保税、納税、課税価格を横断して読む", "主体、手続、期限、例外を選択肢ごとに確認する"], ["原則は税関の管理下で申告・審査・検査・納税・許可を進める。例外や特例は、誰にどの要件で認められるかを別に見る。"], ["税関長は個別手続の許可・承認・処分の中心、財務大臣は制度・政策や一部権限で登場する。輸入者・輸出者は申告や納税の主体になる。"], ["期間・期限は、手続の締切、保税蔵置期間、納期限、法定納期限を同じ言葉として読まない。"], "全体像理解"],
+  ["clearance-flow", "輸出入通関の全体像", "u008", "輸出と輸入で、申告、検査、許可、納税、保税地域との関係が違うことを整理する", ["輸出申告と輸入申告は常に同じ手続である", "申告した時点で許可があったものとする", "保税地域との関係を輸出入で同じにする"], ["輸入は国内流通前の許可と納税が中心", "輸出は外国へ向けた積出し前の許可が中心", "申告、審査、検査、納税、許可の順序を場面ごとに見る"], ["原則は申告をして必要な検査を経て許可を受ける。輸出入の性質により納税や保税地域との結びつきが変わる。"], ["申告する者、許可する税関長、検査を行う税関を分ける。輸入者と輸出者を入れ替えた選択肢に注意する。"], ["輸入許可前、輸出許可前、納期限など、どの時点の話かを最初に確認する。"], "手続要件"],
+  ["export-declaration", "輸出申告", "u009", "輸出しようとする貨物について、税関長への申告と輸出許可を受ける流れを押さえる", ["輸出申告は輸入申告と同じ手続である", "輸出申告は常に輸出者の住所地を管轄する税関長にする", "輸出許可を受ければ貨物の性質は問われない"], ["輸出申告と輸出許可を分ける", "申告先と貨物の蔵置場所の関係を確認する", "他法令の許可・承認を要する貨物に注意する"], ["原則は輸出しようとする貨物を税関長に申告し、必要な検査を経て許可を受ける。例外的な簡易・特例は要件と対象を限定して読む。"], ["輸出者、通関業者、税関長、他法令の主務官庁を分ける。申告、許可、承認、届出は置換しない。"], ["輸出許可前か許可後かで扱いが変わる。積込みや搬入との時点関係を問題文で確認する。"], "輸出申告"],
+  ["import-permission", "輸入申告と輸入の許可", "u008", "輸入申告と輸入許可は別であり、許可前の貨物は原則として国内流通できないことを押さえる", ["申告した時点で輸入許可があったものとする", "輸入許可前でも自由に国内流通できる", "申告、許可、承認、届出を混同させる"], ["輸入しようとする貨物は税関長に申告する", "必要な検査を経て輸入の許可を受ける", "輸入許可前の外国貨物は原則として自由に国内流通できない", "申告先、申告時期、保税地域との関係が頻出"], ["原則は輸入申告、審査・検査、納税、輸入許可の流れで進む。特例や納期限延長は許可そのものと混同しない。"], ["輸入者が申告・納税の中心、税関長が許可の主体。承認・届出は別制度の語であり、輸入許可に置き換えない。"], ["輸入申告時、輸入許可時、法定納期限、納期限を分ける。特に許可前後で貨物の扱いが変わる。"], "許可・承認・届出の混同"],
+  ["special-import", "特例輸入申告・特例申告の基本", "u008", "一般の輸入申告との違い、特例申告の位置づけ、対象者と納税手続を整理する", ["特例申告はすべての輸入者が自由に使える", "特例輸入申告をすれば納税義務が消える", "輸入許可と特例申告を同じものにする"], ["特例は要件を満たす者に認められる制度", "輸入許可と納税申告のタイミングを分ける", "便利な制度ほど主体要件が問われる"], ["原則は通常の輸入申告で納税と許可を結びつける。特例は一定の承認等を前提に手続のタイミングを変える制度として読む。"], ["輸入者、特例輸入者、税関長を区別する。許可、承認、申告を混同しない。"], ["特例申告書の提出期限など、許可日と申告期限を別に確認する。"], "手続要件"],
+  ["bonded-area-types", "保税地域の種類", "u006", "外国貨物を税関の管理下で置く制度として、保税地域の種類と役割を押さえる", ["保税地域は4種類である", "保税工場を保税製造場と表現する", "外国貨物ならどこにでも置ける"], ["保税地域は外国貨物を税関の管理下で置くための制度", "種類ごとに役割、許可、期間、扱える貨物が違う", "保税蔵置場、保税工場、保税展示場、総合保税地域を比較する", "亡失時の納税義務者や届出義務も問われる"], ["原則として外国貨物は保税地域に置く。例外的に税関長が認めた場所や保税運送中など、制度上許される場面がある。"], ["税関長、保税地域の許可を受けた者、貨物の所有者・輸入者を分ける。設置許可と貨物の搬入を混同しない。"], ["蔵置期間や許可期間は種類ごとに違う。数字だけでなく、延長の可否と主体を確認する。"], "保税地域"],
+  ["foreign-goods-place", "外国貨物を置く場所の制限", "u006", "外国貨物は原則として保税地域以外に置けないが、例外があることを整理する", ["外国貨物は保税地域以外に一切置けない", "税関の管理下であれば場所の制限はない", "内国貨物と外国貨物の置場制限は同じ"], ["外国貨物は税関の監督下に置く必要がある", "原則は保税地域に置く", "例外の有無と承認・届出の要否を確認する"], ["原則は保税地域蔵置。例外は法律上認められる場所や税関長の承認等がある場合に限られる。"], ["外国貨物を置く者、保税地域の許可を受けた者、税関長を分ける。置ける場所と輸入許可は別。"], ["いつから外国貨物として扱うか、いつ内国貨物になるかを許可時点と関連づける。"], "例外規定"],
+  ["bonded-warehouse", "保税蔵置場", "u006", "保税蔵置場の役割、許可、蔵置、亡失時の責任を整理する", ["保税蔵置場ではどんな加工も自由にできる", "保税蔵置場の許可を受けた者は亡失時の責任を問われない", "保税蔵置場と保税工場を同じ機能とする"], ["保税蔵置場は外国貨物を蔵置する場所", "保税工場の加工・製造機能と区別する", "亡失・滅却・届出・関税徴収の関係を確認する"], ["原則は蔵置のための保税地域。例外的な作業は認められる範囲を確認し、製造加工の中心は保税工場と区別する。"], ["税関長の許可を受けた者、貨物を管理する者、輸入者を分ける。亡失時の納税義務者を誤らせる選択肢に注意。"], ["蔵置期間、延長、許可期間を同じ数字として暗記しない。"], "保税地域"],
+  ["bonded-factory-exhibition", "保税工場・保税展示場・総合保税地域", "u006", "蔵置以外の機能を持つ保税地域を比較し、名称と役割を混同しない", ["保税工場を保税製造場と表現する", "保税展示場では製造加工が主目的である", "総合保税地域は保税蔵置場とまったく同じ"], ["保税工場は外国貨物を原料として加工・製造等を行う場所", "保税展示場は展示等の目的が中心", "総合保税地域は複合的な機能を持つ", "種類名と役割をセットで覚える"], ["原則は種類ごとに許可された機能の範囲で扱う。例外的な作業や用途変更は税関長の承認等を確認する。"], ["許可を受けた者、貨物を扱う者、税関長を区別する。施設名を変えたひっかけに注意。"], ["展示期間、蔵置期間、許可期間など、制度ごとの期間語を整理する。"], "用語混同"],
+  ["bonded-transport", "保税運送", "u007", "外国貨物を税関の監督下で運送する制度と承認・到着確認を押さえる", ["税関長の承認なしに常に運送できる", "到着確認は不要である", "亡失時の納税義務を誤らせる"], ["保税運送は外国貨物を税関の監督下で運送する制度", "原則として税関長の承認が必要", "運送期間、到着確認、未到着・亡失時の扱いが重要", "特定保税運送と混同しない"], ["原則は税関長の承認を受け、指定された期間・経路等で運送する。特例は対象者・貨物・手続を限定して読む。"], ["運送する者、税関長、到着地の税関、貨物の所有者を分ける。承認と届出を置換しない。"], ["運送期間、到着確認期限、未到着時の扱いをセットで読む。"], "保税運送"],
+  ["specified-bonded-transport", "特定保税運送", "u007", "通常の保税運送との違い、特例を使える主体、承認省略の範囲を整理する", ["特定保税運送は通常の保税運送とまったく同じ", "誰でも承認なしに外国貨物を運送できる", "到着確認や管理責任も不要になる"], ["特定保税運送は要件を満たす者に認められる特例", "承認省略の場面と管理義務を分ける", "通常の保税運送の原則を先に押さえる"], ["原則は保税運送の承認。特定保税運送は一定の承認等を受けた者について手続を簡素化する例外。"], ["特定保税運送者、税関長、通常の運送者を区別する。特例の主体を一般化しない。"], ["特例でも運送期間や到着管理の発想は残る。期限語を消す選択肢に注意。"], "例外規定"],
+  ["detention-storage", "収容・留置", "u006", "税関が貨物を管理・確保する場面と、保税地域での通常蔵置との違いを整理する", ["収容と留置は通常の保税蔵置と同じである", "税関はどんな貨物でも理由なく留置できる", "収容後は関税や費用の問題が消える"], ["収容・留置は税関による貨物管理の制度", "通常の保税蔵置とは目的が違う", "費用、公告、売却、返還の流れを意識する"], ["原則は申告・保税手続で管理する。収容・留置は法定の場面で税関が貨物を確保する例外的管理。"], ["税関長、貨物所有者、輸入者、保税地域の許可を受けた者を分ける。"], ["公告期間、保管期間、引取りの時期を混同しない。"], "手続要件"],
+  ["prohibited-imports", "輸入してはならない貨物", "u008", "輸入禁止貨物の制度趣旨、税関の認定手続、没収等との関係を整理する", ["禁止貨物も申告すれば必ず輸入許可される", "輸入してはならない貨物と他法令の許可貨物は同じ", "税関長の確認だけで国内流通できる"], ["輸入禁止貨物は社会秩序や安全を守るため輸入自体が制限される", "申告・検査で発見された後の扱いを確認する", "没収・廃棄・積戻しなどの語を整理する"], ["原則として輸入禁止貨物は輸入できない。他法令の許可・承認で足りる貨物とは別に扱う。"], ["輸入者、税関長、権利者、主務官庁を区別する。許可、認定、通知、申立てを混同しない。"], ["認定手続や申立期間が出る場合は、誰がいつまでに何をするかで読む。"], "輸入禁止"],
+  ["origin-false", "原産地虚偽表示等貨物", "u008", "原産地表示を偽る貨物の扱いと、輸入禁止貨物との違いを整理する", ["原産地虚偽表示等貨物は常に輸入禁止貨物と同じ扱い", "表示を訂正しても輸入できない", "原産地表示は関税法等では問われない"], ["虚偽・誤認表示の有無を確認する", "訂正・抹消等により扱いが変わる場面がある", "輸入禁止貨物と同じにしない"], ["原則は虚偽表示等のままでは問題となる。例外的に訂正・抹消等で輸入が認められる場面を確認する。"], ["輸入者、税関長、表示を付した者を分ける。原産地規則と表示規制を同じにしない。"], ["是正を求められた後の期限や許可前後の時点を確認する。"], "用語混同"],
+  ["duty-determination", "関税の確定方式", "u010", "申告納税方式と賦課課税方式の違いを整理する", ["関税はすべて税関長が一方的に決定する", "申告納税方式では税関長の更正はできない", "賦課課税方式でも納税者が税額を確定する"], ["原則は申告納税方式を中心に整理する", "賦課課税方式は税関長の処分で税額が確定する", "修正申告・更正・決定との接続を見る"], ["原則は納税者の申告により税額が確定する申告納税方式。一定のものは税関長の処分で確定する賦課課税方式。"], ["納税義務者、申告者、税関長を分ける。申告と更正・決定の主体が逆にされやすい。"], ["法定納期限、納期限、更正の請求期間を別に整理する。"], "申告納税"],
+  ["tax-declaration-correction", "納税申告・修正申告・更正の請求", "u010", "税額が増える場合と減る場合で、納税者側の手続が変わることを押さえる", ["修正申告と更正の請求を逆にする", "税額が増える場合と減る場合を混同する", "税関長が行う更正と納税者が行う申告を混同する"], ["納税申告は納税者が税額等を申告する手続", "修正申告は不足税額等を自ら正す方向", "更正の請求は税額が多すぎた場合などに減額を求める方向"], ["原則は納税者の申告で税額を確定・修正する。減額を求めるときは更正の請求という別手続になる。"], ["納税者が行う修正申告・更正の請求、税関長が行う更正を区別する。"], ["更正の請求期間、法定納期限、納期限を混同しない。"], "修正申告"],
+  ["reassessment-decision", "更正・決定・賦課決定", "u010", "税関長が行う税額確定・変更処分を、納税者側の申告と分ける", ["更正は納税者が自由に行う手続である", "決定は税額を減らす請求である", "賦課決定と修正申告を同じにする"], ["更正は税関長が申告内容を正す処分", "決定は申告がない場合などに税関長が税額を定める処分", "賦課決定は加算税などで問題になる"], ["原則は納税申告に基づく。申告が誤っている、または申告がない場合に税関長の処分が入る。"], ["税関長が行う処分と、納税者が行う申告・請求を分ける。"], ["処分期限や法定納期限からの期間が問われる場合は起算点を確認する。"], "更正・決定"],
+  ["due-date", "納期限・法定納期限", "u010", "納期限と法定納期限の違いを、延滞税・加算税との関係で整理する", ["納期限と法定納期限は常に同じ意味", "納期限を過ぎても延滞税は問題にならない", "法定納期限は税関長が任意に決める"], ["納期限は実際に納付すべき期限", "法定納期限は延滞税・加算税等の基準になる概念", "納期限延長と輸入許可を混同しない"], ["原則は期限までに納付する。納期限延長等の例外は担保や承認などの要件と結びつけて読む。"], ["納税義務者、税関長、担保提供者を分ける。納期限を決める主体と納める主体を混同しない。"], ["納期限、法定納期限、延滞税の起算、加算税の基準日を分ける。"], "期間・期限"],
+  ["additional-tax", "延滞税・過少申告加算税・無申告加算税", "u010", "期限遅れの負担と申告誤り・無申告への加算税を区別する", ["延滞税と加算税を混同する", "過少申告加算税と無申告加算税を混同する", "法定納期限と納期限を混同する"], ["延滞税は納付遅れに対応する利息的負担", "過少申告加算税は申告税額が少なかった場合", "無申告加算税は期限内申告がない場合", "重加算税との違いも意識する"], ["原則は期限内に正しく申告・納付する。正当な理由や自主的修正などの例外は要件を確認する。"], ["納税者、税関長、申告をした者を分ける。税関長が課す加算税と納税者の修正申告を混同しない。"], ["法定納期限、納期限、申告期限、修正申告時期を分ける。"], "加算税"],
+  ["taxable-goods-timing", "課税物件の確定時期", "u010", "どの貨物状態・数量・性質を基準に課税するかを整理する", ["課税物件は常に輸入申告時に確定する", "輸入許可時と輸入申告時を常に同じにする", "保税工場で製造された貨物の扱いを一般輸入と同じにする"], ["課税物件の確定時期は税額計算の前提", "原則時点と特例時点を分ける", "保税地域での亡失・変質なども意識する"], ["原則となる確定時期を押さえたうえで、保税工場、蔵入承認、亡失などの特例を別に整理する。"], ["輸入者、保税地域の許可を受けた者、税関長を分ける。誰の行為で確定時期が動くかを確認する。"], ["輸入申告時、輸入許可時、蔵入承認時などの時点語を混同しない。"], "課税物件"],
+  ["taxpayer", "納税義務者", "u010", "誰が関税を納める義務を負うかを、輸入者・保税地域関係者・運送者で分ける", ["納税義務者は常に輸入者だけである", "亡失時も誰も関税を納めない", "保税運送中の亡失責任を輸入者だけにする"], ["原則は輸入者が納税義務者", "保税地域での亡失、保税運送中の亡失では別主体が問題になる", "連帯・補完的な責任を雑に読まない"], ["原則は輸入者。例外的に保税地域の許可を受けた者、保税運送の承認を受けた者などが納税義務を負う場面がある。"], ["輸入者、貨物所有者、保税蔵置場の許可を受けた者、保税運送者を区別する。"], ["亡失・滅却・輸入許可の前後で誰が義務者か変わるため、時点を確認する。"], "納税義務者"],
+  ["customs-value-principle", "課税価格の決定の原則", "u010", "課税価格は関税額計算の土台であり、輸入取引の現実支払価格を基礎にすることを押さえる", ["現実支払価格と課税価格は常に完全同一である", "輸入取引がなくても常に同じ方法で評価する", "買手・売手の意味を確認しない"], ["課税価格は関税額計算の土台", "原則は輸入取引に係る現実支払価格を基礎にする", "買手、売手、輸入取引、現実支払価格を整理する", "加算要素と不算入要素を分ける"], ["原則は取引価格方式。使えない場合は代替評価方法へ進むため、常に現実支払価格だけで終わらない。"], ["買手、売手、輸入者、輸出者を分ける。国内取引や無償貨物を同じにしない。"], ["本邦到着前後で費用の扱いが変わるため、発生時点を確認する。"], "課税価格"],
+  ["customs-value-additions", "課税価格の加算要素", "u010", "運賃・保険料・手数料・無償提供物・ロイヤルティなどの加算判断を整理する", ["加算要素と不算入要素を逆にする", "売手に支払うすべての費用が課税価格に入る", "本邦到着後の費用を常に加算する"], ["輸入港までの運賃・保険料などは典型的な加算論点", "仲介料、容器・包装、無償提供物、ロイヤルティは要件を見る", "買手負担か、輸入取引の条件かを確認する"], ["原則は現実支払価格に法定の加算要素を加える。支払名目だけでなく、誰が負担し、輸入貨物に関係するかを見る。"], ["買手、売手、仲介者、ライセンサーを分ける。支払先だけで判断しない。"], ["本邦到着までか到着後か、輸入取引の条件かを時間軸で見る。"], "加算要素"],
+  ["customs-value-exclusions", "課税価格に算入しない費用", "u010", "本邦到着後の運賃・据付費・関税等、不算入となる費用を加算要素と分ける", ["本邦到着後の費用を常に加算する", "関税や国内消費税も課税価格に含める", "不算入費用は支払われていればすべて無視できる"], ["本邦到着後の運賃、据付・整備費用などは不算入論点", "明確に区分できることが重要", "加算要素と不算入要素を表で分ける"], ["原則は現実支払価格に含まれていても、法定要件を満たす不算入費用は控除できる。区分不能なら扱いに注意。"], ["買手、売手、国内業者、税関を分ける。誰に払ったかだけではなく費用の性質を見る。"], ["輸入港到着前後、輸入後の据付・輸送など時点語がひっかけになる。"], "控除要素"],
+  ["exemption-reduction", "減免税の基本", "u010", "減税・免税制度は政策目的と要件が重要で、自由に使える優遇ではないことを整理する", ["減免税は申告すれば常に認められる", "用途制限や再輸出条件を無視してよい", "減税と免税と戻し税を同じにする"], ["減免税は政策目的に基づく例外制度", "対象貨物、用途、手続、事後管理を確認する", "用途外使用や譲渡で追徴される場面に注意"], ["原則は課税。減免税は法定要件を満たす場合だけ認められる例外。"], ["輸入者、使用者、税関長を分ける。許可・承認・届出・申請を混同しない。"], ["用途制限期間、再輸出期間、申請時期などを制度ごとに分ける。"], "減免税"],
+  ["duty-refund", "戻し税の基本", "u010", "納付済み関税が一定の場合に戻される制度を、減免税と分ける", ["戻し税は最初から関税を納めない制度である", "輸出すれば常に戻し税が受けられる", "減免税と戻し税を同じにする"], ["戻し税は納付済み関税の還付制度", "輸出、廃棄、違約品など場面ごとの要件がある", "証明・申請・期間が重要"], ["原則は納付した関税は確定する。戻し税は一定の事実と手続がある場合に返される例外。"], ["輸入者、輸出者、税関長、貨物の使用者を分ける。"], ["申請期間、輸出・廃棄の時期、許可日を混同しない。"], "戻し税"],
+  ["foreign-exchange-law", "外為法関連の基本", "u008", "関税法上の通関手続と、外為法など他法令の許可・承認を分ける", ["税関の輸入許可があれば外為法上の許可・承認は不要", "外為法の許可があれば関税法上の申告は不要", "他法令確認と関税納付は同じ制度である"], ["関税法は通関と課税の枠組み", "外為法は輸出入規制・経済安全保障等の枠組み", "他法令の許可・承認と税関の輸出入許可は別"], ["原則は関税法の申告・許可に加え、必要な他法令の許可・承認を確認する。片方だけで足りるとは読まない。"], ["税関長、経済産業大臣などの主務大臣、輸出者・輸入者を分ける。"], ["他法令の許可取得時期、申告時の確認、輸出入許可前後を整理する。"], "他法令"],
+  ["penalties-confiscation", "罰則・没収・追徴の基本", "u008", "関税法等の罰則、没収、追徴を、行政手続や納税義務と分ける", ["違反すれば常に没収される", "没収できない場合に追徴が問題になることはない", "納税義務と刑罰は同じである"], ["罰則は刑罰、没収は物に対する制裁、追徴は没収不能時の金銭徴収", "輸入禁止貨物、無許可輸入、虚偽申告などの場面を整理する", "行政処分と刑罰を分ける"], ["原則は適法な申告・許可・納税。違反時に罰則・没収・追徴が問題となるが、要件と対象は個別に見る。"], ["行為者、法人、貨物所有者、税関長、裁判所を分ける。"], ["時効や告発、処分時期が絡む場合は、納期限とは別の時間軸で読む。"], "罰則"],
+  ["trap-review", "関税法等の頻出ひっかけ総整理", "u008", "申告・許可・承認・届出、主体、期限、原則例外を横断して誤り表現を見抜く", ["許可・承認・届出・申告が置換される", "税関長、財務大臣、輸入者、輸出者が入れ替わる", "原則を絶対化し例外を消す", "期限・期間・納期限を混同する"], ["手続名を最初に確認する", "主体を丸で囲む", "原則と例外のどちらを聞いているか見る", "税額が増える手続と減る手続を分ける"], ["原則は原則として押さえ、例外は要件付きで覚える。例外を一般化する選択肢、原則を絶対化する選択肢に注意。"], ["税関長、財務大臣、輸入者、輸出者、保税蔵置場の許可を受けた者、保税運送者を一覧で比較する。"], ["期限、期間、納期限、法定納期限、蔵置期間、運送期間を同じ言葉として読まない。"], "選択肢読解"]
+];
+
+function makeKanzeihouLesson([slug, title, relatedUnitId, focus, traps, keyPoints, principleExceptions, distinctions, timeLimits, weaknessTag], index) {
+  const order = index + 1;
+  const isMini = slug === "mini-exam";
+  return makeLesson({
+    id: `lesson-kanzeihou-${slug}`,
+    courseId: "course-kanzeihou-intro",
+    subject: "関税法等",
+    title,
+    order,
+    level: "基礎",
+    estimatedMinutes: order >= 22 || order === 30 ? 20 : 16,
+    relatedUnitId,
+    intro: `${title}では、${focus}ことを最初に押さえます。用語暗記で止めず、主体・手続・期限・原則例外の順に分解します。`,
+    goal: `${focus}状態を目標にします。申告、許可、承認、届出、納期限などを置き換えた選択肢を判定できるようにします。`,
+    lecture: `まず結論は、${focus}ことです。\n\nなぜ重要かというと、関税法等は貨物の流れ、税額の確定、税関の管理が同時に問われる科目だからです。正しい語句が入っていても、主体、時点、手続名、例外要件が一つずれるだけで誤りになります。\n\n試験での問われ方は、申告と許可、許可と承認、届出と確認、納期限と法定納期限、輸入者と保税地域の許可を受けた者などの入れ替えが中心です。問題文を読むときは、誰が、いつ、誰に対して、何をするのかを先に固定します。`,
+    keyPoints,
+    confusingPoints: [
+      "申告・許可・承認・届出・確認の語句の置き換え",
+      "税関長、財務大臣、輸入者、輸出者、保税関係者の主体の違い",
+      "原則を絶対化する表現と、例外を一般化する表現",
+      "期限、期間、納期限、法定納期限の混同"
+    ],
+    traps,
+    examTips: [
+      `${title}では「常に」「一切」「当然に」といった断定語を警戒する`,
+      "手続名が申告・許可・承認・届出のどれかを確認する",
+      "主体と時点を入れ替えた選択肢を疑う",
+      "例外がある制度では、要件付きの例外を一般化していないか見る"
+    ],
+    penaltyTips: [
+      "罰則・没収・追徴、延滞税・加算税、行政上の処分は同じ制裁ではありません。",
+      "義務違反がある場合でも、誰にどの効果が生じるかを個別に確認します。"
+    ],
+    principleExceptions,
+    distinctions,
+    timeLimits,
+    miniSummary: `${title}は、${focus}ことを軸に、主体・手続・期限・原則例外を並べて整理すると本試験型のひっかけに強くなります。`,
+    questions: makeKanzeihouQuestions(title, focus, traps, weaknessTag)
+  });
+}
+
+function makeKanzeihouQuestions(title, focus, traps, weaknessTag) {
+  const trapChoices = uniqueOptions([
+    traps[0],
+    "主体・手続・期限を分けて確認する",
+    "原則と例外を要件付きで読む",
+    "申告、許可、承認、届出を置き換えない"
+  ], traps[0]).slice(0, 4);
+  return [
+    makeQuestion("q1", `${title}では、制度名だけでなく、主体・手続・期限・原則例外を分けて確認する必要がある。`, ["正しい", "誤り"], "正しい", `${focus}ためには、誰がいつ何をするかを分ける必要があります。`, "正しい用語を使いながら、主体や時点だけをずらすのが典型です。", weaknessTag, "truefalse"),
+    makeQuestion("q2", `${title}について、本試験で誤り選択肢にされやすい表現はどれか。`, trapChoices, traps[0], `${traps[0]}は、${title}の主体、手続、時点、原則例外のいずれかを崩す表現です。`, "もっともらしい語句が入っていても、手続名や主体が違えば誤りになります。", weaknessTag, "single"),
+    makeQuestion("q3", `${title}を判断するとき、申告・許可・承認・届出を同じ意味として読んでよい。`, ["正しい", "誤り"], "誤り", "申告、許可、承認、届出は法的意味が異なります。置換されていたら誤りの可能性を強く疑います。", "手続っぽい語をまとめて同じ効果にするひっかけです。", "許可・承認・届出の混同", "trap")
+  ];
+}
+
+function makeKanzeihouMiniExamLesson() {
+  return makeLesson({
+    id: "lesson-kanzeihou-mini-exam",
+    courseId: "course-kanzeihou-intro",
+    subject: "関税法等",
+    title: "関税法等ミニ模試",
+    order: 30,
+    level: "基礎",
+    estimatedMinutes: 30,
+    relatedUnitId: "u008",
+    intro: "関税法等全体から、輸出入申告、保税、納税、課税価格、減免税、罰則を横断して確認します。",
+    goal: "15問を通じて、関税法等の主要論点と本試験型ひっかけへの耐性を判定します。",
+    lecture: "まず結論は、関税法等は横断比較の科目です。輸入申告と輸入許可、保税地域と保税運送、修正申告と更正の請求、納期限と法定納期限、加算要素と不算入要素を比較して読みます。\n\nミニ模試では、1問ごとに主体、手続名、時点、原則例外を確認してください。13〜15問正解でA、9〜12問でB、0〜8問でCです。C判定の場合は復習対象にします。",
+    keyPoints: ["13〜15問正解でA判定", "9〜12問正解でB判定", "0〜8問正解でC判定", "C判定は復習対象"],
+    confusingPoints: ["申告と許可", "保税地域と保税運送", "修正申告と更正の請求", "納期限と法定納期限", "加算要素と不算入要素"],
+    traps: ["申告した時点で輸入許可があったものとする", "外国貨物はどこにでも置ける", "修正申告と更正の請求を逆にする", "本邦到着後の費用を常に加算する"],
+    examTips: ["主体を最初に確認する", "申告・許可・承認・届出を置換しない", "時点語と期限語を別々に読む", "原則と例外を分ける"],
+    penaltyTips: ["罰則、没収、追徴、延滞税、加算税は制度目的が違います。"],
+    principleExceptions: ["原則は適法な申告・許可・納税。保税、特例、減免税、戻し税は要件付きの例外として整理します。"],
+    distinctions: ["税関長、財務大臣、輸入者、輸出者、保税地域の許可を受けた者、保税運送者を分けます。"],
+    timeLimits: ["輸入許可時、申告時、法定納期限、納期限、蔵置期間、運送期間を混同しません。"],
+    miniSummary: "ミニ模試の失点タグを使い、保税、納税、課税価格、減免税の弱点から優先復習します。",
+    questions: [
+      makeQuestion("q1", "輸出申告と輸入申告は、目的や納税との関係が異なるため、常に同じ手続として扱うことはできない。", ["正しい", "誤り"], "正しい", "輸出と輸入では貨物の流れ、許可、納税との関係が異なります。", "同じ通関手続という語から完全同一と読むひっかけです。", "輸出申告", "truefalse"),
+      makeQuestion("q2", "輸入申告をした時点で、輸入の許可があったものとされる。", ["正しい", "誤り"], "誤り", "輸入申告と輸入許可は別です。必要な審査・検査等を経て許可を受けます。", "申告と許可を同一視させる典型です。", "許可・承認・届出の混同", "truefalse"),
+      makeQuestion("q3", "保税地域は、外国貨物を税関の管理下で置くための制度であり、種類ごとに役割が異なる。", ["正しい", "誤り"], "正しい", "保税蔵置場、保税工場、保税展示場、総合保税地域などは役割が異なります。", "保税地域を一種類の置場として読ませる選択肢に注意します。", "保税地域", "truefalse"),
+      makeQuestion("q4", "外国貨物は、原則として保税地域以外の場所に自由に置くことができる。", ["正しい", "誤り"], "誤り", "外国貨物は税関管理下に置く必要があり、原則として保税地域に置きます。", "「自由に」という語で場所制限を消すひっかけです。", "例外規定", "truefalse"),
+      makeQuestion("q5", "保税運送は、外国貨物を税関の監督下で運送する制度であり、原則として税関長の承認が問題になる。", ["正しい", "誤り"], "正しい", "通常の保税運送では承認、運送期間、到着確認が重要です。", "承認なしに自由に運送できるという表現に注意します。", "保税運送", "truefalse"),
+      makeQuestion("q6", "収容・留置は、通常の保税蔵置と目的が異なる税関による貨物管理の制度である。", ["正しい", "誤り"], "正しい", "収容・留置は通常の保税蔵置とは異なる場面で税関が貨物を管理・確保する制度です。", "保税地域に置くことと税関が収容・留置することを同じにしない。", "手続要件", "truefalse"),
+      makeQuestion("q7", "輸入してはならない貨物は、申告さえすれば必ず輸入許可される。", ["正しい", "誤り"], "誤り", "輸入禁止貨物は申告だけで輸入できるものではありません。", "申告という正しい手続から許可を当然視させています。", "輸入禁止", "truefalse"),
+      makeQuestion("q8", "原産地虚偽表示等貨物は、表示の訂正・抹消などにより扱いが変わる場面があるため、輸入禁止貨物と常に同じとはいえない。", ["正しい", "誤り"], "正しい", "虚偽表示等のままでは問題になりますが、訂正等による扱いを確認します。", "輸入禁止貨物と完全同一にする表現に注意します。", "用語混同", "truefalse"),
+      makeQuestion("q9", "修正申告は税額が不足していた場合などに納税者側が正す方向、更正の請求は税額が多すぎた場合などに減額を求める方向で整理する。", ["正しい", "誤り"], "正しい", "税額が増える方向と減る方向で手続を分けます。", "修正申告と更正の請求を逆にするひっかけです。", "修正申告", "truefalse"),
+      makeQuestion("q10", "税関長が行う更正・決定と、納税者が行う修正申告・更正の請求は、主体が異なる。", ["正しい", "誤り"], "正しい", "税関長の処分と納税者側の手続を分けます。", "更正という語だけで主体を見落とすと誤ります。", "更正・決定", "truefalse"),
+      makeQuestion("q11", "納期限と法定納期限は、延滞税や加算税の判断で同じ意味として扱えばよい。", ["正しい", "誤り"], "誤り", "納期限と法定納期限は場面により意味が異なります。", "期限語をまとめて読むひっかけです。", "期間・期限", "truefalse"),
+      makeQuestion("q12", "課税物件の確定時期は、関税額計算の前提となるため、輸入申告時・許可時などの時点を確認する必要がある。", ["正しい", "誤り"], "正しい", "どの時点の貨物を課税対象として見るかは税額計算の前提です。", "時点語を読み飛ばすと失点します。", "課税物件", "truefalse"),
+      makeQuestion("q13", "関税の納税義務者は常に輸入者だけであり、保税地域や保税運送中の亡失では別主体が問題になることはない。", ["正しい", "誤り"], "誤り", "原則は輸入者ですが、亡失等では保税地域の許可を受けた者や保税運送者などが問題になる場面があります。", "原則を絶対化するひっかけです。", "納税義務者", "truefalse"),
+      makeQuestion("q14", "課税価格の原則は、輸入取引に係る現実支払価格を基礎にし、加算要素と不算入要素を分けて判断する。", ["正しい", "誤り"], "正しい", "課税価格は関税額計算の土台で、加算・不算入の区別が重要です。", "現実支払価格と課税価格を完全同一視しない。", "課税価格", "truefalse"),
+      makeQuestion("q15", "減免税と戻し税は、いずれも要件を満たす場合の例外制度だが、最初から納めない制度か、納付後に戻す制度かを分ける必要がある。", ["正しい", "誤り"], "正しい", "減免税と戻し税は制度のタイミングと要件が異なります。", "優遇制度として一括りにすると誤ります。", "減免税", "truefalse")
+    ]
+  });
+}
+
+const KANZEIHOU_LESSONS = [
+  ...KANZEIHOU_TOPICS.map(makeKanzeihouLesson),
+  makeKanzeihouMiniExamLesson()
+];
+
 const CURRICULUM_LESSONS = [
   ...TSUKANGYOHO_LESSONS,
-  makeStandardLesson("lesson-kanzeihou-flow", "course-kanzeihou-intro", "関税法等", "輸出入通関の全体像", 1, "u008", "輸出入通関の流れ", ["申告、審査、検査、納税、許可の順序を混同する", "輸出と輸入の要件を入れ替える", "保税地域との関係を飛ばす"]),
-  makeStandardLesson("lesson-kanzeihou-import-declaration", "course-kanzeihou-intro", "関税法等", "輸入申告と輸入の許可", 2, "u008", "輸入申告から許可までの基本", ["申告と許可を同一視する", "納税と許可の関係を単純化する", "必要書類の位置づけをずらす"]),
-  makeStandardLesson("lesson-kanzeihou-bonded-area", "course-kanzeihou-intro", "関税法等", "保税地域の基本", 3, "u006", "保税地域の種類と機能", ["保税蔵置場と保税工場を混同する", "外国貨物と内国貨物を混同する", "置く場所と行える作業を入れ替える"]),
-  makeStandardLesson("lesson-kanzeihou-bonded-transport", "course-kanzeihou-intro", "関税法等", "保税運送の基本", 4, "u007", "保税運送の承認と運送管理", ["承認と届出を置き換える", "運送期間や到着確認を落とす", "外国貨物のまま運ぶ意味を忘れる"]),
-  makeStandardLesson("lesson-kanzeihou-customs-value", "course-kanzeihou-intro", "関税法等", "課税価格の基本", 5, "u010", "課税価格の基本構造", ["現実支払価格と課税価格を完全同一視する", "加算要素と控除要素を入れ替える", "代替評価方法の順序を無視する"]),
+  ...KANZEIHOU_LESSONS,
   makeStandardLesson("lesson-practical-overview", "course-practical-intro", "通関実務", "通関実務の全体像", 1, "u012", "実務問題の全体像", ["申告書、分類、計算を別々に解きすぎる", "資料読み取りの前提を飛ばす", "時間配分を記録しない"]),
   makeStandardLesson("lesson-practical-declaration", "course-practical-intro", "通関実務", "申告書作成の基本", 2, "u012", "申告書欄の意味と入力判断", ["欄の意味を暗記だけで処理する", "インボイス情報の転記ミス", "税額計算とのつながりを切る"]),
   makeStandardLesson("lesson-practical-classification", "course-practical-intro", "通関実務", "品目分類の基本", 3, "u011", "品目分類の判断手順", ["見た目だけで分類する", "部注・類注・通則の順序を飛ばす", "統計品目番号と税番を雑に扱う"]),
@@ -1140,6 +1298,11 @@ function calculateLessonUnderstanding(lesson, progress) {
   const answered = lesson.questions.filter((question) => progress.questionResults.some((result) => result.questionId === question.id));
   if (!answered.length) return "未判定";
   const correct = lesson.questions.filter((question) => progress.questionResults.some((result) => result.questionId === question.id && result.correct)).length;
+  if (lesson.id === "lesson-kanzeihou-mini-exam") {
+    if (correct >= 13) return "A";
+    if (correct >= 9) return "B";
+    return "C";
+  }
   if (lesson.id === "lesson-tsukangyoho-mini-exam") {
     if (correct >= 9) return "A";
     if (correct >= 6) return "B";
@@ -1194,6 +1357,10 @@ function getLessonReviewReason(lessonId) {
   const wrongTags = getWrongLessonTags(lessonId);
   if (progress.understanding === "C") return "C判定のため最優先復習";
   if (progress.understanding === "B") return "B判定のため確認復習";
+  if (lessonId === "lesson-kanzeihou-mini-exam" && wrongTags.length) return "ミニ模試で失点";
+  if (wrongTags.some((tag) => /保税/.test(tag))) return "保税制度で誤答";
+  if (wrongTags.some((tag) => /課税価格|加算要素|控除要素/.test(tag))) return "課税価格で誤答";
+  if (wrongTags.some((tag) => /納税|申告|更正|期限|加算税/.test(tag))) return "納税・申告系で誤答";
   if (wrongTags.some((tag) => /罰則|処分|懲戒|監督|トラップ/.test(tag))) return "罰則トラップで誤答";
   if (lessonId === "lesson-tsukangyoho-mini-exam" && wrongTags.length) return "ミニ模試で失点";
   if (progress.status === "復習中") return "復習中に設定済み";
@@ -1202,6 +1369,8 @@ function getLessonReviewReason(lessonId) {
 }
 
 function getRecommendedLesson() {
+  const kanzeiPriority = getKanzeihouPriorityLessons()[0];
+  if (kanzeiPriority) return kanzeiPriority;
   const tsukanPriority = getTsukangyohoPriorityLessons()[0];
   if (tsukanPriority) return tsukanPriority;
   const review = getReviewLessons();
@@ -1220,6 +1389,10 @@ function getRecommendedLesson() {
 
 function getTsukangyohoLessons() {
   return getLessonsByCourse("course-tsukangyoho-basic");
+}
+
+function getKanzeihouLessons() {
+  return getLessonsByCourse("course-kanzeihou-intro");
 }
 
 function getTsukangyohoPriorityLessons() {
@@ -1244,6 +1417,38 @@ function getTsukangyohoPriorityLessons() {
   const next = lessons.find((lesson) => getLessonProgress(lesson.id).status === "未着手");
   if (next) {
     candidates.push({ lesson: next, progress: getLessonProgress(next.id), reason: "未着手の次レッスン", type: "レッスン学習", priorityScore: 88 });
+  }
+  return candidates.sort((a, b) => (b.priorityScore || 0) - (a.priorityScore || 0) || a.lesson.order - b.lesson.order);
+}
+
+function getKanzeihouPriorityLessons() {
+  const lessons = getKanzeihouLessons();
+  const candidates = [];
+  lessons.forEach((lesson) => {
+    const progress = getLessonProgress(lesson.id);
+    const wrongTags = getWrongLessonTags(lesson.id);
+    const isBondedWeakness = wrongTags.some((tag) => /保税/.test(tag));
+    const isTaxWeakness = wrongTags.some((tag) => /納税|申告|更正|期限|加算税/.test(tag));
+    const isValueWeakness = wrongTags.some((tag) => /課税価格|加算要素|控除要素/.test(tag));
+    if (progress.understanding === "C") {
+      candidates.push({ lesson, progress, reason: "C判定のため復習", type: "レッスン復習", priorityScore: 110 });
+    } else if (progress.reviewNeeded) {
+      candidates.push({ lesson, progress, reason: "復習対象の関税法等レッスン", type: "レッスン復習", priorityScore: 95 });
+    } else if (lesson.id === "lesson-kanzeihou-mini-exam" && ["B", "C"].includes(progress.understanding)) {
+      candidates.push({ lesson, progress, reason: "ミニ模試がB判定以下", type: "レッスン復習", priorityScore: 92 });
+    } else if (isBondedWeakness) {
+      candidates.push({ lesson, progress, reason: "保税制度で誤答あり", type: "レッスン復習", priorityScore: 86 });
+    } else if (isValueWeakness) {
+      candidates.push({ lesson, progress, reason: "課税価格の加算要素で誤答あり", type: "レッスン復習", priorityScore: 84 });
+    } else if (isTaxWeakness) {
+      candidates.push({ lesson, progress, reason: "納税・申告系で誤答あり", type: "レッスン復習", priorityScore: 82 });
+    } else if (progress.lastStudiedAt && daysSinceIso(progress.lastStudiedAt) > 21) {
+      candidates.push({ lesson, progress, reason: "最終学習日が古いレッスン", type: "レッスン復習", priorityScore: 58 - Math.min(daysSinceIso(progress.lastStudiedAt), 45) });
+    }
+  });
+  const next = lessons.find((lesson) => getLessonProgress(lesson.id).status === "未着手");
+  if (next) {
+    candidates.push({ lesson: next, progress: getLessonProgress(next.id), reason: "未着手の次レッスン", type: "レッスン学習", priorityScore: 90 });
   }
   return candidates.sort((a, b) => (b.priorityScore || 0) - (a.priorityScore || 0) || a.lesson.order - b.lesson.order);
 }
@@ -1369,6 +1574,19 @@ function generateTodayMenu(duration = "30分") {
 
 function buildTodayLessonItems() {
   const items = [];
+  const kanzeiPriorityItems = getKanzeihouPriorityLessons().map(({ lesson, progress, reason, type, priorityScore }) => makeTodayMenuItem({
+    id: `lesson-${lesson.id}`,
+    type,
+    title: lesson.title,
+    description: `${lesson.subject} / ${lesson.estimatedMinutes}分 / 理解度 ${progress.understanding}`,
+    reason,
+    priority: progress.understanding === "C" || reason.includes("C判定") ? "最優先" : reason.includes("未着手") ? "中" : "高",
+    priorityScore,
+    estimatedMinutes: lesson.estimatedMinutes,
+    relatedUnitId: lesson.relatedUnitId,
+    relatedLessonId: lesson.id
+  }));
+  items.push(...kanzeiPriorityItems);
   const tsukanPriorityItems = getTsukangyohoPriorityLessons().map(({ lesson, progress, reason, type, priorityScore }) => makeTodayMenuItem({
     id: `lesson-${lesson.id}`,
     type,
@@ -2111,6 +2329,8 @@ function renderLessonDetail() {
         ${renderLessonListSection("重要ポイント", lesson.keyPoints, "key-point-list")}
         ${renderLessonListSection("混同ポイント", lesson.confusingPoints, "confusing-list")}
         ${renderLessonListSection("引っかけ注意", lesson.traps, "trap-list")}
+        ${renderLessonListSection("原則と例外", lesson.principleExceptions || [], "principle-list")}
+        ${renderLessonListSection("主体・期限・手続の区別", [...(lesson.distinctions || []), ...(lesson.timeLimits || [])], "distinction-list")}
         ${renderLessonListSection("試験で狙われる表現", lesson.examTips, "exam-tip-list")}
         ${renderLessonListSection("罰則・処分・手続の区別", lesson.penaltyTips, "penalty-list")}
         <section class="panel lesson-section">
@@ -2125,7 +2345,7 @@ function renderLessonDetail() {
                 ${CURRICULUM_UNDERSTANDING.map((value) => `<option value="${escapeAttribute(value)}" ${value === progress.understanding ? "selected" : ""}>${escapeHtml(value)}</option>`).join("")}
               </select>
             </label>
-            <p class="muted">${lesson.id === "lesson-tsukangyoho-mini-exam" ? "9〜10問正解:A / 6〜8問正解:B / 0〜5問正解:C。" : "全問正解:A / 約7割正解:B / それ未満:C。"}B/Cは自動で復習対象になります。</p>
+            <p class="muted">${lesson.id === "lesson-kanzeihou-mini-exam" ? "13〜15問正解:A / 9〜12問正解:B / 0〜8問正解:C。" : lesson.id === "lesson-tsukangyoho-mini-exam" ? "9〜10問正解:A / 6〜8問正解:B / 0〜5問正解:C。" : "全問正解:A / 約7割正解:B / それ未満:C。"}B/Cは自動で復習対象になります。</p>
           </div>
         </section>
         <section class="panel lesson-section"><h4>ミニまとめ</h4><p>${escapeHtml(lesson.miniSummary)}</p></section>
@@ -2135,6 +2355,7 @@ function renderLessonDetail() {
 }
 
 function renderLessonListSection(title, items, className) {
+  if (!items.length) return "";
   return `
     <section class="panel lesson-section ${className}">
       <h4>${escapeHtml(title)}</h4>
@@ -2725,6 +2946,7 @@ function renderAnalysisView() {
 function renderCurriculumAnalysis() {
   const stats = getCurriculumStats();
   const tsukan = buildTsukangyohoCurriculumAnalysis();
+  const kanzei = buildKanzeihouCurriculumAnalysis();
   const subjectRows = ANALYSIS_SUBJECTS
     .filter((subject) => subject !== "未設定")
     .map((subject) => {
@@ -2740,6 +2962,21 @@ function renderCurriculumAnalysis() {
   const cLessons = CURRICULUM_LESSONS.filter((lesson) => getLessonProgress(lesson.id).understanding === "C");
   return `
     <div class="analysis-card-grid two-col">
+      <article class="analysis-card">
+        <h4>関税法等カリキュラム分析</h4>
+        <dl class="analysis-facts">
+          <div><dt>レッスン総数</dt><dd>${kanzei.total}</dd></div>
+          <div><dt>完了数</dt><dd>${kanzei.completed}</dd></div>
+          <div><dt>未着手数</dt><dd>${kanzei.notStarted}</dd></div>
+          <div><dt>復習対象数</dt><dd>${kanzei.reviewCount}</dd></div>
+          <div><dt>A/B/C/未判定</dt><dd>${kanzei.understandingCounts.A || 0}/${kanzei.understandingCounts.B || 0}/${kanzei.understandingCounts.C || 0}/${kanzei.understandingCounts["未判定"] || 0}</dd></div>
+          <div><dt>ミニ模試結果</dt><dd>${escapeHtml(kanzei.miniExamText)}</dd></div>
+          <div><dt>ひっかけ問題正答率</dt><dd>${escapeHtml(kanzei.trapAccuracy)}</dd></div>
+          <div><dt>保税制度レッスン正答率</dt><dd>${escapeHtml(kanzei.bondedAccuracy)}</dd></div>
+          <div><dt>納税・申告系正答率</dt><dd>${escapeHtml(kanzei.taxDeclarationAccuracy)}</dd></div>
+          <div><dt>課税価格系正答率</dt><dd>${escapeHtml(kanzei.customsValueAccuracy)}</dd></div>
+        </dl>
+      </article>
       <article class="analysis-card">
         <h4>通関業法カリキュラム分析</h4>
         <dl class="analysis-facts">
@@ -2763,6 +3000,15 @@ function renderCurriculumAnalysis() {
           <div><dt>復習対象レッスン数</dt><dd>${stats.reviewCount}</dd></div>
           <div><dt>ひっかけ問題の正答率</dt><dd>${trapRate}</dd></div>
         </dl>
+      </article>
+      <article class="analysis-card">
+        <h4>関税法等 苦手レッスン上位</h4>
+        ${kanzei.weakLessons.length ? kanzei.weakLessons.map(({ lesson, progress, correct, reason }) => `
+          <button class="compact-item ghost-button" type="button" data-open-lesson="${escapeAttribute(lesson.id)}">
+            <span>${escapeHtml(lesson.title)}</span>
+            <span>${escapeHtml(`${progress.understanding} / ${correct}/${lesson.questions.length} / ${reason}`)}</span>
+          </button>
+        `).join("") : `<p class="muted">苦手レッスンはありません。</p>`}
       </article>
       <article class="analysis-card">
         <h4>通関業法 苦手レッスン上位</h4>
@@ -2835,6 +3081,47 @@ function buildTsukangyohoCurriculumAnalysis() {
     miniExamText: mini ? `${miniCorrect}/${mini.questions.length} 正解 / 理解度 ${miniProgress.understanding}` : "未実装",
     trapAccuracy: rate(trapRows),
     penaltyAccuracy: rate(penaltyRows),
+    weakLessons
+  };
+}
+
+function buildKanzeihouCurriculumAnalysis() {
+  const lessons = getKanzeihouLessons();
+  const progresses = lessons.map((lesson) => getLessonProgress(lesson.id));
+  const countByUnderstanding = CURRICULUM_UNDERSTANDING.reduce((acc, value) => {
+    acc[value] = progresses.filter((progress) => progress.understanding === value).length;
+    return acc;
+  }, {});
+  const mini = getLessonById("lesson-kanzeihou-mini-exam");
+  const miniProgress = getLessonProgress("lesson-kanzeihou-mini-exam");
+  const miniCorrect = mini ? mini.questions.filter((question) => miniProgress.questionResults.some((result) => result.questionId === question.id && result.correct)).length : 0;
+  const rows = lessons.flatMap((lesson) => lesson.questions.map((question) => ({
+    lesson,
+    question,
+    result: getLessonQuestionResult(lesson.id, question.id)
+  }))).filter((row) => row.result);
+  const rate = (targetRows) => targetRows.length ? `${Math.round((targetRows.filter((row) => row.result.correct).length / targetRows.length) * 100)}%（${targetRows.filter((row) => row.result.correct).length}/${targetRows.length}）` : "未回答";
+  const weakLessons = lessons.map((lesson) => {
+    const progress = getLessonProgress(lesson.id);
+    const correct = lesson.questions.filter((question) => progress.questionResults.some((result) => result.questionId === question.id && result.correct)).length;
+    return { lesson, progress, correct, reason: getLessonReviewReason(lesson.id) };
+  }).filter((item) => item.progress.understanding === "C" || item.progress.reviewNeeded || item.correct < item.lesson.questions.length)
+    .sort((a, b) => {
+      const order = { C: 3, B: 2, "未判定": 1, A: 0 };
+      return (order[b.progress.understanding] || 0) - (order[a.progress.understanding] || 0) || a.correct - b.correct || a.lesson.order - b.lesson.order;
+    })
+    .slice(0, 6);
+  return {
+    total: lessons.length,
+    completed: progresses.filter((progress) => progress.status === "完了").length,
+    notStarted: progresses.filter((progress) => progress.status === "未着手").length,
+    reviewCount: progresses.filter((progress) => progress.reviewNeeded || ["B", "C"].includes(progress.understanding)).length,
+    understandingCounts: countByUnderstanding,
+    miniExamText: mini ? `${miniCorrect}/${mini.questions.length} 正解 / 理解度 ${miniProgress.understanding}` : "未実装",
+    trapAccuracy: rate(rows.filter((row) => /ひっかけ|主体|許可|承認|届出|期限|原則|例外/.test(`${row.question.weaknessTag}${row.question.trapExplanation}`))),
+    bondedAccuracy: rate(rows.filter((row) => /保税/.test(`${row.lesson.title}${row.question.weaknessTag}`))),
+    taxDeclarationAccuracy: rate(rows.filter((row) => /納税|申告|更正|期限|加算税/.test(`${row.lesson.title}${row.question.weaknessTag}`))),
+    customsValueAccuracy: rate(rows.filter((row) => /課税価格|加算要素|控除要素/.test(`${row.lesson.title}${row.question.weaknessTag}`))),
     weakLessons
   };
 }
@@ -3967,6 +4254,8 @@ function renderAiTargetSelect() {
   label.classList.toggle("is-hidden", !needsSelect);
   hint.textContent = needsSelect ? "" : state.aiForm.targetType === "通関業法カリキュラム"
     ? "通関業法20レッスンの進捗、誤答、弱点タグ、ミニ模試、復習対象を使います。"
+    : state.aiForm.targetType === "関税法等カリキュラム"
+    ? "関税法等30レッスンの進捗、誤答、弱点タグ、ミニ模試、保税・納税・課税価格の苦手状況を使います。"
     : state.aiForm.targetType === "復習対象"
     ? "現在の復習対象単元を最大10件まで使います。"
     : "単元・演習ログ・過去問ログ・実務ログ・今日のメニューの集計値を使います。";
@@ -4126,6 +4415,9 @@ function buildAiTargetData() {
   if (state.aiForm.targetType === "通関業法カリキュラム") {
     return { id: "course-tsukangyoho-basic", title: "通関業法カリキュラム", body: buildTsukangyohoPromptData() };
   }
+  if (state.aiForm.targetType === "関税法等カリキュラム") {
+    return { id: "course-kanzeihou-intro", title: "関税法等カリキュラム", body: buildKanzeihouPromptData() };
+  }
   return { id: "", title: "全体サマリー", body: buildOverallSummaryPromptData() };
 }
 
@@ -4185,6 +4477,8 @@ function buildLessonPromptData(lesson) {
     ["重要ポイント", lesson.keyPoints.join(" / ")],
     ["混同ポイント", lesson.confusingPoints.join(" / ")],
     ["引っかけ注意", lesson.traps.join(" / ")],
+    ["原則と例外", (lesson.principleExceptions || []).join(" / ")],
+    ["主体・期限・手続の区別", [...(lesson.distinctions || []), ...(lesson.timeLimits || [])].join(" / ")],
     ["試験で狙われる表現", lesson.examTips.join(" / ")],
     ["罰則・処分・手続メモ", lesson.penaltyTips.join(" / ")],
     ["確認問題の結果", results],
@@ -4223,6 +4517,41 @@ function buildTsukangyohoPromptData() {
     ["罰則・処分系問題正答率", analysis.penaltyAccuracy],
     ["間違えた確認問題の弱点タグ", rankFromValues(wrongTags).map((item) => `${item.label}(${item.count})`).join(" / ") || "なし"],
     ["復習対象レッスン", reviewLessons],
+    ["レッスン別進捗", lessonLines]
+  ]);
+}
+
+function buildKanzeihouPromptData() {
+  const analysis = buildKanzeihouCurriculumAnalysis();
+  const lessons = getKanzeihouLessons();
+  const lessonLines = lessons.map((lesson) => {
+    const progress = getLessonProgress(lesson.id);
+    const wrongQuestions = lesson.questions
+      .filter((question) => progress.questionResults.some((result) => result.questionId === question.id && !result.correct))
+      .map((question) => `${question.question} / 正答:${question.answer} / 弱点:${question.weaknessTag}`);
+    const correct = lesson.questions.filter((question) => progress.questionResults.some((result) => result.questionId === question.id && result.correct)).length;
+    return `${lesson.order}. ${lesson.title} / 状態:${progress.status} / 理解度:${progress.understanding} / 正答:${correct}/${lesson.questions.length} / 復習:${progress.reviewNeeded ? "対象" : "対象外"} / 誤答:${wrongQuestions.join(" || ") || "なし"}`;
+  }).join("\n");
+  const wrongTags = lessons.flatMap((lesson) => getWrongLessonTags(lesson.id));
+  const reviewLessons = getReviewLessons()
+    .filter(({ lesson }) => lesson.courseId === "course-kanzeihou-intro")
+    .map(({ lesson, progress, reason }) => `${lesson.title}:${progress.understanding}/${reason}`)
+    .join("\n") || "なし";
+  return keyValueLines([
+    ["対象", "関税法等カリキュラム"],
+    ["レッスン総数", analysis.total],
+    ["完了数", analysis.completed],
+    ["未着手数", analysis.notStarted],
+    ["復習対象数", analysis.reviewCount],
+    ["A/B/C/未判定", `A:${analysis.understandingCounts.A || 0} / B:${analysis.understandingCounts.B || 0} / C:${analysis.understandingCounts.C || 0} / 未判定:${analysis.understandingCounts["未判定"] || 0}`],
+    ["ミニ模試結果", analysis.miniExamText],
+    ["ひっかけ問題正答率", analysis.trapAccuracy],
+    ["保税制度レッスン正答率", analysis.bondedAccuracy],
+    ["納税・申告系レッスン正答率", analysis.taxDeclarationAccuracy],
+    ["課税価格系レッスン正答率", analysis.customsValueAccuracy],
+    ["間違えた確認問題の弱点タグ", rankFromValues(wrongTags).map((item) => `${item.label}(${item.count})`).join(" / ") || "なし"],
+    ["復習対象レッスン", reviewLessons],
+    ["苦手状況", `保税:${analysis.bondedAccuracy} / 納税:${analysis.taxDeclarationAccuracy} / 課税価格:${analysis.customsValueAccuracy} / 減免税:${lessonLines.includes("減免税") ? "レッスンあり" : "未収録"}`],
     ["レッスン別進捗", lessonLines]
   ]);
 }

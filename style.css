@@ -1367,12 +1367,22 @@ button:focus-visible {
 
 .confusing-list,
 .trap-list,
-.penalty-list {
+.penalty-list,
+.principle-list,
+.distinction-list {
   border-color: rgba(184, 111, 42, 0.38);
 }
 
 .trap-list {
   background: #fff8f1;
+}
+
+.principle-list {
+  background: #f4faf6;
+}
+
+.distinction-list {
+  background: #f7f8fb;
 }
 
 .penalty-list {
@@ -1494,6 +1504,11 @@ button:focus-visible {
 
   .lesson-reader {
     grid-template-columns: minmax(260px, 0.32fr) minmax(0, 0.68fr);
+    align-items: start;
+  }
+
+  .lesson-card {
+    grid-template-columns: minmax(0, 1.4fr) minmax(250px, 0.8fr);
     align-items: start;
   }
 
