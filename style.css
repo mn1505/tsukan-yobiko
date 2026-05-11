@@ -100,6 +100,32 @@ button {
   padding: 18px 14px 28px;
 }
 
+.home-hero {
+  display: grid;
+  gap: 14px;
+  margin: 8px 0 14px;
+  padding: 18px;
+  border-color: rgba(31, 95, 91, 0.35);
+  background: #ffffff;
+}
+
+.home-hero h2 {
+  margin: 0;
+  font-size: 1.75rem;
+  line-height: 1.18;
+}
+
+.home-priority {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+
+.home-priority strong {
+  font-size: 1.08rem;
+  line-height: 1.35;
+}
+
 .view {
   display: none;
 }
@@ -132,6 +158,29 @@ button {
   align-items: center;
   justify-content: space-between;
   padding: 16px 16px 0;
+}
+
+.details-panel {
+  margin-bottom: 14px;
+}
+
+.details-panel summary,
+.memo-support summary {
+  cursor: pointer;
+  padding: 14px 16px;
+  color: var(--primary-dark);
+  font-weight: 850;
+}
+
+.details-body {
+  padding: 0 16px 16px;
+}
+
+.quick-actions,
+.action-card-list {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px 0;
 }
 
 .stats-grid {
@@ -1246,7 +1295,7 @@ button:disabled {
   left: 0;
   z-index: 30;
   display: grid;
-  grid-template-columns: repeat(9, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 1px;
   padding: 7px 6px calc(7px + env(safe-area-inset-bottom));
   border-top: 1px solid var(--line);
@@ -1260,7 +1309,7 @@ button:disabled {
   border-radius: 8px;
   background: transparent;
   color: var(--muted);
-  font-size: 0.62rem;
+  font-size: 0.72rem;
   font-weight: 800;
 }
 
@@ -1416,7 +1465,7 @@ button:disabled {
     right: 50%;
     left: 50%;
     width: min(960px, calc(100% - 32px));
-    grid-template-columns: repeat(9, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     transform: translateX(-50%);
     border: 1px solid var(--line);
     border-bottom: 0;
@@ -1519,6 +1568,17 @@ button:disabled {
   line-height: 1.85;
 }
 
+.lesson-reader-main .lesson-section:first-child h3 {
+  font-size: 1.55rem;
+}
+
+.lesson-finish-bar {
+  position: sticky;
+  bottom: 70px;
+  z-index: 10;
+  box-shadow: 0 10px 28px rgba(29, 43, 42, 0.16);
+}
+
 .lesson-point-list {
   display: grid;
   gap: 8px;
@@ -1543,6 +1603,10 @@ button:disabled {
 
 .trap-list {
   background: #fff8f1;
+}
+
+.confusing-list {
+  background: #f7f8fb;
 }
 
 .principle-list {
@@ -1588,6 +1652,8 @@ button:disabled {
 
 .question-text {
   font-weight: 800;
+  font-size: 1.05rem;
+  line-height: 1.65;
 }
 
 .choice-card {
@@ -1598,6 +1664,7 @@ button:disabled {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface);
+  min-height: 48px;
 }
 
 .answer-box {

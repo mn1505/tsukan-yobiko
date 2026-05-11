@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="TSUKAN YOBIKO v1.3 - 総合模試・横断復習版">
+    <meta name="description" content="TSUKAN YOBIKO v1.4 - カリキュラム総点検・UI整理版">
     <meta name="theme-color" content="#1f5f5b">
     <title>TSUKAN YOBIKO</title>
     <link rel="stylesheet" href="style.css">
@@ -15,21 +15,27 @@
           <p class="eyebrow">通関士試験 個人予備校</p>
           <h1>TSUKAN YOBIKO</h1>
         </div>
-        <span class="version-pill">v1.3</span>
+        <span class="version-pill">v1.4</span>
       </header>
 
       <main class="app-main">
         <section id="view-home" class="view is-active" aria-labelledby="home-title">
-          <div class="section-heading">
+          <div class="home-hero panel">
             <div>
-              <p class="eyebrow">Dashboard</p>
-              <h2 id="home-title">ホーム</h2>
+              <p class="eyebrow" id="homeTodayDate">Today</p>
+              <h2 id="home-title">TSUKAN YOBIKO</h2>
+              <p id="homeLearningState" class="muted">学習状態を確認中</p>
+            </div>
+            <div class="home-priority">
+              <span class="badge priority">今日の最優先</span>
+              <strong id="homePriorityTask">今日のメニューを確認</strong>
+              <button class="primary-button" type="button" data-open-today>学習を始める</button>
             </div>
           </div>
           <div id="dashboardStats" class="stats-grid"></div>
           <section class="panel learning-home-panel">
             <div class="panel-heading">
-              <h3>カリキュラム進捗</h3>
+              <h3>次に学ぶレッスン</h3>
             </div>
             <div id="homeCurriculumSummary" class="compact-list"></div>
           </section>
@@ -41,43 +47,43 @@
           </section>
           <section class="panel">
             <div class="panel-heading">
-              <h3>最終更新単元</h3>
+              <h3>最新の模試結果</h3>
             </div>
             <div id="lastUpdatedUnit" class="empty-state"></div>
           </section>
           <section class="panel">
             <div class="panel-heading">
-              <h3>今日のおすすめ復習</h3>
+              <h3>復習が必要なレッスン</h3>
             </div>
             <div id="recommendedReviews" class="compact-list"></div>
           </section>
           <section class="panel">
             <div class="panel-heading">
-              <h3>演習ログ</h3>
+              <h3>模試へ進む</h3>
             </div>
             <div id="homePracticeSummary" class="compact-list"></div>
           </section>
           <section class="panel">
             <div class="panel-heading">
-              <h3>過去問ログ</h3>
+              <h3>過去問ログサマリー</h3>
             </div>
             <div id="homePastExamSummary" class="compact-list"></div>
           </section>
           <section class="panel">
             <div class="panel-heading">
-              <h3>実務サマリー</h3>
+              <h3>記録管理へ進む</h3>
             </div>
             <div id="homePracticalSummary" class="compact-list"></div>
           </section>
           <section class="panel">
             <div class="panel-heading">
-              <h3>AIプロンプト履歴</h3>
+              <h3>AI相談へ進む</h3>
             </div>
             <div id="homeAiHistory" class="compact-list"></div>
           </section>
           <section class="panel">
             <div class="panel-heading">
-              <h3>弱点分析サマリー</h3>
+              <h3>弱点トップ3</h3>
             </div>
             <div id="homeRiskSummary" class="compact-list"></div>
           </section>
@@ -104,11 +110,16 @@
               <section class="panel mock-learning-card">
                 <div class="analysis-cta">
                   <div>
-                    <p class="eyebrow">Mock Exam</p>
-                    <h3>総合模試・横断復習</h3>
-                    <p class="muted">3科目をまたぐ15問ライト模試、30問標準模試、弱点集中模試を実施できます。</p>
+                    <p class="eyebrow">Learning Hub</p>
+                    <h3>模試・横断復習・AI相談</h3>
+                    <p class="muted">レッスンの続き、総合模試、弱点集中、AI相談へすぐ進めます。</p>
                   </div>
-                  <button class="primary-button" type="button" data-open-mock>模試を開く</button>
+                  <div class="card-actions">
+                    <button class="primary-button" type="button" data-open-mock>模試</button>
+                    <button class="ghost-button" type="button" data-view-shortcut="review">横断復習</button>
+                    <button class="ghost-button" type="button" data-start-mock="weakness">弱点集中模試</button>
+                    <button class="ghost-button" type="button" data-view-shortcut="ai">AIに学習相談</button>
+                  </div>
                 </div>
               </section>
 
@@ -215,7 +226,7 @@
 
               <section class="panel">
                 <div class="panel-heading">
-                  <h3>今日のおすすめメニュー</h3>
+                  <h3>今日のメニュー一覧</h3>
                 </div>
                 <div id="todayRecommendedMenu" class="today-card-list"></div>
               </section>
@@ -231,7 +242,7 @@
             <aside class="today-side">
               <section class="panel">
                 <div class="panel-heading">
-                  <h3>演習・過去問・実務メニュー</h3>
+                  <h3>未完了項目・復習候補</h3>
                 </div>
                 <div class="today-log-sections">
                   <section>
@@ -251,21 +262,19 @@
 
               <section class="panel">
                 <div class="panel-heading">
-                  <h3>学習完了チェック</h3>
+                  <h3>完了チェック</h3>
                 </div>
                 <div id="todayCompletion" class="today-completion"></div>
               </section>
 
-              <section class="panel">
-                <div class="panel-heading">
-                  <h3>今日のメモ</h3>
-                </div>
-                <div class="today-memo">
+              <details class="panel details-panel">
+                <summary>今日のメモ</summary>
+                <div class="today-memo details-body">
                   <textarea id="todayMemo" placeholder="今日やったこと、気づいた弱点、明日やること、AIに相談したいこと"></textarea>
                   <button id="saveTodayMemoButton" class="primary-button" type="button">メモを保存</button>
                   <p id="todayMemoMessage" class="form-message" role="status" aria-live="polite"></p>
                 </div>
-              </section>
+              </details>
 
               <section class="panel">
                 <div class="analysis-cta">
@@ -576,7 +585,14 @@
           <div class="ai-layout">
             <section class="panel ai-form-panel">
               <div class="panel-heading">
-                <h3>プロンプト生成</h3>
+                <h3>用途別AI相談</h3>
+              </div>
+              <div class="quick-actions">
+                <button class="ghost-button" type="button" data-ai-quick="today">今日の学習相談</button>
+                <button class="ghost-button" type="button" data-ai-quick="mock">最新模試を分析</button>
+                <button class="ghost-button" type="button" data-ai-quick="weak">苦手レッスンを相談</button>
+                <button class="ghost-button" type="button" data-ai-quick="tags">弱点タグから復習計画</button>
+                <button class="ghost-button" type="button" data-ai-quick="lesson">レッスン質問</button>
               </div>
               <div class="ai-form">
                 <label>
@@ -621,12 +637,10 @@
             </section>
           </div>
 
-          <section class="panel ai-history-panel">
-            <div class="panel-heading">
-              <h3>生成履歴</h3>
-            </div>
-            <div id="aiHistoryList" class="ai-history-list"></div>
-          </section>
+          <details class="panel details-panel ai-history-panel">
+            <summary>生成履歴</summary>
+            <div id="aiHistoryList" class="ai-history-list details-body"></div>
+          </details>
         </section>
 
         <section id="view-mock" class="view" aria-labelledby="mock-title">
@@ -669,12 +683,10 @@
                 <div id="crossReviewList" class="cross-review-list"></div>
               </section>
 
-              <section class="panel">
-                <div class="panel-heading">
-                  <h3>模試履歴</h3>
-                </div>
-                <div id="mockHistoryList" class="mock-history-list"></div>
-              </section>
+              <details class="panel details-panel" open>
+                <summary>模試履歴</summary>
+                <div id="mockHistoryList" class="mock-history-list details-body"></div>
+              </details>
             </aside>
           </div>
         </section>
@@ -694,68 +706,50 @@
             <div id="analysisOverallSummary" class="analysis-section-body"></div>
           </section>
 
-          <section class="panel">
-            <div class="panel-heading">
-              <h3>科目別分析</h3>
-            </div>
+          <details class="panel details-panel" open>
+            <summary>科目別分析</summary>
             <div id="analysisSubjectCards" class="analysis-section-body"></div>
-          </section>
+          </details>
 
-          <section class="panel">
-            <div class="panel-heading">
-              <h3>弱点タグランキング</h3>
-            </div>
+          <details class="panel details-panel">
+            <summary>弱点タグランキング</summary>
             <div id="analysisWeaknessRanking" class="analysis-section-body"></div>
-          </section>
+          </details>
 
-          <section class="panel">
-            <div class="panel-heading">
-              <h3>単元別危険度ランキング</h3>
-            </div>
+          <details class="panel details-panel">
+            <summary>ログ分析</summary>
             <div id="analysisUnitRiskRanking" class="analysis-section-body"></div>
-          </section>
+          </details>
 
-          <section class="panel">
-            <div class="panel-heading">
-              <h3>演習・過去問成績分析</h3>
-            </div>
+          <details class="panel details-panel">
+            <summary>演習・過去問成績分析</summary>
             <div id="analysisPerformance" class="analysis-section-body"></div>
-          </section>
+          </details>
 
-          <section class="panel">
-            <div class="panel-heading">
-              <h3>実務分析</h3>
-            </div>
+          <details class="panel details-panel">
+            <summary>実務分析</summary>
             <div id="analysisPractical" class="analysis-section-body"></div>
-          </section>
+          </details>
 
-          <section class="panel">
-            <div class="panel-heading">
-              <h3>学習カリキュラム分析</h3>
-            </div>
+          <details class="panel details-panel">
+            <summary>カリキュラム分析</summary>
             <div id="analysisCurriculum" class="analysis-section-body"></div>
-          </section>
+          </details>
 
-          <section class="panel">
-            <div class="panel-heading">
-              <h3>総合模試分析</h3>
-            </div>
+          <details class="panel details-panel">
+            <summary>模試分析</summary>
             <div id="analysisMockExam" class="analysis-section-body"></div>
-          </section>
+          </details>
 
-          <section class="panel">
-            <div class="panel-heading">
-              <h3>再演習対象一覧</h3>
-            </div>
+          <details class="panel details-panel">
+            <summary>再演習対象一覧</summary>
             <div id="analysisRetryTargets" class="analysis-section-body"></div>
-          </section>
+          </details>
 
-          <section class="panel">
-            <div class="panel-heading">
-              <h3>AI活用状況</h3>
-            </div>
+          <details class="panel details-panel">
+            <summary>AI活用状況</summary>
             <div id="analysisAiUsage" class="analysis-section-body"></div>
-          </section>
+          </details>
 
           <section class="panel">
             <div class="analysis-cta">
@@ -833,8 +827,8 @@
               </div>
               <dl class="info-list">
                 <div><dt>アプリ名</dt><dd>TSUKAN YOBIKO</dd></div>
-                <div><dt>現在のバージョン</dt><dd>v1.3</dd></div>
-                <div><dt>状態</dt><dd>総合模試・横断復習版</dd></div>
+                <div><dt>現在のバージョン</dt><dd>v1.4</dd></div>
+                <div><dt>状態</dt><dd>カリキュラム総点検・UI整理版</dd></div>
                 <div><dt>公開前提</dt><dd>GitHub Pagesで公開して使う静的アプリです。</dd></div>
                 <div><dt>保存方式</dt><dd id="storageStatus">確認中</dd></div>
               </dl>
@@ -842,28 +836,15 @@
 
             <section class="panel">
               <div class="panel-heading">
-                <h3>主な機能一覧</h3>
+                <h3>今後の予定</h3>
               </div>
               <ul class="note-list">
-                <li>単元管理</li>
-                <li>カリキュラム</li>
-                <li>レッスン</li>
-                <li>講義本文</li>
-                <li>確認問題</li>
-                <li>解説</li>
-                <li>ひっかけ解説</li>
-                <li>レッスン理解度判定</li>
-                <li>レッスン復習管理</li>
-                <li>演習ログ</li>
-                <li>過去問分析</li>
-                <li>実務ログ</li>
-                <li>AI解析プロンプト生成</li>
-                <li>弱点分析</li>
-                <li>復習管理</li>
-                <li>今日の学習メニュー</li>
-                <li>総合模試</li>
-                <li>横断復習モード</li>
-                <li>JSONバックアップ/復元</li>
+                <li>v1.5：試験直前モード</li>
+                <li>v1.6：学習データ拡充</li>
+                <li>v1.7：弱点別ドリル強化</li>
+                <li>将来：AI API連携</li>
+                <li>将来：PWA対応</li>
+                <li>将来：スマホ・PC間同期</li>
               </ul>
             </section>
 
@@ -916,11 +897,8 @@
         <button class="nav-button is-active" type="button" data-view="home">ホーム</button>
         <button class="nav-button" type="button" data-view="today">今日</button>
         <button class="nav-button" type="button" data-view="learning">学習</button>
-        <button class="nav-button" type="button" data-view="mock">模試</button>
         <button class="nav-button" type="button" data-view="review">復習</button>
         <button class="nav-button" type="button" data-view="analysis">分析</button>
-        <button class="nav-button" type="button" data-view="ai">AI</button>
-        <button class="nav-button" type="button" data-view="records">記録</button>
         <button class="nav-button" type="button" data-view="settings">設定</button>
       </nav>
     </div>

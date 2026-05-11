@@ -1,4 +1,4 @@
-const APP_VERSION = "v1.3";
+const APP_VERSION = "v1.4";
 const STORAGE_KEYS = {
   units: "tsukanYobiko.units",
   version: "tsukanYobiko.version",
@@ -2892,14 +2892,16 @@ function renderDashboard() {
   });
   const reviewUnits = state.units.filter((unit) => getReviewStatus(unit).weight > 0);
   const latestMock = getLatestMockResult();
+  const curriculumStats = getCurriculumStats();
+  const todayMenu = state.todayMenu || generateTodayMenu(getTodayPlan().selectedDuration);
+  const topTask = todayMenu.recommended[0] || todayMenu.priorityItems[0];
+  document.querySelector("#homeTodayDate").textContent = formatJapaneseDate(todayString());
+  document.querySelector("#homeLearningState").textContent = `進捗 ${curriculumStats.rate}% / 完了 ${curriculumStats.completed}レッスン / 復習対象 ${curriculumStats.reviewCount}件`;
+  document.querySelector("#homePriorityTask").textContent = topTask ? topTask.title : "今日のメニューを確認";
   const stats = [
-    ["総単元数", state.units.length],
-    ["A判定数", counts.A || 0],
-    ["B判定数", counts.B || 0],
-    ["C判定数", counts.C || 0],
-    ["未判定数", counts["未判定"] || 0],
-    ["要復習数", reviewUnits.length],
-    ["模試回数", state.mockExamResults.length],
+    ["カリキュラム進捗", `${curriculumStats.rate}%`],
+    ["今日の完了率", `${getTodayCompletion(todayMenu).rate}%`],
+    ["復習レッスン", curriculumStats.reviewCount],
     ["最新模試", latestMock ? `${latestMock.scoreRate}% ${latestMock.resultLevel}` : "未実施"]
   ];
 
@@ -2910,10 +2912,16 @@ function renderDashboard() {
   renderHomeTodaySummary();
   renderHomeCurriculumSummary();
 
-  const last = [...state.units].filter((unit) => unit.updatedAt).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0];
-  document.querySelector("#lastUpdatedUnit").innerHTML = last
-    ? `<button class="compact-item ghost-button" type="button" data-open-unit="${last.id}"><span>${escapeHtml(last.title)}</span><span>${escapeHtml(last.updatedAt)}</span></button>`
-    : `<p class="muted">まだ保存された単元はありません。</p>`;
+  document.querySelector("#lastUpdatedUnit").innerHTML = latestMock
+    ? `<div class="mini-list">
+        <div class="mini-item"><span>${escapeHtml(latestMock.title)}</span><small>${escapeHtml(formatDateTime(latestMock.completedAt))}</small></div>
+        <dl class="summary-list">
+          <div><dt>正答率</dt><dd>${latestMock.scoreRate}%</dd></div>
+          <div><dt>判定</dt><dd>${escapeHtml(latestMock.resultLevel)}</dd></div>
+        </dl>
+        <button class="primary-button" type="button" data-show-mock-result="${escapeAttribute(latestMock.id)}">模試結果を見る</button>
+      </div>`
+    : `<div class="mini-list"><p class="muted">模試結果はまだありません。</p><button class="primary-button" type="button" data-open-mock>模試へ進む</button></div>`;
 
   const recommendations = reviewUnits
     .sort(compareReviewUnits)
@@ -2929,20 +2937,10 @@ function renderDashboard() {
     .sort(comparePracticeLogs)
     .slice(0, 3);
   document.querySelector("#homePracticeSummary").innerHTML = `
-    <dl class="summary-list">
-      <div><dt>総演習数</dt><dd>${practiceStats.total}</dd></div>
-      <div><dt>正答率</dt><dd>${practiceStats.accuracy}</dd></div>
-      <div><dt>再演習対象数</dt><dd>${practiceStats.retry}</dd></div>
-      <div><dt>最近の演習日</dt><dd>${escapeHtml(recentDate || "未記録")}</dd></div>
-    </dl>
-    <div class="mini-list">
-      <p class="muted mini-list-title">直近の×ログ</p>
-      ${recentWrongLogs.length ? recentWrongLogs.map((log) => `
-        <div class="mini-item">
-          <span>${escapeHtml(log.studiedAt || "日付なし")} / ${escapeHtml(log.unitTitle || "単元未設定")}</span>
-          <small>${escapeHtml([log.sourceName, log.questionRef].filter(Boolean).join(" / ") || "参照未設定")}</small>
-        </div>
-      `).join("") : `<p class="muted">×の演習ログはありません。</p>`}
+    <div class="action-card-list">
+      <button class="record-link" type="button" data-open-mock><strong>総合模試</strong><span>15問・30問・弱点集中</span></button>
+      <button class="record-link" type="button" data-start-mock="light15"><strong>15問ライト模試</strong><span>短時間で3科目確認</span></button>
+      <button class="record-link" type="button" data-start-mock="weakness"><strong>弱点集中模試</strong><span>C判定と誤答タグを優先</span></button>
     </div>
   `;
 
@@ -2982,23 +2980,27 @@ function renderDashboard() {
     .filter((log) => log.result === "×")
     .sort(comparePracticalLogs)
     .slice(0, 3);
+  document.querySelector("#homePastExamSummary").innerHTML = `
+    <dl class="summary-list">
+      <div><dt>過去問ログ</dt><dd>${pastStats.total}件</dd></div>
+      <div><dt>過去問正答率</dt><dd>${pastStats.accuracy}</dd></div>
+      <div><dt>最近</dt><dd>${escapeHtml(recentPastDate || "未記録")}</dd></div>
+      <div><dt>再演習</dt><dd>${pastStats.retry}件</dd></div>
+    </dl>
+  `;
   const practicalHost = document.querySelector("#homePracticalSummary");
   if (practicalHost) {
     practicalHost.innerHTML = `
       <dl class="summary-list">
-        <div><dt>総実務ログ数</dt><dd>${practicalStats.total}</dd></div>
-        <div><dt>実務正答率</dt><dd>${dataAwareAccuracy(practicalStats)}</dd></div>
-        <div><dt>実務系再演習対象数</dt><dd>${practicalStats.retry}</dd></div>
-        <div><dt>最近の実務学習日</dt><dd>${escapeHtml(recentPracticalDate || "未記録")}</dd></div>
+        <div><dt>演習ログ</dt><dd>${practiceStats.total}件</dd></div>
+        <div><dt>過去問ログ</dt><dd>${pastStats.total}件</dd></div>
+        <div><dt>実務ログ</dt><dd>${practicalStats.total}件</dd></div>
+        <div><dt>再演習対象</dt><dd>${practiceStats.retry + pastStats.retry + practicalStats.retry}件</dd></div>
       </dl>
-      <div class="mini-list">
-        <p class="muted mini-list-title">直近の×実務ログ</p>
-        ${recentWrongPracticalLogs.length ? recentWrongPracticalLogs.map((log) => `
-          <div class="mini-item">
-            <span>${escapeHtml(log.studiedAt || "日付なし")} / ${escapeHtml(log.practicalType || "未設定")} / ${escapeHtml(log.relatedUnitTitle || "単元未設定")}</span>
-            <small>${escapeHtml([log.questionRef, log.mistakeField].filter(Boolean).join(" / ") || "参照未設定")}</small>
-          </div>
-        `).join("") : `<p class="muted">×の実務ログはありません。</p>`}
+      <div class="action-card-list">
+        <button class="record-link" type="button" data-view-shortcut="records"><strong>記録管理</strong><span>単元・演習・過去問・実務ログ</span></button>
+        <button class="record-link" type="button" data-view-shortcut="practice"><strong>演習ログ</strong><span>最近 ${escapeHtml(recentDate || "未記録")}</span></button>
+        <button class="record-link" type="button" data-view-shortcut="practical"><strong>実務ログ</strong><span>最近 ${escapeHtml(recentPracticalDate || "未記録")}</span></button>
       </div>
     `;
   }
@@ -3006,14 +3008,20 @@ function renderDashboard() {
   const recentAi = [...state.aiAnalyses]
     .sort(compareAiAnalyses)
     .slice(0, 3);
-  document.querySelector("#homeAiHistory").innerHTML = recentAi.length
-    ? recentAi.map((item) => `
-      <div class="mini-item">
-        <span>${escapeHtml(formatDateTime(item.createdAt))} / ${escapeHtml(item.promptType || "種別なし")}</span>
-        <small>${escapeHtml(item.targetTitle || "対象なし")}</small>
-      </div>
-    `).join("")
-    : `<p class="muted">AIプロンプト生成履歴はまだありません。</p>`;
+  document.querySelector("#homeAiHistory").innerHTML = `
+    <div class="action-card-list">
+      <button class="record-link" type="button" data-view-shortcut="ai"><strong>今日の学習相談</strong><span>メニュー・弱点・復習計画をプロンプト化</span></button>
+      <button class="record-link" type="button" data-ai-quick="mock"><strong>最新模試を分析</strong><span>${latestMock ? `${latestMock.scoreRate}% ${latestMock.resultLevel}` : "模試未実施"}</span></button>
+    </div>
+    <div class="mini-list">
+      ${recentAi.length ? recentAi.slice(0, 2).map((item) => `
+        <div class="mini-item">
+          <span>${escapeHtml(formatDateTime(item.createdAt))} / ${escapeHtml(item.promptType || "種別なし")}</span>
+          <small>${escapeHtml(item.targetTitle || "対象なし")}</small>
+        </div>
+      `).join("") : `<p class="muted">AIプロンプト生成履歴はまだありません。</p>`}
+    </div>
+  `;
 
   const analysis = buildWeaknessAnalysis();
   const priorityRisks = analysis.unitRisks.filter((item) => item.risk.label === "最優先改善").slice(0, 3);
@@ -3263,7 +3271,7 @@ function renderLessonFilters() {
   const courses = [{ value: "すべて", label: "すべて" }, ...CURRICULUM_COURSES.map((course) => ({ value: course.id, label: course.title }))];
   fillSelect("#lessonSubjectFilter", subjects, state.lessonFilters.subject);
   fillObjectSelect("#lessonCourseFilter", courses, state.lessonFilters.courseId);
-  fillSelect("#lessonStatusFilter", ["すべて", ...CURRICULUM_STATUS], state.lessonFilters.status);
+  fillSelect("#lessonStatusFilter", ["すべて", "未着手", "学習中", "復習対象", "C判定", "完了"], state.lessonFilters.status);
   fillSelect("#lessonUnderstandingFilter", ["すべて", ...CURRICULUM_UNDERSTANDING], state.lessonFilters.understanding);
   document.querySelector("#lessonReviewOnlyFilter").checked = state.lessonFilters.reviewOnly;
 }
@@ -3280,7 +3288,10 @@ function filteredLessons() {
     return (
       (state.lessonFilters.subject === "すべて" || lesson.subject === state.lessonFilters.subject) &&
       (state.lessonFilters.courseId === "すべて" || lesson.courseId === state.lessonFilters.courseId) &&
-      (state.lessonFilters.status === "すべて" || progress.status === state.lessonFilters.status) &&
+      (state.lessonFilters.status === "すべて" ||
+        progress.status === state.lessonFilters.status ||
+        (state.lessonFilters.status === "復習対象" && (progress.reviewNeeded || ["B", "C"].includes(progress.understanding))) ||
+        (state.lessonFilters.status === "C判定" && progress.understanding === "C")) &&
       (state.lessonFilters.understanding === "すべて" || progress.understanding === state.lessonFilters.understanding) &&
       (!state.lessonFilters.reviewOnly || progress.reviewNeeded || ["B", "C"].includes(progress.understanding))
     );
@@ -3304,7 +3315,14 @@ function renderRecommendedLesson(item) {
 
 function renderCourseCard(course) {
   const lessons = getLessonsByCourse(course.id);
-  const completed = lessons.filter((lesson) => getLessonProgress(lesson.id).status === "完了").length;
+  const progresses = lessons.map((lesson) => getLessonProgress(lesson.id));
+  const completed = progresses.filter((progress) => progress.status === "完了").length;
+  const reviewCount = progresses.filter((progress) => progress.reviewNeeded || ["B", "C"].includes(progress.understanding)).length;
+  const counts = progresses.reduce((acc, progress) => {
+    acc[progress.understanding] = (acc[progress.understanding] || 0) + 1;
+    return acc;
+  }, {});
+  const nextLesson = lessons.find((lesson) => getLessonProgress(lesson.id).status !== "完了") || lessons[0];
   const rate = lessons.length ? Math.round((completed / lessons.length) * 100) : 0;
   return `
     <article class="course-card">
@@ -3315,10 +3333,15 @@ function renderCourseCard(course) {
       </div>
       <dl class="review-facts">
         <div><dt>レッスン数</dt><dd>${lessons.length}</dd></div>
-        <div><dt>完了</dt><dd>${completed}</dd></div>
-        <div><dt>進捗</dt><dd>${rate}%</dd></div>
+        <div><dt>完了数</dt><dd>${completed}</dd></div>
+        <div><dt>進捗率</dt><dd>${rate}%</dd></div>
+        <div><dt>A/B/C</dt><dd>${counts.A || 0}/${counts.B || 0}/${counts.C || 0}</dd></div>
+        <div><dt>復習対象</dt><dd>${reviewCount}</dd></div>
       </dl>
       <div class="progress-bar"><span style="width:${rate}%"></span></div>
+      <div class="card-actions">
+        ${nextLesson ? `<button class="primary-button" type="button" data-open-lesson="${escapeAttribute(nextLesson.id)}">${completed ? "続きから" : "開始"}</button>` : ""}
+      </div>
     </article>
   `;
 }
@@ -3393,21 +3416,22 @@ function renderLessonDetail() {
           <h3>${escapeHtml(lesson.title)}</h3>
           <h4>まず結論</h4>
           <p>${escapeHtml(lesson.intro)}</p>
-          <h4>なぜ重要か</h4>
+          <h4>学習目標</h4>
           <p>${escapeHtml(lesson.goal)}</p>
-          <h4>試験での問われ方</h4>
+          <h4>講義</h4>
           ${lesson.lecture.split("\n").filter(Boolean).map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join("")}
         </section>
-        ${renderLessonListSection("解く手順", lesson.solveSteps || [], "procedure-list")}
         ${renderLessonListSection("重要ポイント", lesson.keyPoints, "key-point-list")}
+        ${renderLessonListSection("ひっかけ注意", lesson.traps, "trap-list")}
         ${renderLessonListSection("混同ポイント", lesson.confusingPoints, "confusing-list")}
-        ${renderLessonListSection("ミスしやすいポイント", lesson.traps, "trap-list")}
+        ${renderLessonListSection("解く手順", lesson.solveSteps || [], "procedure-list")}
         ${renderLessonListSection("原則と例外", lesson.principleExceptions || [], "principle-list")}
         ${renderLessonListSection("主体・期限・手続の区別", [...(lesson.distinctions || []), ...(lesson.timeLimits || [])], "distinction-list")}
         ${renderLessonListSection("試験で狙われる表現", lesson.examTips, "exam-tip-list")}
         ${renderLessonListSection("実務上の注意", lesson.practicalNotes || [], "practical-note-list")}
         ${renderLessonListSection(lesson.subject === "通関実務" ? "ミス防止メモ" : "罰則・処分・手続の区別", lesson.penaltyTips, "penalty-list")}
         ${lesson.subject === "通関実務" ? renderRelatedPracticalLogsForLesson(lesson) : ""}
+        <section class="panel lesson-section"><h4>ミニまとめ</h4><p>${escapeHtml(lesson.miniSummary)}</p></section>
         <section class="panel lesson-section">
           <div class="panel-heading flush"><h3>確認問題</h3></div>
           <div class="question-list">
@@ -3423,7 +3447,14 @@ function renderLessonDetail() {
             <p class="muted">${lesson.id === "lesson-kanzeihou-mini-exam" || lesson.id === "lesson-practical-mini-exam" ? "13〜15問正解:A / 9〜12問正解:B / 0〜8問正解:C。" : lesson.id === "lesson-tsukangyoho-mini-exam" ? "9〜10問正解:A / 6〜8問正解:B / 0〜5問正解:C。" : "全問正解:A / 約7割正解:B / それ未満:C。"}B/Cは自動で復習対象になります。</p>
           </div>
         </section>
-        <section class="panel lesson-section"><h4>ミニまとめ</h4><p>${escapeHtml(lesson.miniSummary)}</p></section>
+        <section class="panel lesson-section lesson-finish-bar">
+          <h4>完了・復習・次へ</h4>
+          <div class="form-actions">
+            <button class="primary-button" type="button" data-complete-lesson="${escapeAttribute(lesson.id)}">レッスン完了</button>
+            <button class="ghost-button" type="button" data-review-lesson="${escapeAttribute(lesson.id)}">復習に回す</button>
+            ${nextLesson ? `<button class="primary-button" type="button" data-open-lesson="${escapeAttribute(nextLesson.id)}">次のレッスンへ進む</button>` : ""}
+          </div>
+        </section>
       </div>
     </div>
   `;
@@ -3479,10 +3510,13 @@ function renderLessonQuestion(lesson, question, index) {
         `).join("")}
       </div>
       ${["procedure", "判断メモ", "計算過程", "手順選択"].includes(question.type) ? `
-        <label class="field-wide memo-support">
-          判断メモ
-          <textarea placeholder="資料の見る順番、計算過程、迷った条件を短くメモできます。採点は選択肢で行います。"></textarea>
-        </label>
+        <details class="memo-support">
+          <summary>判断メモを開く</summary>
+          <label class="field-wide details-body">
+            判断メモ
+            <textarea placeholder="資料の見る順番、計算過程、迷った条件を短くメモできます。採点は選択肢で行います。"></textarea>
+          </label>
+        </details>
       ` : ""}
       <div class="card-actions">
         <button class="primary-button" type="button" data-grade-question="${escapeAttribute(lesson.id)}:${escapeAttribute(question.id)}">採点する</button>
@@ -5484,16 +5518,44 @@ function practiceResultClass(result) {
 function renderMockExamView() {
   const modeHost = document.querySelector("#mockModeSelector");
   if (!modeHost) return;
+  const subjectMiniExams = [
+    { title: "通関業法ミニ模試", questions: 10, minutes: 20, range: "通関業法 基礎編", lessonId: "lesson-tsukangyoho-mini-exam" },
+    { title: "関税法等ミニ模試", questions: 15, minutes: 30, range: "関税法等 基礎編", lessonId: "lesson-kanzeihou-mini-exam" },
+    { title: "通関実務ミニ模試", questions: 15, minutes: 35, range: "通関実務 基礎編", lessonId: "lesson-practical-mini-exam" }
+  ];
   modeHost.innerHTML = Object.values(MOCK_EXAM_MODES).map((mode) => `
     <article class="mock-mode-card ${state.mockExam.selectedMode === mode.id ? "is-active" : ""}">
       <div>
         <p class="eyebrow">${mode.totalQuestions}問 / ${mode.estimatedMinutes}分</p>
         <h3>${escapeHtml(mode.title)}</h3>
         <p>${escapeHtml(mode.description)}</p>
+        <dl class="review-facts compact">
+          <div><dt>問題数</dt><dd>${mode.totalQuestions}</dd></div>
+          <div><dt>目安時間</dt><dd>${mode.estimatedMinutes}分</dd></div>
+          <div><dt>対象範囲</dt><dd>3科目横断</dd></div>
+          <div><dt>前回結果</dt><dd>${escapeHtml(getLastMockModeText(mode.id))}</dd></div>
+        </dl>
       </div>
       <div class="card-actions">
         <button class="ghost-button" type="button" data-select-mock="${escapeAttribute(mode.id)}">選択</button>
         <button class="primary-button" type="button" data-start-mock="${escapeAttribute(mode.id)}">開始</button>
+      </div>
+    </article>
+  `).join("") + subjectMiniExams.map((mode) => `
+    <article class="mock-mode-card">
+      <div>
+        <p class="eyebrow">${mode.questions}問 / ${mode.minutes}分</p>
+        <h3>${escapeHtml(mode.title)}</h3>
+        <p>科目別レッスン内の確認問題を模試形式で解きます。</p>
+        <dl class="review-facts compact">
+          <div><dt>問題数</dt><dd>${mode.questions}</dd></div>
+          <div><dt>目安時間</dt><dd>${mode.minutes}分</dd></div>
+          <div><dt>対象範囲</dt><dd>${escapeHtml(mode.range)}</dd></div>
+          <div><dt>前回結果</dt><dd>${escapeHtml(getLessonProgress(mode.lessonId).understanding)}</dd></div>
+        </dl>
+      </div>
+      <div class="card-actions">
+        <button class="primary-button" type="button" data-open-lesson="${escapeAttribute(mode.lessonId)}">開始</button>
       </div>
     </article>
   `).join("");
@@ -5501,6 +5563,13 @@ function renderMockExamView() {
   renderMockResultArea();
   renderCrossReviewList("#crossReviewList", 10);
   renderMockHistory();
+}
+
+function getLastMockModeText(modeId) {
+  const result = [...state.mockExamResults]
+    .filter((item) => item.mode === modeId)
+    .sort((a, b) => (b.completedAt || "").localeCompare(a.completedAt || ""))[0];
+  return result ? `${result.scoreRate}% / ${result.resultLevel}` : "未実施";
 }
 
 function renderMockPlayer() {
@@ -5799,6 +5868,47 @@ function renderAiHistory() {
       </article>
     `).join("")
     : `<div class="empty-state"><p class="muted">生成履歴はまだありません。</p></div>`;
+}
+
+function applyAiQuickAction(kind) {
+  if (kind === "today") {
+    openAiForTodayConsult();
+    return;
+  }
+  if (kind === "mock") {
+    const latest = getLatestMockResult();
+    if (latest) {
+      openAiForTarget("総合模試結果", latest.id, "総合学習相談");
+    } else {
+      state.aiForm.promptType = "総合学習相談";
+      state.aiForm.targetType = "全体サマリー";
+      state.aiForm.targetId = "";
+      state.aiForm.additionalConditions = "総合模試が未実施の場合に、最初に受けるべき模試と復習順を提案してください。";
+      state.aiForm.promptText = "";
+      switchView("ai");
+      renderAiView();
+    }
+    return;
+  }
+  if (kind === "weak") {
+    const lesson = getReviewLessons().find(({ progress }) => progress.understanding === "C")?.lesson || getRecommendedLesson()?.lesson;
+    if (lesson) openAiForLesson(lesson.id);
+    return;
+  }
+  if (kind === "tags") {
+    state.aiForm.promptType = "復習指示";
+    state.aiForm.targetType = "横断弱点";
+    state.aiForm.targetId = "";
+    state.aiForm.additionalConditions = "弱点タグ上位から、今日30分でやる復習計画と今週の復習計画を作ってください。";
+    state.aiForm.promptText = "";
+    switchView("ai");
+    renderAiView();
+    return;
+  }
+  if (kind === "lesson") {
+    const lesson = getRecommendedLesson()?.lesson || CURRICULUM_LESSONS[0];
+    if (lesson) openAiForLesson(lesson.id);
+  }
 }
 
 function compareAiAnalyses(a, b) {
@@ -7668,6 +7778,11 @@ function attachEvents() {
     if (event.target.closest("[data-open-learning]")) {
       switchView("learning");
       window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    const aiQuickButton = event.target.closest("[data-ai-quick]");
+    if (aiQuickButton) {
+      applyAiQuickAction(aiQuickButton.dataset.aiQuick);
       return;
     }
     if (event.target.closest("[data-open-mock]")) {
