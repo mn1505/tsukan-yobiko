@@ -290,6 +290,7 @@ button:focus-visible {
 .past-exam-layout,
 .practical-layout,
 .ai-layout,
+.mock-layout,
 .today-layout {
   display: grid;
   gap: 14px;
@@ -392,6 +393,157 @@ button:focus-visible {
   margin: 0;
   font-size: 1.05rem;
   line-height: 1.35;
+}
+
+.mock-main,
+.mock-side,
+.mock-mode-grid,
+.mock-player,
+.mock-result-area,
+.mock-history-list,
+.cross-review-list,
+.mock-choice-list,
+.mock-explanations {
+  display: grid;
+  gap: 12px;
+}
+
+.mock-mode-grid,
+.mock-player,
+.mock-result-area,
+.mock-history-list,
+.cross-review-list {
+  padding: 16px;
+}
+
+.mock-learning-card {
+  border-color: rgba(184, 111, 42, 0.38);
+}
+
+.mock-mode-card,
+.mock-question-card,
+.mock-history-card,
+.cross-review-card,
+.mock-explanation-card {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfa;
+}
+
+.mock-mode-card.is-active {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(31, 95, 91, 0.12);
+}
+
+.mock-mode-card h3,
+.mock-question-card h3,
+.mock-history-card h3,
+.cross-review-card h4,
+.mock-explanation-card h5 {
+  margin: 0;
+  line-height: 1.35;
+}
+
+.mock-mode-card p {
+  margin: 6px 0 0;
+  color: var(--muted);
+}
+
+.mock-progress-head,
+.mock-question-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.mock-progress-head h3 {
+  margin: 0;
+  font-size: 1.6rem;
+}
+
+.mock-choice {
+  min-height: 54px;
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  padding: 12px;
+  text-align: left;
+  font-weight: 750;
+}
+
+.mock-choice.is-selected {
+  border-color: var(--primary);
+  background: var(--surface-soft);
+  color: var(--primary-dark);
+  box-shadow: inset 0 0 0 2px rgba(31, 95, 91, 0.14);
+}
+
+.mock-question-nav > button {
+  flex: 1 1 0;
+}
+
+.mock-jump-list {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.mock-jump {
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--muted);
+  font-weight: 900;
+}
+
+.mock-jump.is-answered {
+  background: #e2f1e9;
+  color: var(--ok);
+}
+
+.mock-jump.is-active {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: #fff;
+}
+
+.mock-score-hero {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.mock-score-hero div {
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfa;
+}
+
+.mock-score-hero span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.mock-score-hero strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 1.55rem;
+  line-height: 1.1;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.52;
 }
 
 .result-mark {
@@ -1094,7 +1246,7 @@ button:focus-visible {
   left: 0;
   z-index: 30;
   display: grid;
-  grid-template-columns: repeat(8, minmax(0, 1fr));
+  grid-template-columns: repeat(9, minmax(0, 1fr));
   gap: 1px;
   padding: 7px 6px calc(7px + env(safe-area-inset-bottom));
   border-top: 1px solid var(--line);
@@ -1152,6 +1304,14 @@ button:focus-visible {
 
   .analysis-card-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mock-mode-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .mock-jump-list {
+    grid-template-columns: repeat(10, minmax(0, 1fr));
   }
 
   .analysis-card-grid.three-col {
@@ -1230,7 +1390,8 @@ button:focus-visible {
   .practice-layout,
   .past-exam-layout,
   .practical-layout,
-  .ai-layout {
+  .ai-layout,
+  .mock-layout {
     grid-template-columns: minmax(320px, 0.88fr) minmax(0, 1.12fr);
     align-items: start;
   }
@@ -1255,7 +1416,7 @@ button:focus-visible {
     right: 50%;
     left: 50%;
     width: min(960px, calc(100% - 32px));
-    grid-template-columns: repeat(8, minmax(0, 1fr));
+    grid-template-columns: repeat(9, minmax(0, 1fr));
     transform: translateX(-50%);
     border: 1px solid var(--line);
     border-bottom: 0;

@@ -1,4 +1,4 @@
-const APP_VERSION = "v1.2";
+const APP_VERSION = "v1.3";
 const STORAGE_KEYS = {
   units: "tsukanYobiko.units",
   version: "tsukanYobiko.version",
@@ -7,7 +7,8 @@ const STORAGE_KEYS = {
   practicalLogs: "tsukanYobiko.practicalLogs",
   aiAnalyses: "tsukanYobiko.aiAnalyses",
   studyPlans: "tsukanYobiko.studyPlans",
-  curriculumProgress: "tsukanYobiko.curriculumProgress"
+  curriculumProgress: "tsukanYobiko.curriculumProgress",
+  mockExamResults: "tsukanYobiko.mockExamResults"
 };
 
 const LEVELS = ["未判定", "A", "B", "C"];
@@ -85,8 +86,31 @@ const AI_PROMPT_TYPES = [
   "過去問分析",
   "総合学習相談"
 ];
-const AI_TARGET_TYPES = ["単元", "レッスン", "通関業法カリキュラム", "関税法等カリキュラム", "通関実務カリキュラム", "演習ログ", "過去問ログ", "実務ログ", "復習対象", "全体サマリー"];
+const AI_TARGET_TYPES = ["単元", "レッスン", "通関業法カリキュラム", "関税法等カリキュラム", "通関実務カリキュラム", "演習ログ", "過去問ログ", "実務ログ", "復習対象", "総合模試結果", "最新模試結果", "横断弱点", "全体サマリー"];
 const STUDY_DURATIONS = ["15分", "30分", "1時間", "2時間", "じっくり"];
+const MOCK_EXAM_MODES = {
+  light15: {
+    id: "light15",
+    title: "15問ライト模試",
+    description: "通関業法5問、関税法等5問、通関実務5問。スマホで短時間に横断確認します。",
+    totalQuestions: 15,
+    estimatedMinutes: 25
+  },
+  standard30: {
+    id: "standard30",
+    title: "30問標準模試",
+    description: "通関業法10問、関税法等12問、通関実務8問。主要論点を一通り確認します。",
+    totalQuestions: 30,
+    estimatedMinutes: 55
+  },
+  weakness: {
+    id: "weakness",
+    title: "弱点集中模試",
+    description: "C判定レッスン、復習対象、過去の誤答タグを優先して10〜20問を出題します。",
+    totalQuestions: 15,
+    estimatedMinutes: 30
+  }
+};
 const AI_ANALYSIS_POINTS = {
   "回答添削": ["結論は合っているか", "理由づけは正しいか", "用語の使い方は正しいか", "条文・制度理解にズレはないか", "本試験ならどこで失点しそうか", "より良い回答にするにはどう修正すべきか"],
   "誤答分析": ["間違えた直接原因", "背後にある理解不足", "暗記不足か理解不足か", "混同している制度・用語", "次に復習すべき論点", "同じミスを防ぐための注意点"],
@@ -1052,11 +1076,59 @@ const CURRICULUM_LESSONS = [
   ...PRACTICAL_LESSONS
 ];
 
+function makeMockQuestion(id, subject, topic, type, question, choices, answer, explanation, trapExplanation, weaknessTag, relatedLessonId) {
+  return { id, subject, topic, type, question, choices, answer, explanation, trapExplanation, weaknessTag, relatedLessonId };
+}
+
+const MOCK_EXAM_QUESTIONS = [
+  makeMockQuestion("mock-q-001", "通関業法", "目的", "single", "通関業法の目的として最も適切なものはどれか。", ["通関手続の適正・迅速な実施を確保し、通関業の健全な発達を図ること", "関税の税率を毎年改定すること", "輸入貨物の国内販売価格を統制すること", "すべての輸出入貨物を国が直接検査すること"], "通関手続の適正・迅速な実施を確保し、通関業の健全な発達を図ること", "通関業法は通関業者を通じて通関手続の適正・迅速な実施を確保する制度です。", "関税率や販売価格の統制を目的とする法律ではありません。", "制度趣旨", "lesson-tsukangyoho-purpose"),
+  makeMockQuestion("mock-q-002", "通関業法", "通関業務と関連業務", "single", "通関業務と関連業務の区別として正しいものはどれか。", ["輸出入申告の代理は通関業務に当たる", "貨物保管の手配は常に通関業務に当たる", "関税額の相談は通関業務に一切含まれない", "通関業務と関連業務は法律上まったく区別されない"], "輸出入申告の代理は通関業務に当たる", "申告等の代理・代行は通関業務の中核です。周辺事務は関連業務として整理します。", "貨物手配や一般相談まで全部を通関業務とすると範囲を広げすぎます。", "用語混同", "lesson-tsukangyoho-business-related"),
+  makeMockQuestion("mock-q-003", "通関業法", "通関業の許可", "trueFalse", "通関業を営むには、営業所ごとに自由に開始でき、事後届出だけで足りる。", ["正しい", "誤り"], "誤り", "通関業は許可制です。事後届出だけで自由に開始できる制度ではありません。", "届出・許可の言葉の入れ替えは頻出のひっかけです。", "許可・承認・届出の混同", "lesson-tsukangyoho-permission"),
+  makeMockQuestion("mock-q-004", "通関業法", "欠格事由", "single", "欠格事由の学習で最も注意すべき観点はどれか。", ["対象者と期間をセットで確認する", "すべて永久に許可されないと覚える", "法人には欠格事由がないと覚える", "欠格事由は通関士だけに関係すると覚える"], "対象者と期間をセットで確認する", "欠格事由は誰が対象か、どの期間問題になるかを組み合わせて判断します。", "永久・一律・通関士だけ、という単純化が誤り選択肢になりやすいです。", "主体の混同", "lesson-tsukangyoho-disqualification"),
+  makeMockQuestion("mock-q-005", "通関業法", "通関士の確認", "single", "通関士の確認で狙われやすい混同はどれか。", ["通関士が確認すべき書類と、通関業者の管理義務を混同すること", "輸出貨物は確認不要と覚えること", "確認は税関長ではなく輸入者が行うと覚えること", "確認義務は罰則と無関係なので軽視してよいと覚えること"], "通関士が確認すべき書類と、通関業者の管理義務を混同すること", "通関士の確認は、誰の義務かを通関業者の義務と分けて整理します。", "主体が変わる選択肢は、本試験型の典型的な落とし穴です。", "主体の混同", "lesson-tsukangyoho-customs-broker-confirmation"),
+  makeMockQuestion("mock-q-006", "通関業法", "名義貸し禁止", "trueFalse", "通関業者は、自己の名義を他人に通関業のため使用させてはならない。", ["正しい", "誤り"], "正しい", "名義貸し禁止は通関業者の重要な義務です。", "名義を貸しても実作業を監督していればよい、という逃げ方は危険です。", "罰則", "lesson-tsukangyoho-name-lending"),
+  makeMockQuestion("mock-q-007", "通関業法", "秘密保持義務", "single", "秘密保持義務について正しいものはどれか。", ["業務上知り得た秘密を正当な理由なく漏らしてはならない", "退職後は秘密保持義務が当然になくなる", "依頼者が法人なら秘密にはならない", "税関に関係する情報だけが秘密である"], "業務上知り得た秘密を正当な理由なく漏らしてはならない", "業務で知った秘密は正当な理由なく漏らせません。退職後や法人情報でも安易に除外しません。", "「退職後ならよい」「法人情報ならよい」は対象を狭めるひっかけです。", "罰則", "lesson-tsukangyoho-confidentiality"),
+  makeMockQuestion("mock-q-008", "通関業法", "信用失墜行為", "trueFalse", "法人である通関業者の役員が、通関業法第20条の信用失墜行為に該当する行為をした場合、直ちに罰金刑に処せられることがある。", ["正しい", "誤り"], "誤り", "役員も対象になり得ますが、第20条違反そのものが罰金刑に直結するわけではありません。義務規定と罰則を分けます。", "「対象になる」と「直ちに罰金刑」をつなげる表現がひっかけです。", "罰則", "lesson-tsukangyoho-credit-penalty-trap"),
+  makeMockQuestion("mock-q-009", "通関業法", "監督処分", "single", "監督処分と懲戒処分の区別として正しいものはどれか。", ["監督処分は主に通関業者に対する処分として整理する", "監督処分は通関士個人だけを対象にする", "懲戒処分は通関業者の許可取消しだけをいう", "両者は名称が違うだけで対象も効果も同じ"], "監督処分は主に通関業者に対する処分として整理する", "通関業者への監督処分と通関士への懲戒処分を対象者で分けます。", "処分名だけでなく、誰に対する処分かを見ます。", "主体の混同", "lesson-tsukangyoho-supervision"),
+  makeMockQuestion("mock-q-010", "通関業法", "懲戒処分", "single", "通関士の懲戒処分を判断するときの軸として最も適切なものはどれか。", ["通関士個人の義務違反・信用失墜行為等に着目する", "輸入者の納税額だけで判断する", "通関業者の売上高だけで判断する", "輸出入許可の有無だけで自動的に決まる"], "通関士個人の義務違反・信用失墜行為等に着目する", "懲戒処分は通関士個人への処分として、義務違反等の有無を見ます。", "会社全体の事情や税額だけに置き換える選択肢に注意します。", "処分", "lesson-tsukangyoho-customs-broker-discipline"),
+  makeMockQuestion("mock-q-011", "関税法等", "輸出申告", "single", "輸出申告について最も適切なものはどれか。", ["輸出しようとする貨物について、必要な事項を税関に申告し許可を受ける", "輸出は関税がかからないため申告制度がない", "輸出申告は輸入者だけが行う", "輸出申告は貨物到着後に国内販売者が行う"], "輸出しようとする貨物について、必要な事項を税関に申告し許可を受ける", "輸出も税関手続として申告・許可の流れがあります。", "関税が課されないことと申告不要を混同しないようにします。", "申告書", "lesson-kanzeihou-export-declaration"),
+  makeMockQuestion("mock-q-012", "関税法等", "輸入申告と輸入の許可", "trueFalse", "輸入申告をすれば、納税や検査に関係なく直ちに輸入の許可があったものと扱われる。", ["正しい", "誤り"], "誤り", "申告と許可は別段階です。必要な審査、検査、納税等を経て許可されます。", "「申告＝許可」とする短絡が頻出です。", "許可・承認・届出の混同", "lesson-kanzeihou-import-permission"),
+  makeMockQuestion("mock-q-013", "関税法等", "特例申告", "single", "特例申告の理解として最も適切なものはどれか。", ["一定の承認を受けた者について、輸入許可後に納税申告を行う仕組みがある", "すべての輸入者が無条件で納税申告を省略できる", "輸出申告だけに使う制度である", "関税額の計算が不要になる制度である"], "一定の承認を受けた者について、輸入許可後に納税申告を行う仕組みがある", "特例申告は対象者・承認・時期をセットで整理します。", "無条件、省略、計算不要といった極端な表現に注意します。", "納税申告", "lesson-kanzeihou-special-import"),
+  makeMockQuestion("mock-q-014", "関税法等", "保税地域の種類", "single", "保税地域の種類の整理として正しいものはどれか。", ["保税蔵置場、保税工場、保税展示場など機能別に区分される", "保税地域は保税蔵置場だけである", "保税地域は輸出貨物には一切関係しない", "保税地域は税関の許可なく自由に設置できる"], "保税蔵置場、保税工場、保税展示場など機能別に区分される", "保税地域は複数の種類があり、機能と手続が異なります。", "一種類だけ、自由設置、輸出無関係という単純化は危険です。", "保税", "lesson-kanzeihou-bonded-area-types"),
+  makeMockQuestion("mock-q-015", "関税法等", "外国貨物を置く場所", "trueFalse", "外国貨物は、原則として保税地域以外の場所に置くことが制限される。", ["正しい", "誤り"], "正しい", "外国貨物は税関監督下で扱う必要があり、置ける場所に制限があります。", "国内貨物と同じように自由に置ける、という発想が誤りです。", "保税", "lesson-kanzeihou-foreign-goods-place"),
+  makeMockQuestion("mock-q-016", "関税法等", "保税蔵置場", "single", "保税蔵置場の説明として最も適切なものはどれか。", ["外国貨物を一定期間置くことができる保税地域である", "外国貨物の加工だけを目的とし蔵置はできない", "輸入許可後の内国貨物だけを置く施設である", "税関の監督とは無関係な民間倉庫である"], "外国貨物を一定期間置くことができる保税地域である", "保税蔵置場は外国貨物の蔵置を中心に理解します。", "保税工場など他の保税地域との機能混同に注意します。", "保税", "lesson-kanzeihou-bonded-warehouse"),
+  makeMockQuestion("mock-q-017", "関税法等", "保税運送", "single", "保税運送で混同しやすいものはどれか。", ["外国貨物を保税状態で運送するための承認・手続", "輸入許可後の国内配送をすべて保税運送と呼ぶこと", "保税運送中は税関の監督が一切及ばないこと", "保税運送は輸出貨物だけに限られること"], "外国貨物を保税状態で運送するための承認・手続", "外国貨物を保税状態のまま移動させる制度です。", "輸入許可後の配送や監督なしの運送と混同しないようにします。", "保税", "lesson-kanzeihou-bonded-transport"),
+  makeMockQuestion("mock-q-018", "関税法等", "収容・留置", "trueFalse", "収容・留置は、税関が貨物を管理下に置く制度であり、輸入許可と同じ意味ではない。", ["正しい", "誤り"], "正しい", "収容・留置は貨物管理の制度で、輸入許可そのものではありません。", "税関が関与する手続をすべて許可と呼ぶ選択肢に注意します。", "用語混同", "lesson-kanzeihou-detention-storage"),
+  makeMockQuestion("mock-q-019", "関税法等", "輸入してはならない貨物", "single", "輸入してはならない貨物の学習で重要な姿勢はどれか。", ["該当貨物と手続上の扱いを区別して整理する", "税率が高い貨物のことだと覚える", "原産地表示がある貨物は常に輸入禁止と覚える", "少額貨物は輸入禁止規定の対象外と覚える"], "該当貨物と手続上の扱いを区別して整理する", "輸入してはならない貨物は、税率の高さとは別の規制です。", "高税率、少額、表示の有無だけで判断する選択肢に注意します。", "輸入規制", "lesson-kanzeihou-prohibited-imports"),
+  makeMockQuestion("mock-q-020", "関税法等", "原産地虚偽表示等貨物", "single", "原産地虚偽表示等貨物について正しい方向性はどれか。", ["虚偽表示等がある場合、輸入手続上の規制対象となり得る", "原産地表示が誤っていても税関手続では一切問題にならない", "表示を消せば常に即時に輸入許可される", "国内販売者だけが判断し税関は関与しない"], "虚偽表示等がある場合、輸入手続上の規制対象となり得る", "原産地の虚偽表示等は輸入時の規制論点です。", "一切問題なし、常に即時許可という断定に注意します。", "輸入規制", "lesson-kanzeihou-origin-false"),
+  makeMockQuestion("mock-q-021", "関税法等", "納税申告", "trueFalse", "納税申告は、関税額等を確定させるための申告であり、輸入申告と常に同じ時点・同じ意味とは限らない。", ["正しい", "誤り"], "正しい", "輸入申告と納税申告は関連しますが、特例申告などでは時期の整理が必要です。", "名称に申告が付くものを全部同じにしないことが重要です。", "納税申告", "lesson-kanzeihou-tax-declaration-correction"),
+  makeMockQuestion("mock-q-022", "関税法等", "修正申告", "single", "修正申告の説明として最も適切なものはどれか。", ["申告した税額が過少である場合などに、納税者が増額方向に是正する手続", "税額が多すぎた場合だけに使う手続", "税関だけが必ず行う処分", "輸出許可を取り消すための手続"], "申告した税額が過少である場合などに、納税者が増額方向に是正する手続", "修正申告は主に増額方向の自己是正として押さえます。", "更正の請求との方向性の逆転がひっかけです。", "納税申告", "lesson-kanzeihou-tax-declaration-correction"),
+  makeMockQuestion("mock-q-023", "関税法等", "更正の請求", "single", "更正の請求として正しいものはどれか。", ["納付すべき税額が過大であった場合などに減額を求める手続", "税額が少なすぎた場合に納税者が増額する手続", "保税運送の到着確認手続", "通関士の懲戒処分を求める手続"], "納付すべき税額が過大であった場合などに減額を求める手続", "更正の請求は納税者側から減額を求める方向で整理します。", "修正申告との増減方向の混同が狙われます。", "納税申告", "lesson-kanzeihou-reassessment-decision"),
+  makeMockQuestion("mock-q-024", "関税法等", "納期限・法定納期限", "single", "納期限と法定納期限の学習で最も危険な混同はどれか。", ["延滞税などの計算基準と、実際に納付すべき期限を混同すること", "どちらも輸出許可日を必ず基準にすると覚えること", "どちらも通関士が任意に決めると覚えること", "関税には期限概念がないと覚えること"], "延滞税などの計算基準と、実際に納付すべき期限を混同すること", "納期限と法定納期限は関連しますが、使われる場面を分けます。", "期限の名前が似ているため、計算基準の文脈を見落としやすいです。", "期間・期限", "lesson-kanzeihou-due-date"),
+  makeMockQuestion("mock-q-025", "関税法等", "延滞税・加算税", "trueFalse", "延滞税と加算税は、名称が違うだけで発生原因も性質も同一である。", ["正しい", "誤り"], "誤り", "延滞税は納付遅延、加算税は申告誤り等に対する制裁的要素として整理します。", "税の名前が似ていても、発生原因を分けます。", "期間・期限", "lesson-kanzeihou-additional-tax"),
+  makeMockQuestion("mock-q-026", "通関実務", "インボイス読取", "single", "インボイス読取で最初に確認すべき観点として適切なものはどれか。", ["取引条件、品名、数量、価格、通貨を整理する", "税率だけを見ればよい", "日本語の商品名だけで分類を決める", "輸送費は必ず無視する"], "取引条件、品名、数量、価格、通貨を整理する", "インボイスから価格条件、品名、数量、通貨などを取り出して申告・計算に使います。", "一項目だけを見ると分類・課税価格・為替で連鎖ミスが起きます。", "インボイス読取", "lesson-practical-invoice-reading"),
+  makeMockQuestion("mock-q-027", "通関実務", "輸出申告", "single", "輸出申告実務で注意すべきものはどれか。", ["品名・数量・価格・統計品目番号を資料と突き合わせる", "輸出では品目分類が不要である", "輸入と同じ税額計算だけを行えばよい", "インボイスの通貨は確認不要である"], "品名・数量・価格・統計品目番号を資料と突き合わせる", "輸出申告でも統計品目番号や数量・価格の読み取りが重要です。", "輸出だから分類不要、という油断が誤り選択肢になります。", "申告書", "lesson-practical-export-structure"),
+  makeMockQuestion("mock-q-028", "通関実務", "輸入申告", "single", "輸入申告実務で特に連動する処理はどれか。", ["課税価格、税率、関税額、消費税額の確認", "輸出統計だけの確認", "通関業者の欠格事由だけの確認", "保税蔵置場の設置許可だけの確認"], "課税価格、税率、関税額、消費税額の確認", "輸入申告では課税価格から関税・消費税まで連動して処理します。", "法令知識だけ、統計だけに切り離すと実務問題で崩れます。", "税額計算", "lesson-practical-import-structure"),
+  makeMockQuestion("mock-q-029", "通関実務", "品目分類", "single", "品目分類の判断手順として適切なものはどれか。", ["品名だけで即断せず、材質・用途・構造・注を確認する", "カタログの販売名だけで決める", "税率が低い番号を選ぶ", "過去に見た似た商品名だけで決める"], "品名だけで即断せず、材質・用途・構造・注を確認する", "分類は品名だけでなく、客観的な性状と注・通則を使います。", "商品名の印象や有利な税率で選ぶのは危険です。", "品目分類", "lesson-practical-classification"),
+  makeMockQuestion("mock-q-030", "通関実務", "統計品目番号", "trueFalse", "統計品目番号は、品目分類と無関係に申告者が任意に決めてよい。", ["正しい", "誤り"], "誤り", "統計品目番号は分類判断と結びつき、任意に選ぶものではありません。", "番号欄を単なる入力欄と見るとミスにつながります。", "統計品目番号", "lesson-practical-statistical-code"),
+  makeMockQuestion("mock-q-031", "通関実務", "課税価格", "single", "課税価格の基本として最も適切なものはどれか。", ["現実支払価格を基礎に、必要な加算・不算入を整理する", "インボイス価格を常にそのまま使う", "国内販売価格を常に課税価格にする", "輸入者が希望する価格を使う"], "現実支払価格を基礎に、必要な加算・不算入を整理する", "課税価格は現実支払価格を基礎に評価要素を調整します。", "インボイス価格を無条件にそのまま使う、という処理はひっかけです。", "課税価格", "lesson-practical-customs-value"),
+  makeMockQuestion("mock-q-032", "通関実務", "加算要素", "single", "課税価格に加算する可能性があるものとして適切な例はどれか。", ["輸入貨物に係る買手負担の一定の運賃・保険料", "輸入後の国内販売広告費で条件を満たさないもの", "輸入後の国内据付費で明確に区分されるもの", "輸入後の国内輸送費で明確に区分されるもの"], "輸入貨物に係る買手負担の一定の運賃・保険料", "輸入港までの運賃・保険料などは加算要素になり得ます。", "輸入後の費用を何でも加算するわけではありません。", "加算要素", "lesson-practical-additions"),
+  makeMockQuestion("mock-q-033", "通関実務", "不算入要素", "single", "課税価格に算入しない可能性が高いものはどれか。", ["輸入後の国内据付費で価格と明確に区分されるもの", "輸入港までの国際運賃", "買手が無償提供した輸入貨物の材料費", "輸入貨物の生産に必要な金型の費用"], "輸入後の国内据付費で価格と明確に区分されるもの", "輸入後の据付費などは、条件を満たせば不算入として整理します。", "輸入前・輸入港まで・生産補助の費用と輸入後費用を混同しないようにします。", "控除要素", "lesson-practical-exclusions"),
+  makeMockQuestion("mock-q-034", "通関実務", "為替換算", "trueFalse", "外貨建て価格を円換算するときは、問題文の指定レートや適用時点を確認せず、現在の市場レートを使えばよい。", ["正しい", "誤り"], "誤り", "試験では指定されたレート・条件を使うのが基本です。現時点の市場レートを持ち込まないようにします。", "実生活の感覚で最新レートを使うと、資料読み取り問題で失点します。", "為替換算", "lesson-practical-exchange"),
+  makeMockQuestion("mock-q-035", "通関実務", "関税額計算", "single", "関税額計算の手順として適切なものはどれか。", ["課税価格に適用税率を乗じ、端数処理の条件を確認する", "インボイス総額に消費税率だけを乗じる", "数量だけを見て税率を無視する", "通貨換算前の外貨額に日本の税率を乗じて終える"], "課税価格に適用税率を乗じ、端数処理の条件を確認する", "関税額は課税価格と税率を結びつけ、端数処理まで確認します。", "消費税計算や為替換算前の金額との混同に注意します。", "関税額計算", "lesson-practical-duty-calculation"),
+  makeMockQuestion("mock-q-036", "通関実務", "消費税計算", "single", "輸入消費税計算で注意すべきものはどれか。", ["関税額等を加えた課税標準の考え方を確認する", "関税とは完全に無関係な任意額を基礎にする", "輸出申告価格だけを基礎にする", "品目分類を確認しても消費税計算には一切影響しない"], "関税額等を加えた課税標準の考え方を確認する", "輸入消費税は関税額等との連動を押さえます。", "関税計算と消費税計算を切り離しすぎると失点します。", "消費税計算", "lesson-practical-consumption-tax"),
+  makeMockQuestion("mock-q-037", "通関実務", "端数処理", "trueFalse", "端数処理は問題ごとの指定や法令上の処理に従う必要があり、毎回自分の計算しやすい単位で丸めてよいわけではない。", ["正しい", "誤り"], "正しい", "端数処理は指定されたタイミングと単位に従います。", "途中で勝手に丸めると最終税額がずれます。", "税額計算", "lesson-practical-rounding"),
+  makeMockQuestion("mock-q-038", "通関実務", "税率適用", "single", "税率適用で避けるべき判断はどれか。", ["品目分類や適用条件を確認せず、最も低い税率を選ぶ", "分類番号と税率表を対応させる", "適用日や条件を確認する", "協定税率などの条件を確認する"], "品目分類や適用条件を確認せず、最も低い税率を選ぶ", "税率は分類・条件・時点を確認して適用します。低い税率を機械的に選ぶものではありません。", "受験上は有利な数字に飛びつく選択肢が危険です。", "税率適用", "lesson-practical-tax-rate"),
+  makeMockQuestion("mock-q-039", "通関実務", "NACCS入力項目", "single", "NACCS入力項目の学習で重要なものはどれか。", ["欄の意味と資料上の根拠を対応させる", "入力欄名だけ暗記し、資料は読まない", "品名欄だけ合っていれば他欄は不要", "計算欄は自動なので確認不要"], "欄の意味と資料上の根拠を対応させる", "NACCS系は入力欄の意味と資料のどこを拾うかを結びつけます。", "自動処理に見える欄でも、元データの読み取りミスが得点を落とします。", "NACCS入力", "lesson-practical-naccs"),
+  makeMockQuestion("mock-q-040", "通関実務", "時間配分", "single", "通関実務の時間配分として最も適切なものはどれか。", ["資料読取、分類、計算、見直しに時間枠を作る", "最初の分類問題に全時間を使う", "計算問題は見直し不要と決める", "迷った問題を無制限に考え続ける"], "資料読取、分類、計算、見直しに時間枠を作る", "実務は満点狙いより、処理順と見直し時間の確保が重要です。", "一問に固執する選択肢読解の癖は横断的な弱点になります。", "時間不足", "lesson-practical-time-management")
+];
+
 const state = {
   units: [],
   practiceLogs: [],
   pastExamLogs: [],
   practicalLogs: [],
+  mockExamResults: [],
   aiAnalyses: [],
   studyPlans: [],
   curriculumProgress: [],
@@ -1134,6 +1206,12 @@ const state = {
     additionalConditions: "",
     promptText: "",
     currentAnalysisId: ""
+  },
+  mockExam: {
+    selectedMode: "light15",
+    active: null,
+    currentIndex: 0,
+    lastResultId: ""
   },
   editingPracticeLogId: null,
   editingPastExamLogId: null,
@@ -1418,6 +1496,7 @@ function loadState() {
   state.practiceLogs = normalizeArray(readJson(STORAGE_KEYS.practiceLogs)).map(normalizePracticeLog);
   state.pastExamLogs = normalizeArray(readJson(STORAGE_KEYS.pastExamLogs)).map(normalizePastExamLog);
   state.practicalLogs = normalizeArray(readJson(STORAGE_KEYS.practicalLogs)).map(normalizePracticalLog);
+  state.mockExamResults = normalizeArray(readJson(STORAGE_KEYS.mockExamResults)).map(normalizeMockExamResult);
   state.aiAnalyses = normalizeArray(readJson(STORAGE_KEYS.aiAnalyses)).map(normalizeAiAnalysis);
   state.studyPlans = normalizeArray(readJson(STORAGE_KEYS.studyPlans)).map(normalizeStudyPlan);
   state.curriculumProgress = normalizeArray(readJson(STORAGE_KEYS.curriculumProgress)).map(normalizeCurriculumProgress);
@@ -1510,6 +1589,47 @@ function normalizePracticalLog(log) {
   if (!normalized.priority) normalized.priority = "未設定";
   const unit = state.units.find((item) => item.id === normalized.relatedUnitId);
   if (unit) normalized.relatedUnitTitle = unit.title;
+  return normalized;
+}
+
+function normalizeMockExamResult(result) {
+  const normalized = {
+    id: "",
+    mode: "",
+    title: "",
+    startedAt: "",
+    completedAt: "",
+    totalQuestions: 0,
+    correctCount: 0,
+    scoreRate: 0,
+    resultLevel: "未判定",
+    answers: [],
+    weaknessTags: [],
+    subjectSummary: {},
+    reviewNeeded: false,
+    memo: "",
+    ...(result || {})
+  };
+  if (!normalized.id) normalized.id = makeMockExamResultId();
+  if (!normalized.startedAt) normalized.startedAt = new Date().toISOString();
+  if (!normalized.completedAt) normalized.completedAt = normalized.startedAt;
+  if (!["A", "B", "C", "未判定"].includes(normalized.resultLevel)) normalized.resultLevel = "未判定";
+  normalized.answers = normalizeArray(normalized.answers).map((answer) => ({
+    questionId: String(answer?.questionId || ""),
+    userAnswer: String(answer?.userAnswer || ""),
+    correct: Boolean(answer?.correct),
+    subject: String(answer?.subject || ""),
+    topic: String(answer?.topic || ""),
+    weaknessTag: String(answer?.weaknessTag || ""),
+    answeredAt: answer?.answeredAt || ""
+  })).filter((answer) => answer.questionId);
+  normalized.weaknessTags = normalizeArray(normalized.weaknessTags).map(String).filter(Boolean);
+  normalized.subjectSummary = normalized.subjectSummary && typeof normalized.subjectSummary === "object" ? normalized.subjectSummary : {};
+  normalized.totalQuestions = Number(normalized.totalQuestions || normalized.answers.length || 0);
+  normalized.correctCount = Number(normalized.correctCount || normalized.answers.filter((answer) => answer.correct).length || 0);
+  normalized.scoreRate = Number(normalized.scoreRate || (normalized.totalQuestions ? Math.round((normalized.correctCount / normalized.totalQuestions) * 100) : 0));
+  normalized.reviewNeeded = Boolean(normalized.reviewNeeded || normalized.resultLevel === "C");
+  normalized.memo = String(normalized.memo || "");
   return normalized;
 }
 
@@ -1660,6 +1780,7 @@ function saveUnits() {
   localStorage.setItem(STORAGE_KEYS.practiceLogs, JSON.stringify(state.practiceLogs));
   localStorage.setItem(STORAGE_KEYS.pastExamLogs, JSON.stringify(state.pastExamLogs));
   localStorage.setItem(STORAGE_KEYS.practicalLogs, JSON.stringify(state.practicalLogs));
+  localStorage.setItem(STORAGE_KEYS.mockExamResults, JSON.stringify(state.mockExamResults));
   localStorage.setItem(STORAGE_KEYS.aiAnalyses, JSON.stringify(state.aiAnalyses));
   localStorage.setItem(STORAGE_KEYS.studyPlans, JSON.stringify(state.studyPlans));
   localStorage.setItem(STORAGE_KEYS.curriculumProgress, JSON.stringify(state.curriculumProgress));
@@ -1685,6 +1806,11 @@ function makePastExamLogId() {
 function makePracticalLogId() {
   const random = Math.random().toString(36).slice(2, 10);
   return `prac-${Date.now().toString(36)}-${random}`;
+}
+
+function makeMockExamResultId() {
+  const random = Math.random().toString(36).slice(2, 10);
+  return `mock-${Date.now().toString(36)}-${random}`;
 }
 
 function makeAiAnalysisId() {
@@ -2149,7 +2275,11 @@ function generateTodayMenu(duration = "30分") {
   const practiceItems = buildTodayPracticeItems().slice(0, limits.practice);
   const pastExamItems = buildTodayPastExamItems().slice(0, limits.past);
   const practicalItems = buildTodayPracticalItems().slice(0, limits.practical);
+  const mockItems = buildTodayMockItems(duration);
+  const crossReviewItems = buildTodayCrossReviewItems(duration);
   const priorityItems = uniqueTodayItems([
+    ...mockItems.filter((item) => item.priority === "最優先" || item.priority === "高"),
+    ...crossReviewItems.filter((item) => item.priority === "最優先" || item.priority === "高"),
     ...lessonItems.filter((item) => item.priority === "最優先"),
     ...unitItems.filter((item) => item.priority === "最優先"),
     ...practiceItems.filter((item) => item.priority === "高"),
@@ -2170,6 +2300,8 @@ function generateTodayMenu(duration = "30分") {
   const recommended = uniqueTodayItems([
     ...manualItems,
     ...priorityItems,
+    ...mockItems,
+    ...crossReviewItems,
     ...lessonItems,
     ...pastExamItems,
     ...practicalItems,
@@ -2178,8 +2310,8 @@ function generateTodayMenu(duration = "30分") {
     ...aiItems,
     ...unitItems
   ]).slice(0, limits.total);
-  const allItems = uniqueTodayItems([...recommended, ...manualItems, ...priorityItems, ...lessonItems, ...practiceItems, ...pastExamItems, ...practicalItems, ...weaknessItems, ...aiItems]);
-  return { duration, date: plan.date, plan, recommended, priorityItems, lessonItems, practiceItems, pastExamItems, practicalItems, weaknessItems, aiItems, manualItems, allItems };
+  const allItems = uniqueTodayItems([...recommended, ...manualItems, ...priorityItems, ...mockItems, ...crossReviewItems, ...lessonItems, ...practiceItems, ...pastExamItems, ...practicalItems, ...weaknessItems, ...aiItems]);
+  return { duration, date: plan.date, plan, recommended, priorityItems, lessonItems, practiceItems, pastExamItems, practicalItems, mockItems, crossReviewItems, weaknessItems, aiItems, manualItems, allItems };
 }
 
 function buildTodayLessonItems() {
@@ -2350,6 +2482,79 @@ function buildTodayWeaknessItems() {
   }));
 }
 
+function buildTodayMockItems(duration) {
+  const latest = getLatestMockResult();
+  const items = [];
+  if (latest?.resultLevel === "C") {
+    items.push(makeTodayMenuItem({
+      id: `mock-review-${latest.id}`,
+      type: "模試復習",
+      title: `${latest.title}の誤答復習`,
+      description: `${latest.correctCount}/${latest.totalQuestions}正解 / ${latest.scoreRate}% / 判定${latest.resultLevel}`,
+      reason: "前回模試C判定",
+      priority: "最優先",
+      priorityScore: 140,
+      estimatedMinutes: 25,
+      relatedMockResultId: latest.id
+    }));
+    items.push(makeTodayMenuItem({
+      id: "mock-weakness-today",
+      type: "弱点集中模試",
+      title: "弱点集中模試",
+      description: "前回模試の弱点タグとC判定レッスンを優先して確認",
+      reason: "前回模試で間違えた論点を再確認",
+      priority: "高",
+      priorityScore: 120,
+      estimatedMinutes: 30,
+      mockMode: "weakness"
+    }));
+  }
+  if (!state.mockExamResults.some((result) => result.mode === "light15")) {
+    items.push(makeTodayMenuItem({
+      id: "mock-light-untried",
+      type: "総合模試",
+      title: "15問ライト模試",
+      description: "3科目を短時間で横断確認",
+      reason: "未実施の総合模試",
+      priority: duration === "30分" || duration === "1時間" ? "高" : "中",
+      priorityScore: 70,
+      estimatedMinutes: 25,
+      mockMode: "light15"
+    }));
+  }
+  if ((duration === "2時間" || duration === "じっくり") && !state.mockExamResults.some((result) => result.mode === "standard30")) {
+    items.push(makeTodayMenuItem({
+      id: "mock-standard-untried",
+      type: "総合模試",
+      title: "30問標準模試",
+      description: "本試験に近い横断演習",
+      reason: "未実施の標準模試",
+      priority: "高",
+      priorityScore: 80,
+      estimatedMinutes: 55,
+      mockMode: "standard30"
+    }));
+  }
+  return items;
+}
+
+function buildTodayCrossReviewItems(duration) {
+  const limit = duration === "15分" ? 1 : duration === "30分" ? 2 : duration === "1時間" ? 2 : 3;
+  return getCrossReviewItems().slice(0, limit).map((item, index) => makeTodayMenuItem({
+    id: `today-${item.id}`,
+    type: "横断復習",
+    title: item.title,
+    description: `${item.subject} / ${item.type} / ${item.weaknessTag || "タグなし"}`,
+    reason: item.reason,
+    priority: index === 0 && item.priorityScore >= 90 ? "最優先" : "高",
+    priorityScore: item.priorityScore,
+    estimatedMinutes: 12,
+    relatedUnitId: item.relatedUnitId || "",
+    relatedLessonId: item.relatedLessonId || "",
+    relatedMockResultId: item.mockResultId || ""
+  }));
+}
+
 function makeTodayMenuItem(item) {
   return {
     id: "",
@@ -2362,6 +2567,9 @@ function makeTodayMenuItem(item) {
     estimatedMinutes: 10,
     relatedUnitId: "",
     relatedLogId: "",
+    relatedLessonId: "",
+    relatedMockResultId: "",
+    mockMode: "",
     ...item
   };
 }
@@ -2402,6 +2610,239 @@ function todayLogReason(log) {
   ].filter(Boolean).join(" / ") || "見直し対象";
 }
 
+function getLatestMockResult() {
+  return [...state.mockExamResults].sort((a, b) => (b.completedAt || "").localeCompare(a.completedAt || ""))[0] || null;
+}
+
+function getMockQuestionById(questionId) {
+  return MOCK_EXAM_QUESTIONS.find((question) => question.id === questionId);
+}
+
+function getSubjectMockQuestions(subject) {
+  return MOCK_EXAM_QUESTIONS.filter((question) => question.subject === subject);
+}
+
+function startMockExam(modeId = state.mockExam.selectedMode) {
+  const questions = buildMockExamQuestions(modeId);
+  state.mockExam = {
+    selectedMode: modeId,
+    active: {
+      mode: modeId,
+      title: MOCK_EXAM_MODES[modeId]?.title || "総合模試",
+      startedAt: new Date().toISOString(),
+      questions,
+      answers: {}
+    },
+    currentIndex: 0,
+    lastResultId: ""
+  };
+  renderMockExamView();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function buildMockExamQuestions(modeId) {
+  if (modeId === "standard30") {
+    return [
+      ...getSubjectMockQuestions("通関業法").slice(0, 10),
+      ...getSubjectMockQuestions("関税法等").slice(0, 12),
+      ...getSubjectMockQuestions("通関実務").slice(0, 8)
+    ];
+  }
+  if (modeId === "weakness") {
+    const priorityTags = getCrossWeaknessTagRanking().map((item) => item.tag);
+    const reviewLessonIds = new Set(getReviewLessons().map(({ lesson }) => lesson.id));
+    const scored = MOCK_EXAM_QUESTIONS.map((question, index) => ({
+      question,
+      index,
+      score: (priorityTags.indexOf(question.weaknessTag) >= 0 ? 100 - priorityTags.indexOf(question.weaknessTag) * 4 : 0) +
+        (reviewLessonIds.has(question.relatedLessonId) ? 45 : 0) +
+        (getLessonProgress(question.relatedLessonId).understanding === "C" ? 60 : 0) +
+        (state.mockExamResults.some((result) => result.answers.some((answer) => answer.questionId === question.id && !answer.correct)) ? 55 : 0)
+    }));
+    const prioritized = scored.sort((a, b) => b.score - a.score || a.index - b.index).map((item) => item.question);
+    return uniqueQuestions(prioritized).slice(0, 15);
+  }
+  return [
+    ...getSubjectMockQuestions("通関業法").slice(0, 5),
+    ...getSubjectMockQuestions("関税法等").slice(0, 5),
+    ...getSubjectMockQuestions("通関実務").slice(0, 5)
+  ];
+}
+
+function uniqueQuestions(questions) {
+  const map = new Map();
+  questions.forEach((question) => {
+    if (!map.has(question.id)) map.set(question.id, question);
+  });
+  return [...map.values()];
+}
+
+function answerMockQuestion(questionId, value) {
+  if (!state.mockExam.active) return;
+  state.mockExam.active.answers[questionId] = {
+    value,
+    answeredAt: new Date().toISOString()
+  };
+  renderMockExamView();
+}
+
+function moveMockQuestion(delta) {
+  if (!state.mockExam.active) return;
+  const max = state.mockExam.active.questions.length - 1;
+  state.mockExam.currentIndex = Math.min(max, Math.max(0, state.mockExam.currentIndex + delta));
+  renderMockExamView();
+  document.querySelector("#mockExamPlayer")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function gradeMockExam() {
+  const active = state.mockExam.active;
+  if (!active) return;
+  const unanswered = active.questions.filter((question) => !active.answers[question.id]?.value).length;
+  const confirmed = window.confirm(`未回答は${unanswered}問です。採点しますか？`);
+  if (!confirmed) return;
+  const completedAt = new Date().toISOString();
+  const answers = active.questions.map((question) => {
+    const userAnswer = active.answers[question.id]?.value || "";
+    return {
+      questionId: question.id,
+      userAnswer,
+      correct: userAnswer === question.answer,
+      subject: question.subject,
+      topic: question.topic,
+      weaknessTag: question.weaknessTag,
+      answeredAt: active.answers[question.id]?.answeredAt || completedAt
+    };
+  });
+  const correctCount = answers.filter((answer) => answer.correct).length;
+  const totalQuestions = active.questions.length;
+  const scoreRate = totalQuestions ? Math.round((correctCount / totalQuestions) * 100) : 0;
+  const weaknessTags = rankFromValues(answers.filter((answer) => !answer.correct).map((answer) => answer.weaknessTag)).map((item) => item.label);
+  const subjectSummary = buildMockSubjectSummary(answers);
+  const resultLevel = judgeMockResultLevel(active.mode, correctCount, scoreRate);
+  const result = normalizeMockExamResult({
+    id: makeMockExamResultId(),
+    mode: active.mode,
+    title: active.title,
+    startedAt: active.startedAt,
+    completedAt,
+    totalQuestions,
+    correctCount,
+    scoreRate,
+    resultLevel,
+    answers,
+    weaknessTags,
+    subjectSummary,
+    reviewNeeded: resultLevel === "C",
+    memo: ""
+  });
+  state.mockExamResults.unshift(result);
+  state.mockExam.active = null;
+  state.mockExam.lastResultId = result.id;
+  saveUnits();
+  render();
+  showToast("模試結果を保存しました。");
+}
+
+function buildMockSubjectSummary(answers) {
+  return ["通関業法", "関税法等", "通関実務"].reduce((acc, subject) => {
+    const rows = answers.filter((answer) => answer.subject === subject);
+    const correct = rows.filter((answer) => answer.correct).length;
+    acc[subject] = {
+      total: rows.length,
+      correct,
+      rate: rows.length ? Math.round((correct / rows.length) * 100) : 0
+    };
+    return acc;
+  }, {});
+}
+
+function judgeMockResultLevel(mode, correctCount, scoreRate) {
+  if (mode === "light15") {
+    if (correctCount >= 13) return "A";
+    if (correctCount >= 9) return "B";
+    return "C";
+  }
+  if (mode === "standard30") {
+    if (correctCount >= 26) return "A";
+    if (correctCount >= 18) return "B";
+    return "C";
+  }
+  if (scoreRate >= 85) return "A";
+  if (scoreRate >= 60) return "B";
+  return "C";
+}
+
+function getCrossReviewItems() {
+  const items = [];
+  getReviewLessons().forEach(({ lesson, progress, reason }) => {
+    items.push({
+      id: `cross-lesson-${lesson.id}`,
+      title: lesson.title,
+      subject: lesson.subject,
+      type: "レッスン",
+      reason: progress.understanding === "C" ? "C判定レッスン" : reason,
+      weaknessTag: getWrongLessonTags(lesson.id)[0] || lesson.weaknessTag || "",
+      relatedLessonId: lesson.id,
+      priorityScore: progress.understanding === "C" ? 100 : 70
+    });
+  });
+  state.mockExamResults.forEach((result) => {
+    result.answers.filter((answer) => !answer.correct).forEach((answer) => {
+      const question = getMockQuestionById(answer.questionId);
+      items.push({
+        id: `cross-mock-${result.id}-${answer.questionId}`,
+        title: question?.topic || answer.topic || "模試誤答",
+        subject: answer.subject,
+        type: "模試誤答",
+        reason: `${result.title}で誤答`,
+        weaknessTag: answer.weaknessTag,
+        relatedLessonId: question?.relatedLessonId || "",
+        mockResultId: result.id,
+        priorityScore: result.resultLevel === "C" ? 95 : 75
+      });
+    });
+  });
+  [...state.practiceLogs, ...state.pastExamLogs, ...state.practicalLogs].forEach((log) => {
+    if (!["×", "△"].includes(log.result) && !log.retry) return;
+    const unitId = log.unitId || log.relatedUnitId || "";
+    items.push({
+      id: `cross-log-${log.id}`,
+      title: log.unitTitle || log.relatedUnitTitle || log.topic || log.questionRef || "ログ見直し",
+      subject: log.subject || "未設定",
+      type: "ログ",
+      reason: todayLogReason(log),
+      weaknessTag: (log.weaknessTags || [])[0] || "",
+      relatedUnitId: unitId,
+      priorityScore: log.result === "×" ? 80 : 55
+    });
+  });
+  getCrossWeaknessTagRanking().slice(0, 8).forEach((item) => {
+    items.push({
+      id: `cross-tag-${item.tag}`,
+      title: item.tag,
+      subject: "横断",
+      type: "弱点タグ",
+      reason: `横断弱点タグ上位 ${item.count}件`,
+      weaknessTag: item.tag,
+      priorityScore: item.count * 12
+    });
+  });
+  return uniqueCrossReviewItems(items).sort((a, b) => b.priorityScore - a.priorityScore || a.title.localeCompare(b.title, "ja"));
+}
+
+function uniqueCrossReviewItems(items) {
+  const map = new Map();
+  items.forEach((item) => {
+    if (!map.has(item.id)) map.set(item.id, item);
+  });
+  return [...map.values()];
+}
+
+function getCrossWeaknessTagRanking() {
+  return rankFromValues(buildWeaknessRanking().flatMap((item) => Array(item.count).fill(item.tag)))
+    .map((item) => ({ tag: item.label, count: item.count }));
+}
+
 function daysSince(dateString) {
   if (!dateString) return 999;
   const date = new Date(`${dateString}T00:00:00`);
@@ -2431,6 +2872,7 @@ function render() {
   renderPracticeView();
   renderPastExamView();
   renderPracticalView();
+  renderMockExamView();
   renderAiView();
   renderAnalysisView();
   renderReviewList();
@@ -2449,13 +2891,16 @@ function renderDashboard() {
     counts[unit.level] = (counts[unit.level] || 0) + 1;
   });
   const reviewUnits = state.units.filter((unit) => getReviewStatus(unit).weight > 0);
+  const latestMock = getLatestMockResult();
   const stats = [
     ["総単元数", state.units.length],
     ["A判定数", counts.A || 0],
     ["B判定数", counts.B || 0],
     ["C判定数", counts.C || 0],
     ["未判定数", counts["未判定"] || 0],
-    ["要復習数", reviewUnits.length]
+    ["要復習数", reviewUnits.length],
+    ["模試回数", state.mockExamResults.length],
+    ["最新模試", latestMock ? `${latestMock.scoreRate}% ${latestMock.resultLevel}` : "未実施"]
   ];
 
   document.querySelector("#dashboardStats").innerHTML = stats
@@ -2678,6 +3123,8 @@ function renderTodayView() {
       <div><dt>最優先復習</dt><dd>${menu.priorityItems.length}件</dd></div>
       <div><dt>レッスン</dt><dd>${menu.lessonItems.length}件</dd></div>
       <div><dt>ログ見直し</dt><dd>${menu.practiceItems.length + menu.pastExamItems.length + menu.practicalItems.length}件</dd></div>
+      <div><dt>模試</dt><dd>${menu.mockItems.length}件</dd></div>
+      <div><dt>横断復習</dt><dd>${menu.crossReviewItems.length}件</dd></div>
     </dl>
   `;
   document.querySelector("#durationButtons").innerHTML = STUDY_DURATIONS.map((duration) => `
@@ -2724,6 +3171,8 @@ function todayMenuCard(item, compact = false) {
         ${item.relatedLessonId ? `<button class="primary-button" type="button" data-open-lesson="${escapeAttribute(item.relatedLessonId)}">開く</button>` : ""}
         ${item.relatedUnitId ? `<button class="ghost-button" type="button" data-open-unit="${escapeAttribute(item.relatedUnitId)}">開く</button>` : ""}
         ${item.relatedLogId ? `<button class="ghost-button" type="button" data-open-today-log="${escapeAttribute(item.type)}:${escapeAttribute(item.relatedLogId)}">ログを開く</button>` : ""}
+        ${item.mockMode ? `<button class="primary-button" type="button" data-start-mock="${escapeAttribute(item.mockMode)}">開始</button>` : ""}
+        ${item.relatedMockResultId ? `<button class="ghost-button" type="button" data-show-mock-result="${escapeAttribute(item.relatedMockResultId)}">模試詳細</button>` : ""}
       </div>
     </article>
   `;
@@ -3603,8 +4052,56 @@ function renderAnalysisView() {
   document.querySelector("#analysisPerformance").innerHTML = renderPerformanceAnalysis(analysis.performance);
   document.querySelector("#analysisPractical").innerHTML = renderPracticalAnalysis(analysis.performance.practical);
   document.querySelector("#analysisCurriculum").innerHTML = renderCurriculumAnalysis();
+  document.querySelector("#analysisMockExam").innerHTML = renderMockExamAnalysis();
   document.querySelector("#analysisRetryTargets").innerHTML = renderRetryTargets(analysis.retryTargets);
   document.querySelector("#analysisAiUsage").innerHTML = renderAiUsage(analysis.aiUsage);
+}
+
+function renderMockExamAnalysis() {
+  const results = state.mockExamResults;
+  const latest = getLatestMockResult();
+  const average = results.length ? Math.round(results.reduce((sum, result) => sum + result.scoreRate, 0) / results.length) : 0;
+  const subjectRows = ["通関業法", "関税法等", "通関実務"].map((subject) => {
+    const rows = results.flatMap((result) => result.answers).filter((answer) => answer.subject === subject);
+    const correct = rows.filter((answer) => answer.correct).length;
+    return `${subject}:${rows.length ? Math.round((correct / rows.length) * 100) : 0}%`;
+  }).join(" / ");
+  const weakTags = getCrossWeaknessTagRanking().slice(0, 8).map((item) => `${item.tag}(${item.count})`).join(" / ");
+  const wrongTopics = rankFromValues(results.flatMap((result) => result.answers.filter((answer) => !answer.correct).map((answer) => answer.topic))).slice(0, 8);
+  const transitions = [...results].sort((a, b) => (a.completedAt || "").localeCompare(b.completedAt || "")).map((result) => `${formatDateTime(result.completedAt)}:${result.resultLevel}`).join(" / ");
+  const doneModes = new Set(results.map((result) => result.mode));
+  const untried = Object.values(MOCK_EXAM_MODES).filter((mode) => !doneModes.has(mode.id)).map((mode) => mode.title);
+  const nextMode = latest?.resultLevel === "C" ? "弱点集中模試"
+    : !doneModes.has("light15") ? "15問ライト模試"
+    : !doneModes.has("standard30") ? "30問標準模試"
+    : "弱点集中模試";
+  return `
+    <div class="analysis-card-grid two-col">
+      <article class="analysis-card">
+        <h4>総合模試集計</h4>
+        <dl class="analysis-facts">
+          <div><dt>模試実施回数</dt><dd>${results.length}</dd></div>
+          <div><dt>最新模試判定</dt><dd>${escapeHtml(latest?.resultLevel || "未実施")}</dd></div>
+          <div><dt>最新模試正答率</dt><dd>${latest ? `${latest.scoreRate}%` : "未実施"}</dd></div>
+          <div><dt>模試平均正答率</dt><dd>${results.length ? `${average}%` : "未実施"}</dd></div>
+          <div><dt>科目別模試正答率</dt><dd>${escapeHtml(subjectRows)}</dd></div>
+          <div><dt>A/B/C判定推移</dt><dd>${escapeHtml(transitions || "未実施")}</dd></div>
+          <div><dt>未実施の模試モード</dt><dd>${escapeHtml(untried.join(" / ") || "なし")}</dd></div>
+          <div><dt>次に受けるべき模試</dt><dd>${escapeHtml(nextMode)}</dd></div>
+        </dl>
+      </article>
+      <article class="analysis-card">
+        <h4>模試で多い弱点</h4>
+        <dl class="analysis-facts">
+          <div><dt>弱点タグ</dt><dd>${escapeHtml(weakTags || "データ不足")}</dd></div>
+          <div><dt>間違えた論点ランキング</dt><dd>${escapeHtml(wrongTopics.map((item) => `${item.label}(${item.count})`).join(" / ") || "なし")}</dd></div>
+        </dl>
+        <div class="card-actions">
+          <button class="primary-button" type="button" data-open-mock>模試を開く</button>
+        </div>
+      </article>
+    </div>
+  `;
 }
 
 function renderCurriculumAnalysis() {
@@ -3885,6 +4382,8 @@ function buildWeaknessAnalysis() {
     practiceStats,
     pastStats,
     practicalStats,
+    mockExamCount: state.mockExamResults.length,
+    latestMockRate: getLatestMockResult()?.scoreRate ?? null,
     retryCount: retryTargets.units.length + retryTargets.practiceLogs.length + retryTargets.pastExamLogs.length + retryTargets.practicalLogs.length,
     weaknessTotal: weaknessRanking.reduce((sum, item) => sum + item.count, 0),
     aiCount: state.aiAnalyses.length
@@ -4049,6 +4548,10 @@ function buildWeaknessRanking() {
     const item = ensure(tag);
     item.count += 1;
     item.practicalLogIds.add(log.id);
+  }));
+  state.mockExamResults.forEach((result) => (result.weaknessTags || []).forEach((tag) => {
+    const item = ensure(tag);
+    item.count += 1;
   }));
   return [...map.values()]
     .map((item) => ({
@@ -4270,6 +4773,8 @@ function renderAnalysisOverall(analysis) {
     ["過去問正答率", dataAwareAccuracy(summary.pastStats)],
     ["総実務ログ数", summary.practicalStats.total],
     ["実務正答率", dataAwareAccuracy(summary.practicalStats)],
+    ["総合模試回数", summary.mockExamCount],
+    ["最新模試正答率", summary.latestMockRate === null ? "未実施" : `${summary.latestMockRate}%`],
     ["再演習対象数", summary.retryCount],
     ["弱点タグ総数", summary.weaknessTotal],
     ["AI解析履歴数", summary.aiCount],
@@ -4976,6 +5481,222 @@ function practiceResultClass(result) {
   return "is-pending";
 }
 
+function renderMockExamView() {
+  const modeHost = document.querySelector("#mockModeSelector");
+  if (!modeHost) return;
+  modeHost.innerHTML = Object.values(MOCK_EXAM_MODES).map((mode) => `
+    <article class="mock-mode-card ${state.mockExam.selectedMode === mode.id ? "is-active" : ""}">
+      <div>
+        <p class="eyebrow">${mode.totalQuestions}問 / ${mode.estimatedMinutes}分</p>
+        <h3>${escapeHtml(mode.title)}</h3>
+        <p>${escapeHtml(mode.description)}</p>
+      </div>
+      <div class="card-actions">
+        <button class="ghost-button" type="button" data-select-mock="${escapeAttribute(mode.id)}">選択</button>
+        <button class="primary-button" type="button" data-start-mock="${escapeAttribute(mode.id)}">開始</button>
+      </div>
+    </article>
+  `).join("");
+  renderMockPlayer();
+  renderMockResultArea();
+  renderCrossReviewList("#crossReviewList", 10);
+  renderMockHistory();
+}
+
+function renderMockPlayer() {
+  const host = document.querySelector("#mockExamPlayer");
+  if (!host) return;
+  const active = state.mockExam.active;
+  if (!active) {
+    host.innerHTML = `<div class="empty-state"><p class="muted">模試モードを選んで開始してください。採点後は結果・解説・履歴に保存されます。</p></div>`;
+    return;
+  }
+  const total = active.questions.length;
+  const index = Math.min(state.mockExam.currentIndex, total - 1);
+  const question = active.questions[index];
+  const selected = active.answers[question.id]?.value || "";
+  const answeredCount = active.questions.filter((item) => active.answers[item.id]?.value).length;
+  const unanswered = total - answeredCount;
+  host.innerHTML = `
+    <div class="mock-progress-head">
+      <div>
+        <p class="eyebrow">${escapeHtml(active.title)}</p>
+        <h3>${index + 1} / ${total}</h3>
+      </div>
+      <span class="badge ${unanswered ? "normal" : "ok"}">未回答 ${unanswered}</span>
+    </div>
+    <div class="progress-bar" aria-label="模試回答進捗"><span style="width:${Math.round((answeredCount / total) * 100)}%"></span></div>
+    <article class="mock-question-card">
+      <div class="card-meta">
+        <span class="badge">${escapeHtml(question.subject)}</span>
+        <span class="badge">${escapeHtml(question.topic)}</span>
+        <span class="badge">${escapeHtml(question.weaknessTag)}</span>
+      </div>
+      <h3>${escapeHtml(question.question)}</h3>
+      <div class="mock-choice-list">
+        ${question.choices.map((choice) => `
+          <button class="mock-choice ${selected === choice ? "is-selected" : ""}" type="button" data-mock-answer="${escapeAttribute(question.id)}:${escapeAttribute(choice)}">
+            ${escapeHtml(choice)}
+          </button>
+        `).join("")}
+      </div>
+    </article>
+    <div class="mock-question-nav">
+      <button class="ghost-button" type="button" data-mock-prev ${index === 0 ? "disabled" : ""}>前へ</button>
+      <button class="ghost-button" type="button" data-mock-next ${index === total - 1 ? "disabled" : ""}>次へ</button>
+      <button class="primary-button" type="button" data-grade-mock>採点する</button>
+    </div>
+    <div class="mock-jump-list">
+      ${active.questions.map((item, itemIndex) => `
+        <button class="mock-jump ${itemIndex === index ? "is-active" : ""} ${active.answers[item.id]?.value ? "is-answered" : ""}" type="button" data-mock-jump="${itemIndex}">
+          ${itemIndex + 1}
+        </button>
+      `).join("")}
+    </div>
+  `;
+}
+
+function renderMockResultArea(resultId = state.mockExam.lastResultId) {
+  const host = document.querySelector("#mockResultSummary");
+  if (!host) return;
+  const result = state.mockExamResults.find((item) => item.id === resultId) || getLatestMockResult();
+  if (!result) {
+    host.innerHTML = `<div class="empty-state"><p class="muted">採点済みの模試結果はまだありません。</p></div>`;
+    return;
+  }
+  state.mockExam.lastResultId = result.id;
+  const wrongAnswers = result.answers.filter((answer) => !answer.correct);
+  host.innerHTML = `
+    <div class="mock-score-hero">
+      <div><span>正答率</span><strong>${result.scoreRate}%</strong></div>
+      <div><span>正解数</span><strong>${result.correctCount}/${result.totalQuestions}</strong></div>
+      <div><span>判定</span><strong>${escapeHtml(result.resultLevel)}</strong></div>
+    </div>
+    <dl class="summary-list">
+      <div><dt>模試</dt><dd>${escapeHtml(result.title)}</dd></div>
+      <div><dt>実施日</dt><dd>${escapeHtml(formatDateTime(result.completedAt))}</dd></div>
+      <div><dt>復習対象</dt><dd>${result.reviewNeeded ? "対象" : "対象外"}</dd></div>
+      <div><dt>弱点タグ</dt><dd>${escapeHtml(result.weaknessTags.join(" / ") || "なし")}</dd></div>
+    </dl>
+    <div class="analysis-card-grid three-col">
+      ${Object.entries(result.subjectSummary || {}).map(([subject, item]) => `
+        <article class="analysis-card">
+          <h4>${escapeHtml(subject)}</h4>
+          <dl class="analysis-facts compact">
+            <div><dt>正答</dt><dd>${item.correct}/${item.total}</dd></div>
+            <div><dt>正答率</dt><dd>${item.rate}%</dd></div>
+          </dl>
+        </article>
+      `).join("")}
+    </div>
+    <div class="analysis-card">
+      <h4>次にやるべきこと</h4>
+      <p>${escapeHtml(getMockNextAction(result))}</p>
+      <div class="card-actions">
+        <button class="primary-button" type="button" data-open-cross-review>横断復習を見る</button>
+        <button class="ghost-button" type="button" data-ai-mock-result="${escapeAttribute(result.id)}">AI相談へ送る</button>
+      </div>
+    </div>
+    <div class="mock-explanations">
+      <h4>間違えた問題</h4>
+      ${wrongAnswers.length ? wrongAnswers.map((answer) => renderMockAnswerExplanation(answer)).join("") : `<p class="muted">誤答はありません。</p>`}
+      <h4>全問題の解説</h4>
+      ${result.answers.map((answer) => renderMockAnswerExplanation(answer)).join("")}
+    </div>
+  `;
+}
+
+function renderMockAnswerExplanation(answer) {
+  const question = getMockQuestionById(answer.questionId);
+  if (!question) return "";
+  return `
+    <article class="mock-explanation-card">
+      <div class="card-meta">
+        <span class="badge">${escapeHtml(answer.subject)}</span>
+        <span class="badge">${escapeHtml(answer.topic)}</span>
+        <span class="badge ${answer.correct ? "ok" : "danger"}">${answer.correct ? "正解" : "不正解"}</span>
+      </div>
+      <h5>${escapeHtml(question.question)}</h5>
+      <dl class="analysis-facts compact">
+        <div><dt>自分の回答</dt><dd>${escapeHtml(answer.userAnswer || "未回答")}</dd></div>
+        <div><dt>正答</dt><dd>${escapeHtml(question.answer)}</dd></div>
+        <div><dt>通常解説</dt><dd>${escapeHtml(question.explanation)}</dd></div>
+        <div><dt>ひっかけ解説</dt><dd>${escapeHtml(question.trapExplanation)}</dd></div>
+        <div><dt>関連弱点タグ</dt><dd>${escapeHtml(question.weaknessTag)}</dd></div>
+      </dl>
+      <div class="card-actions">
+        ${question.relatedLessonId ? `<button class="ghost-button" type="button" data-open-lesson="${escapeAttribute(question.relatedLessonId)}">関連レッスン</button>` : ""}
+      </div>
+    </article>
+  `;
+}
+
+function getMockNextAction(result) {
+  if (result.resultLevel === "C") return "模試復習を最優先にし、誤答タグの関連レッスンと弱点集中模試に進んでください。";
+  if (result.resultLevel === "B") return "誤答した論点を横断復習し、同じタグの問題でA判定を狙ってください。";
+  return "A判定です。次は30問標準模試または苦手タグだけの短時間復習で維持します。";
+}
+
+function renderMockHistory() {
+  const host = document.querySelector("#mockHistoryList");
+  if (!host) return;
+  const items = [...state.mockExamResults].sort((a, b) => (b.completedAt || "").localeCompare(a.completedAt || ""));
+  host.innerHTML = items.length ? items.map((result) => `
+    <article class="mock-history-card">
+      <div>
+        <p class="eyebrow">${escapeHtml(formatDateTime(result.completedAt))}</p>
+        <h3>${escapeHtml(result.title)}</h3>
+      </div>
+      <dl class="review-facts compact">
+        <div><dt>正解</dt><dd>${result.correctCount}/${result.totalQuestions}</dd></div>
+        <div><dt>正答率</dt><dd>${result.scoreRate}%</dd></div>
+        <div><dt>判定</dt><dd>${escapeHtml(result.resultLevel)}</dd></div>
+        <div><dt>弱点タグ数</dt><dd>${result.weaknessTags.length}</dd></div>
+        <div><dt>復習対象</dt><dd>${result.reviewNeeded ? "対象" : "対象外"}</dd></div>
+      </dl>
+      <div class="card-actions">
+        <button class="ghost-button" type="button" data-show-mock-result="${escapeAttribute(result.id)}">詳細</button>
+        <button class="danger-button" type="button" data-delete-mock-result="${escapeAttribute(result.id)}">削除</button>
+      </div>
+    </article>
+  `).join("") : `<div class="empty-state"><p class="muted">模試履歴はまだありません。</p></div>`;
+}
+
+function renderCrossReviewList(selector, limit = 20) {
+  const host = document.querySelector(selector);
+  if (!host) return;
+  const items = getCrossReviewItems().slice(0, limit);
+  host.innerHTML = items.length ? items.map((item) => `
+    <article class="cross-review-card">
+      <div>
+        <p class="eyebrow">${escapeHtml(item.subject)} / ${escapeHtml(item.type)}</p>
+        <h4>${escapeHtml(item.title)}</h4>
+      </div>
+      <dl class="review-facts compact">
+        <div><dt>理由</dt><dd>${escapeHtml(item.reason)}</dd></div>
+        <div><dt>関連弱点タグ</dt><dd>${escapeHtml(item.weaknessTag || "なし")}</dd></div>
+      </dl>
+      <div class="card-actions">
+        ${item.relatedLessonId ? `<button class="primary-button" type="button" data-open-lesson="${escapeAttribute(item.relatedLessonId)}">開く</button>` : ""}
+        ${item.relatedUnitId ? `<button class="ghost-button" type="button" data-open-unit="${escapeAttribute(item.relatedUnitId)}">開く</button>` : ""}
+        ${item.mockResultId ? `<button class="ghost-button" type="button" data-show-mock-result="${escapeAttribute(item.mockResultId)}">模試詳細</button>` : ""}
+      </div>
+    </article>
+  `).join("") : `<div class="empty-state"><p class="muted">横断復習対象はまだありません。</p></div>`;
+}
+
+function deleteMockResult(resultId) {
+  const result = state.mockExamResults.find((item) => item.id === resultId);
+  if (!result) return;
+  const confirmed = window.confirm(`${result.title}の履歴を削除しますか？`);
+  if (!confirmed) return;
+  state.mockExamResults = state.mockExamResults.filter((item) => item.id !== resultId);
+  if (state.mockExam.lastResultId === resultId) state.mockExam.lastResultId = "";
+  saveUnits();
+  render();
+  showToast("模試履歴を削除しました。");
+}
+
 function renderAiView() {
   fillSelect("#aiPromptTypeSelect", AI_PROMPT_TYPES, state.aiForm.promptType);
   fillSelect("#aiTargetTypeSelect", AI_TARGET_TYPES, state.aiForm.targetType);
@@ -4990,7 +5711,7 @@ function renderAiTargetSelect() {
   const label = document.querySelector("#aiTargetSelectLabel");
   const hint = document.querySelector("#aiTargetHint");
   const options = getAiTargetOptions(state.aiForm.targetType);
-  const needsSelect = ["単元", "レッスン", "演習ログ", "過去問ログ", "実務ログ"].includes(state.aiForm.targetType);
+  const needsSelect = ["単元", "レッスン", "演習ログ", "過去問ログ", "実務ログ", "総合模試結果"].includes(state.aiForm.targetType);
   label.classList.toggle("is-hidden", !needsSelect);
   hint.textContent = needsSelect ? "" : state.aiForm.targetType === "通関業法カリキュラム"
     ? "通関業法20レッスンの進捗、誤答、弱点タグ、ミニ模試、復習対象を使います。"
@@ -5000,6 +5721,10 @@ function renderAiTargetSelect() {
     ? "通関実務30レッスンの進捗、誤答、弱点タグ、ミニ模試、品目分類・課税価格・申告書・税額計算・時間配分の苦手状況を使います。"
     : state.aiForm.targetType === "復習対象"
     ? "現在の復習対象単元を最大10件まで使います。"
+    : state.aiForm.targetType === "最新模試結果"
+    ? "最新の総合模試結果、科目別正答率、誤答、弱点タグを使います。"
+    : state.aiForm.targetType === "横断弱点"
+    ? "模試、C判定レッスン、演習・過去問・実務ログをまたぐ弱点タグを使います。"
     : "単元・演習ログ・過去問ログ・実務ログ・今日のメニューの集計値を使います。";
   if (!needsSelect) {
     select.innerHTML = `<option value="">自動選択</option>`;
@@ -5038,6 +5763,12 @@ function getAiTargetOptions(targetType) {
     return [...state.practicalLogs].sort(comparePracticalLogs).map((log) => ({
       value: log.id,
       label: `${log.studiedAt || "日付なし"} / ${log.practicalType || "未設定"} / ${log.relatedUnitTitle || "単元なし"} / ${log.questionRef || "参照なし"}`
+    }));
+  }
+  if (targetType === "総合模試結果") {
+    return [...state.mockExamResults].sort((a, b) => (b.completedAt || "").localeCompare(a.completedAt || "")).map((result) => ({
+      value: result.id,
+      label: `${formatDateTime(result.completedAt)} / ${result.title} / ${result.scoreRate}% / ${result.resultLevel}`
     }));
   }
   return [];
@@ -5100,7 +5831,9 @@ function generateAiPrompt() {
 }
 
 function buildAiPromptText(promptType, target, additionalConditions) {
-  const points = state.aiForm.targetType === "通関業法カリキュラム"
+  const points = ["総合模試結果", "最新模試結果", "横断弱点"].includes(state.aiForm.targetType)
+    ? ["模試モードと正答率の評価", "A/B/C判定の妥当性", "科目別正答率の弱い順", "間違えた問題の共通原因", "弱点タグの優先順位", "関連レッスンの復習順", "次に復習すべき候補", "30分・1時間での復習指示"]
+    : state.aiForm.targetType === "通関業法カリキュラム"
     ? ["通関業法レッスン進捗の評価", "A/B/C判定の偏り", "間違えた確認問題から見える弱点", "弱点タグの優先順位", "ミニ模試結果の評価", "復習対象レッスンの優先順位", "罰則・処分系トラップへの耐性", "30分でできる通関業法復習メニュー"]
     : state.aiForm.targetType === "通関実務カリキュラム"
     ? ["通関実務レッスン進捗の評価", "A/B/C判定の偏り", "間違えた確認問題から見える弱点", "弱点タグの優先順位", "ミニ模試結果の評価", "復習対象レッスンの優先順位", "品目分類、課税価格、申告書、税額計算、時間配分の苦手状況", "30分でできる通関実務復習メニュー"]
@@ -5152,6 +5885,17 @@ function buildAiTargetData() {
   if (state.aiForm.targetType === "実務ログ") {
     const log = state.practicalLogs.find((item) => item.id === state.aiForm.targetId) || state.practicalLogs[0];
     return log ? { id: log.id, title: [log.studiedAt, log.practicalType, log.questionRef].filter(Boolean).join(" / ") || "実務ログ", body: buildPracticalPromptData(log) } : null;
+  }
+  if (state.aiForm.targetType === "総合模試結果") {
+    const result = state.mockExamResults.find((item) => item.id === state.aiForm.targetId) || state.mockExamResults[0];
+    return result ? { id: result.id, title: result.title, body: buildMockExamPromptData(result) } : null;
+  }
+  if (state.aiForm.targetType === "最新模試結果") {
+    const result = getLatestMockResult();
+    return result ? { id: result.id, title: `最新模試結果 / ${result.title}`, body: buildMockExamPromptData(result) } : null;
+  }
+  if (state.aiForm.targetType === "横断弱点") {
+    return { id: "cross-weakness", title: "横断弱点", body: buildCrossWeaknessPromptData() };
   }
   if (state.aiForm.targetType === "復習対象") {
     return { id: "", title: "復習対象", body: buildReviewTargetsPromptData() };
@@ -5411,6 +6155,46 @@ function buildPracticalPromptData(log) {
     ["再演習対象", log.retry ? "対象" : "対象外"],
     ["優先度", log.priority],
     ["AI解析メモ", log.aiAnalysisMemo]
+  ]);
+}
+
+function buildMockExamPromptData(result) {
+  const wrongAnswers = result.answers.filter((answer) => !answer.correct).map((answer) => {
+    const question = getMockQuestionById(answer.questionId);
+    return `${answer.subject} / ${answer.topic} / 自分の回答:${answer.userAnswer || "未回答"} / 正答:${question?.answer || ""} / 弱点:${answer.weaknessTag} / 関連レッスン:${question?.relatedLessonId || ""}`;
+  }).join("\n") || "なし";
+  const subjectRates = Object.entries(result.subjectSummary || {})
+    .map(([subject, summary]) => `${subject}:${summary.correct}/${summary.total} (${summary.rate}%)`)
+    .join(" / ");
+  const relatedLessons = result.answers
+    .filter((answer) => !answer.correct)
+    .map((answer) => getMockQuestionById(answer.questionId)?.relatedLessonId)
+    .filter(Boolean)
+    .map((lessonId) => getLessonById(lessonId))
+    .filter(Boolean)
+    .map((lesson) => `${lesson.subject} / ${lesson.title}`)
+    .join("\n") || "なし";
+  return keyValueLines([
+    ["模試モード", result.title],
+    ["実施日", formatDateTime(result.completedAt)],
+    ["正答率", `${result.scoreRate}%`],
+    ["A/B/C判定", result.resultLevel],
+    ["正解数", `${result.correctCount}/${result.totalQuestions}`],
+    ["科目別正答率", subjectRates],
+    ["間違えた問題", wrongAnswers],
+    ["弱点タグ", result.weaknessTags.join(" / ") || "なし"],
+    ["関連レッスン", relatedLessons],
+    ["次に復習すべき候補", getCrossReviewItems().slice(0, 8).map((item) => `${item.type}:${item.title} / ${item.reason} / ${item.weaknessTag || "タグなし"}`).join("\n") || "なし"]
+  ]);
+}
+
+function buildCrossWeaknessPromptData() {
+  const items = getCrossReviewItems().slice(0, 15);
+  return keyValueLines([
+    ["横断弱点タグ", getCrossWeaknessTagRanking().slice(0, 10).map((item) => `${item.tag}(${item.count})`).join(" / ") || "なし"],
+    ["最新模試結果", getLatestMockResult() ? `${getLatestMockResult().title} / ${getLatestMockResult().scoreRate}% / ${getLatestMockResult().resultLevel}` : "未実施"],
+    ["横断復習候補", items.map((item) => `${item.subject} / ${item.type} / ${item.title} / 理由:${item.reason} / 弱点:${item.weaknessTag || "なし"}`).join("\n") || "なし"],
+    ["C判定レッスン", getReviewLessons().filter(({ progress }) => progress.understanding === "C").map(({ lesson, reason }) => `${lesson.subject} / ${lesson.title} / ${reason}`).join("\n") || "なし"]
   ]);
 }
 
@@ -5778,6 +6562,8 @@ function renderReviewList() {
   document.querySelector("#reviewCards").innerHTML = units.length
     ? units.map((unit) => reviewCard(unit)).join("")
     : `<div class="panel empty-state"><p class="muted">条件に合う復習単元はありません。</p></div>`;
+  renderReviewMockCards();
+  renderCrossReviewList("#reviewCrossCards", 12);
   const lessons = getReviewLessons();
   document.querySelector("#reviewLessonCards").innerHTML = lessons.length
     ? lessons.map(({ lesson, progress, reason }) => {
@@ -5802,6 +6588,43 @@ function renderReviewList() {
     `;
     }).join("")
     : `<div class="empty-state"><p class="muted">復習対象レッスンはありません。</p></div>`;
+}
+
+function renderReviewMockCards() {
+  const host = document.querySelector("#reviewMockCards");
+  if (!host) return;
+  const targets = state.mockExamResults
+    .filter((result) => result.reviewNeeded || ["B", "C"].includes(result.resultLevel) || result.answers.some((answer) => !answer.correct))
+    .sort((a, b) => (b.completedAt || "").localeCompare(a.completedAt || ""))
+    .slice(0, 10);
+  host.innerHTML = targets.length ? targets.map((result) => {
+    const weakSubjects = Object.entries(result.subjectSummary || {})
+      .filter(([, summary]) => summary.total && summary.rate < 80)
+      .map(([subject]) => `${subject}で失点`);
+    const reasons = [
+      result.resultLevel === "C" ? "総合模試C判定" : "",
+      result.resultLevel === "B" ? "B判定以下の模試" : "",
+      ...weakSubjects,
+      ...result.weaknessTags.slice(0, 3).map((tag) => `${tag}タグで誤答`)
+    ].filter(Boolean);
+    return `
+      <article class="lesson-card">
+        <div>
+          <p class="eyebrow">${escapeHtml(formatDateTime(result.completedAt))}</p>
+          <h4>${escapeHtml(result.title)}</h4>
+          <dl class="review-facts compact">
+            <div><dt>結果</dt><dd>${result.correctCount}/${result.totalQuestions} / ${result.scoreRate}% / ${escapeHtml(result.resultLevel)}</dd></div>
+            <div><dt>復習理由</dt><dd>${escapeHtml(reasons.join(" / ") || "模試誤答の確認")}</dd></div>
+            <div><dt>弱点タグ</dt><dd>${escapeHtml(result.weaknessTags.join(" / ") || "なし")}</dd></div>
+          </dl>
+        </div>
+        <div class="card-actions">
+          <button class="primary-button" type="button" data-show-mock-result="${escapeAttribute(result.id)}">詳細</button>
+          <button class="ghost-button" type="button" data-ai-mock-result="${escapeAttribute(result.id)}">AI相談</button>
+        </div>
+      </article>
+    `;
+  }).join("") : `<div class="empty-state"><p class="muted">模試由来の復習対象はまだありません。</p></div>`;
 }
 
 function filteredReviewUnits() {
@@ -6444,12 +7267,13 @@ function renderSettings() {
   const backupJson = JSON.stringify(makeBackupPayload());
   const sizeKb = Math.max(1, Math.ceil(backupJson.length / 1024));
   const last = getLastUpdatedUnit();
-  document.querySelector("#storageStatus").textContent = `${state.units.length}単元・${CURRICULUM_LESSONS.length}レッスン / 約${sizeKb}KBをこのブラウザに保存`;
+  document.querySelector("#storageStatus").textContent = `${state.units.length}単元・${CURRICULUM_LESSONS.length}レッスン・模試${state.mockExamResults.length}件 / 約${sizeKb}KBをこのブラウザに保存`;
   document.querySelector("#storageDetails").innerHTML = `
     <div><dt>保存中の単元数</dt><dd>${state.units.length}単元</dd></div>
     <div><dt>保存中の演習ログ数</dt><dd>${state.practiceLogs.length}件</dd></div>
     <div><dt>保存中の過去問ログ数</dt><dd>${state.pastExamLogs.length}件</dd></div>
     <div><dt>保存中の実務ログ数</dt><dd>${state.practicalLogs.length}件</dd></div>
+    <div><dt>保存中の模試結果数</dt><dd>${state.mockExamResults.length}件</dd></div>
     <div><dt>保存中のAI履歴数</dt><dd>${state.aiAnalyses.length}件</dd></div>
     <div><dt>保存中の学習メニュー数</dt><dd>${state.studyPlans.length}件</dd></div>
     <div><dt>保存中のレッスン進捗数</dt><dd>${state.curriculumProgress.length}件</dd></div>
@@ -6474,6 +7298,7 @@ function makeBackupPayload() {
     practiceLogs: state.practiceLogs,
     pastExamLogs: state.pastExamLogs,
     practicalLogs: state.practicalLogs,
+    mockExamResults: state.mockExamResults,
     aiAnalyses: state.aiAnalyses,
     studyPlans: state.studyPlans,
     curriculumProgress: state.curriculumProgress
@@ -6522,6 +7347,7 @@ function importBackup(file) {
       state.practiceLogs = normalizeArray(parsed.practiceLogs).map(normalizePracticeLog);
       state.pastExamLogs = normalizeArray(parsed.pastExamLogs).map(normalizePastExamLog);
       state.practicalLogs = normalizeArray(parsed.practicalLogs).map(normalizePracticalLog);
+      state.mockExamResults = normalizeArray(parsed.mockExamResults).map(normalizeMockExamResult);
       state.aiAnalyses = normalizeArray(parsed.aiAnalyses).map(normalizeAiAnalysis);
       state.studyPlans = normalizeArray(parsed.studyPlans).map(normalizeStudyPlan);
       state.curriculumProgress = normalizeArray(parsed.curriculumProgress).map(normalizeCurriculumProgress);
@@ -6844,6 +7670,16 @@ function attachEvents() {
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
+    if (event.target.closest("[data-open-mock]")) {
+      switchView("mock");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    if (event.target.closest("[data-open-cross-review]")) {
+      switchView("review");
+      document.querySelector("#reviewCrossCards")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
     const shortcut = event.target.closest("[data-view-shortcut]");
     if (shortcut) {
       switchView(shortcut.dataset.viewShortcut);
@@ -6853,6 +7689,60 @@ function attachEvents() {
     const lessonButton = event.target.closest("[data-open-lesson]");
     if (lessonButton) {
       openLesson(lessonButton.dataset.openLesson);
+      return;
+    }
+    const selectMockButton = event.target.closest("[data-select-mock]");
+    if (selectMockButton) {
+      state.mockExam.selectedMode = selectMockButton.dataset.selectMock;
+      renderMockExamView();
+      return;
+    }
+    const startMockButton = event.target.closest("[data-start-mock]");
+    if (startMockButton) {
+      switchView("mock");
+      startMockExam(startMockButton.dataset.startMock);
+      return;
+    }
+    const mockAnswerButton = event.target.closest("[data-mock-answer]");
+    if (mockAnswerButton) {
+      const [questionId, ...answerParts] = mockAnswerButton.dataset.mockAnswer.split(":");
+      answerMockQuestion(questionId, answerParts.join(":"));
+      return;
+    }
+    if (event.target.closest("[data-mock-prev]")) {
+      moveMockQuestion(-1);
+      return;
+    }
+    if (event.target.closest("[data-mock-next]")) {
+      moveMockQuestion(1);
+      return;
+    }
+    const mockJumpButton = event.target.closest("[data-mock-jump]");
+    if (mockJumpButton) {
+      state.mockExam.currentIndex = Number(mockJumpButton.dataset.mockJump || 0);
+      renderMockExamView();
+      return;
+    }
+    if (event.target.closest("[data-grade-mock]")) {
+      gradeMockExam();
+      return;
+    }
+    const showMockButton = event.target.closest("[data-show-mock-result]");
+    if (showMockButton) {
+      switchView("mock");
+      state.mockExam.lastResultId = showMockButton.dataset.showMockResult;
+      renderMockExamView();
+      document.querySelector("#mockResultSummary")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    const deleteMockButton = event.target.closest("[data-delete-mock-result]");
+    if (deleteMockButton) {
+      deleteMockResult(deleteMockButton.dataset.deleteMockResult);
+      return;
+    }
+    const aiMockButton = event.target.closest("[data-ai-mock-result]");
+    if (aiMockButton) {
+      openAiForTarget("総合模試結果", aiMockButton.dataset.aiMockResult, "総合学習相談");
       return;
     }
     const gradeButton = event.target.closest("[data-grade-question]");
@@ -7017,6 +7907,7 @@ function attachEvents() {
     localStorage.removeItem(STORAGE_KEYS.practiceLogs);
     localStorage.removeItem(STORAGE_KEYS.pastExamLogs);
     localStorage.removeItem(STORAGE_KEYS.practicalLogs);
+    localStorage.removeItem(STORAGE_KEYS.mockExamResults);
     localStorage.removeItem(STORAGE_KEYS.aiAnalyses);
     localStorage.removeItem(STORAGE_KEYS.studyPlans);
     localStorage.removeItem(STORAGE_KEYS.curriculumProgress);
@@ -7024,6 +7915,7 @@ function attachEvents() {
     state.practiceLogs = [];
     state.pastExamLogs = [];
     state.practicalLogs = [];
+    state.mockExamResults = [];
     state.aiAnalyses = [];
     state.studyPlans = [];
     state.curriculumProgress = [];
