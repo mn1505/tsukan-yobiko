@@ -1,4 +1,4 @@
-const APP_VERSION = "v1.1";
+const APP_VERSION = "v1.2";
 const STORAGE_KEYS = {
   units: "tsukanYobiko.units",
   version: "tsukanYobiko.version",
@@ -85,7 +85,7 @@ const AI_PROMPT_TYPES = [
   "過去問分析",
   "総合学習相談"
 ];
-const AI_TARGET_TYPES = ["単元", "レッスン", "通関業法カリキュラム", "関税法等カリキュラム", "演習ログ", "過去問ログ", "実務ログ", "復習対象", "全体サマリー"];
+const AI_TARGET_TYPES = ["単元", "レッスン", "通関業法カリキュラム", "関税法等カリキュラム", "通関実務カリキュラム", "演習ログ", "過去問ログ", "実務ログ", "復習対象", "全体サマリー"];
 const STUDY_DURATIONS = ["15分", "30分", "1時間", "2時間", "じっくり"];
 const AI_ANALYSIS_POINTS = {
   "回答添削": ["結論は合っているか", "理由づけは正しいか", "用語の使い方は正しいか", "条文・制度理解にズレはないか", "本試験ならどこで失点しそうか", "より良い回答にするにはどう修正すべきか"],
@@ -124,9 +124,11 @@ function makeLesson({
   goal,
   lecture,
   keyPoints,
+  solveSteps = [],
   confusingPoints,
   traps,
   examTips,
+  practicalNotes = [],
   penaltyTips = [],
   principleExceptions = [],
   distinctions = [],
@@ -134,7 +136,7 @@ function makeLesson({
   miniSummary,
   questions
 }) {
-  return { id, courseId, subject, title, order, level, estimatedMinutes, relatedUnitId, intro, goal, lecture, keyPoints, confusingPoints, traps, examTips, penaltyTips, principleExceptions, distinctions, timeLimits, miniSummary, questions };
+  return { id, courseId, subject, title, order, level, estimatedMinutes, relatedUnitId, intro, goal, lecture, keyPoints, solveSteps, confusingPoints, traps, examTips, practicalNotes, penaltyTips, principleExceptions, distinctions, timeLimits, miniSummary, questions };
 }
 
 const CURRICULUM_COURSES = [
@@ -208,16 +210,41 @@ const CURRICULUM_COURSES = [
   },
   {
     id: "course-practical-intro",
-    title: "通関実務 入門編",
+    title: "通関実務 基礎編",
     subject: "通関実務",
-    description: "申告書、品目分類、課税価格計算、時間配分を実務問題の入口として学ぶ講座",
+    description: "申告書、品目分類、課税価格、税額計算、NACCS、資料読取、時間配分を体系的に学ぶ講座",
     order: 3,
     lessonIds: [
       "lesson-practical-overview",
+      "lesson-practical-time-management",
+      "lesson-practical-export-structure",
+      "lesson-practical-import-structure",
       "lesson-practical-declaration",
+      "lesson-practical-invoice-reading",
+      "lesson-practical-price-terms",
+      "lesson-practical-exchange",
       "lesson-practical-classification",
+      "lesson-practical-notes-reading",
+      "lesson-practical-statistical-code",
+      "lesson-practical-small-cargo",
       "lesson-practical-customs-value",
-      "lesson-practical-time-management"
+      "lesson-practical-additions",
+      "lesson-practical-exclusions",
+      "lesson-practical-freight-insurance",
+      "lesson-practical-free-supplies-royalty",
+      "lesson-practical-duty-calculation",
+      "lesson-practical-consumption-tax",
+      "lesson-practical-rounding",
+      "lesson-practical-tax-rate",
+      "lesson-practical-naccs",
+      "lesson-practical-export-exercise",
+      "lesson-practical-import-exercise",
+      "lesson-practical-customs-value-exercise",
+      "lesson-practical-tax-exercise",
+      "lesson-practical-classification-exercise",
+      "lesson-practical-material-exercise",
+      "lesson-practical-mistake-review",
+      "lesson-practical-mini-exam"
     ]
   }
 ];
@@ -524,14 +551,505 @@ const KANZEIHOU_LESSONS = [
   makeKanzeihouMiniExamLesson()
 ];
 
+const PRACTICAL_TOPIC_BASES = [
+  {
+    slug: "overview",
+    title: "通関実務の全体像",
+    unitId: "u012",
+    focus: "申告書作成、品目分類、課税価格、税額計算、資料読取を一つの処理としてつなげる",
+    tag: "全体像理解",
+    type: "手順選択",
+    steps: ["問題の要求を確認する", "資料の種類と通貨・価格条件を確認する", "分類・価格・数量を整理する", "税額計算や入力順を確認する"],
+    keyPoints: ["実務は知識暗記ではなく処理順で点が安定する", "申告書、分類、計算、資料読取は相互に関係する", "迷った箇所は印を付けて先へ進む", "最後に単位・通貨・端数をまとめて見直す"],
+    confusing: ["法令知識だけで解ける問題と、資料処理が必要な問題", "分類と税率適用", "仕入書価格と申告価格"],
+    traps: ["申告書、分類、計算を別々に解きすぎる", "資料読み取りの前提を飛ばす", "通貨・単位・価格条件を見落とす"],
+    extra: "通関実務は、資料から必要情報を拾い、順番に処理して申告書や税額に落とし込む科目です。最初に何を求める問題かを決め、インボイス、運賃、保険料、税率表、為替相場を読む目的を固定します。"
+  },
+  {
+    slug: "time-management",
+    title: "実務問題の解き方と時間配分",
+    unitId: "u012",
+    focus: "問題要求を先に読み、資料読取と計算を小さく分け、時間不足による失点を防ぐ",
+    tag: "時間不足",
+    type: "手順選択",
+    steps: ["設問で求められている答えを確認する", "資料を読む前に必要な情報を決める", "分類・価格・数量・通貨・条件を表にする", "難所に固執せず次へ進み、最後に見直す"],
+    keyPoints: ["最初に問題の要求を確認する", "申告書問題では分類・価格・数量・通貨・条件を整理する", "計算問題では式を小さく分ける", "本試験では時間不足そのものが失点原因になる"],
+    confusing: ["速く読むことと雑に読むこと", "分類に使う時間と計算に使う時間", "見直し時間と解き直し時間"],
+    traps: ["難問に時間を使い切る", "資料を全部読んでから要求を確認する", "式を一度に長く作って転記ミスをする"],
+    extra: "実務は知識だけではなく処理順と時間配分が重要です。分からない箇所に固執しすぎると、取れる計算や読取まで落とします。"
+  },
+  {
+    slug: "export-structure",
+    title: "輸出申告の基本構造",
+    unitId: "u012",
+    focus: "輸出申告で整理する貨物情報、統計品目番号、申告価格、入力順を理解する",
+    tag: "申告書欄ミス",
+    type: "single",
+    steps: ["輸出貨物の品名・数量・価格条件を読む", "統計品目番号ごとにまとめる", "申告価格と入力順を確認する", "輸出と輸入の欄を混同しない"],
+    keyPoints: ["輸出申告は統計品目番号のまとめ方が重要", "少額貨物や一括処理の扱いに注意する", "申告価格の大きい順が問われる場面がある", "輸入申告の課税価格計算とは目的が違う"],
+    confusing: ["輸出申告と輸入申告", "統計品目番号と品名", "仕入書価格と申告価格"],
+    traps: ["統計品目番号のまとめ方を誤る", "価格条件を読み落とす", "輸出と輸入の入力項目を混同する"]
+  },
+  {
+    slug: "import-structure",
+    title: "輸入申告の基本構造",
+    unitId: "u012",
+    focus: "輸入申告で課税価格、税率、関税額、消費税等へつなげる流れを理解する",
+    tag: "申告書欄ミス",
+    type: "single",
+    steps: ["輸入貨物の品名・数量・価格条件を読む", "課税価格に入れる費用を整理する", "税番・税率を確認する", "関税額から消費税等へ順に計算する"],
+    keyPoints: ["輸入申告は納税計算と直結する", "仕入書価格と課税価格は同じとは限らない", "本邦到着までの費用と到着後の費用を分ける", "税率適用と端数処理を最後に確認する"],
+    confusing: ["課税価格と関税額", "関税と消費税", "運賃・保険料の加算と不算入"],
+    traps: ["課税価格に入れる費用と入れない費用を混同する", "関税額から消費税計算への流れを誤る", "税率の適用を誤る"]
+  },
+  {
+    slug: "declaration-procedure",
+    id: "lesson-practical-declaration",
+    title: "申告書作成の基本手順",
+    unitId: "u012",
+    focus: "資料読取から分類、価格、数量、税額、入力確認までの標準手順を持つ",
+    tag: "申告書",
+    type: "手順選択",
+    steps: ["設問要求を読む", "インボイス・運賃・保険料・為替を拾う", "分類と統計品目番号を決める", "価格・数量・税額・入力順を確認する"],
+    keyPoints: ["手順を固定すると読み飛ばしが減る", "分類と価格計算は互いに影響する", "同じ統計品目番号でまとめる場面がある", "最後は単位、通貨、端数、順序を見直す"],
+    confusing: ["資料を読む順番", "申告価格のまとめ方", "数量単位と価格単位"],
+    traps: ["先に計算して設問要求とずれる", "同一税番の合算を忘れる", "申告価格順を誤る"]
+  },
+  {
+    slug: "invoice-reading",
+    title: "インボイスの読み取り",
+    unitId: "u012",
+    focus: "品名、数量、単価、金額、価格条件、通貨、取引条件を漏れなく読む",
+    tag: "インボイス読取",
+    type: "single",
+    steps: ["品名・数量・単価・金額を確認する", "価格条件と通貨を確認する", "運賃・保険料を加算する必要があるか見る", "同じ統計品目番号の貨物をまとめる必要を確認する"],
+    keyPoints: ["インボイスは申告書作成・課税価格計算・品目分類の出発点", "価格条件で運賃・保険料の扱いが変わる", "申告価格の大きい順に入力する場面がある", "読み飛ばし・単位ミス・通貨換算ミスが狙われる"],
+    confusing: ["品名と分類", "単価と合計金額", "価格条件と課税価格"],
+    traps: ["通貨を円だと思い込む", "ケース数と個数を混同する", "同じ税番の貨物を別々に扱う"],
+    extra: "インボイスは、品目分類、申告価格、数量、課税価格計算の出発点です。品名だけでなく、数量単位、単価、合計金額、価格条件、通貨、取引条件をセットで読みます。"
+  },
+  {
+    slug: "price-terms",
+    title: "価格条件と申告価格",
+    unitId: "u012",
+    focus: "FOB、CIFなどの価格条件から、申告価格に含まれる費用を判断する",
+    tag: "課税価格計算",
+    type: "single",
+    steps: ["価格条件を確認する", "含まれている費用を分解する", "不足する運賃・保険料等を足すか判断する", "本邦到着後費用を混ぜない"],
+    keyPoints: ["価格条件は申告価格と課税価格の入口", "CIFなら運賃・保険料込み、FOBなら別途加算を検討する", "到着後費用は原則混ぜない", "通貨換算前後を区別する"],
+    confusing: ["FOBとCIF", "加算要素と既に含まれる費用", "輸出申告価格と輸入課税価格"],
+    traps: ["CIF価格に運賃を二重加算する", "FOB価格なのに運賃を足さない", "到着後費用を加算する"]
+  },
+  {
+    slug: "exchange",
+    title: "為替換算の基本",
+    unitId: "u012",
+    focus: "外貨建て資料を指定された相場で円換算し、換算の時点と端数に注意する",
+    tag: "為替換算",
+    type: "計算過程",
+    steps: ["通貨を確認する", "設問指定の為替相場を確認する", "外貨金額に相場を掛ける", "端数処理の指示を確認する"],
+    keyPoints: ["通貨記号を最初に見る", "為替相場は設問指定を使う", "換算前後の金額を混同しない", "円換算後に加算するか外貨で合算するかを確認する"],
+    confusing: ["USD、EUR、JPY", "外貨のままの合計と円換算後の合計", "為替換算と端数処理"],
+    traps: ["別通貨を同じ相場で換算する", "円建て費用まで換算する", "換算後の端数処理を飛ばす"]
+  },
+  {
+    slug: "classification-basic",
+    id: "lesson-practical-classification",
+    title: "品目分類の基本",
+    unitId: "u011",
+    focus: "貨物の性質・用途・成分・状態から、類・項・号・統計細分を順に絞る",
+    tag: "品目分類",
+    type: "single",
+    steps: ["貨物の性質・用途・成分・状態を読む", "類、項、号、統計細分の順に絞る", "類注・号注・解説を確認する", "名称だけで判断していないか見直す"],
+    keyPoints: ["名称だけで判断しない", "類注、号注、関税率表解説を読む", "飲料、食品、素材、部品はひっかけが多い", "アルコール分、ブリックス値、添加物、容器容量が分類に影響する場合がある"],
+    confusing: ["第20類と第22類のような近接分類", "用途分類と材質分類", "完成品と部分品"],
+    traps: ["商品名だけで判断する", "類注・号注を読まない", "成分・用途・容器容量を見落とす"],
+    extra: "品目分類は、貨物の性質・用途・成分・状態などから判断します。類をまたぐ判断では、名称が似ていても注や条件で分類が変わります。"
+  },
+  {
+    slug: "notes-reading",
+    title: "品目分類における注・号注・解説の読み方",
+    unitId: "u011",
+    focus: "注、号注、解説を使って、見た目や商品名だけの判断を補正する",
+    tag: "品目分類ミス",
+    type: "判断メモ",
+    steps: ["候補となる類・項を出す", "除外規定や限定条件を読む", "号注で細かい条件を確認する", "統計細分の条件へ進む"],
+    keyPoints: ["注は分類の優先ルールとして読む", "除外規定は特に強い", "号注は号レベルの条件を決める", "解説は判断理由を補強する"],
+    confusing: ["類注と号注", "本文の品名と注の限定条件", "参考情報と分類を決める条件"],
+    traps: ["注の除外規定を見落とす", "号注を類全体に広げる", "説明文の一部だけで判断する"]
+  },
+  {
+    slug: "statistical-code",
+    title: "統計品目番号・税番の基本",
+    unitId: "u011",
+    focus: "税番、号、統計細分、統計品目番号の位置づけと申告書での使い方を理解する",
+    tag: "統計品目番号",
+    type: "single",
+    steps: ["類・項・号を確認する", "統計細分の条件を読む", "同じ番号の貨物をまとめるか判断する", "申告書の入力欄と順序を確認する"],
+    keyPoints: ["統計品目番号は分類結果を申告書へ落とす番号", "同一番号の貨物をまとめる場面がある", "税率適用にも分類が関係する", "桁や細分条件の見落としに注意する"],
+    confusing: ["税番と統計品目番号", "同一品名と同一税番", "統計細分と数量単位"],
+    traps: ["番号の桁を読み違える", "同じ品名なら必ず同じ番号と考える", "細分条件を落とす"]
+  },
+  {
+    slug: "small-cargo",
+    title: "少額貨物・一括処理の基本",
+    unitId: "u012",
+    focus: "少額貨物や一括処理を、申告価格のまとめ方・入力順と関連づけて理解する",
+    tag: "申告書欄ミス",
+    type: "single",
+    steps: ["少額貨物に該当するか確認する", "一括処理できる条件を確認する", "まとめた後の申告価格を確認する", "通常貨物との入力順を見直す"],
+    keyPoints: ["少額貨物は通常処理と分けて見る", "一括処理は条件付き", "申告価格の大きい順に影響する", "輸出と輸入で扱いを混同しない"],
+    confusing: ["少額貨物と無税貨物", "一括処理と同一税番の合算", "輸出申告と輸入申告"],
+    traps: ["少額なら何でも一括できると考える", "一括後の価格順を誤る", "対象外貨物まで含める"]
+  },
+  {
+    slug: "customs-value-basic",
+    id: "lesson-practical-customs-value",
+    title: "課税価格の基本構造",
+    unitId: "u010",
+    focus: "現実支払価格を基礎に、加算要素と不算入要素を分けて課税価格を組み立てる",
+    tag: "課税価格",
+    type: "single",
+    steps: ["現実支払価格を確認する", "加算要素を拾う", "不算入要素を除外する", "本邦到着までと到着後を分ける"],
+    keyPoints: ["課税価格は関税額計算の土台", "原則は輸入取引に係る現実支払価格が基礎", "加算要素と不算入要素を分ける", "本邦到着後の費用を混ぜない"],
+    confusing: ["現実支払価格と課税価格", "本邦到着までの費用と到着後費用", "無償提供物やロイヤルティの条件"],
+    traps: ["加算要素と不算入要素を逆にする", "本邦到着後の費用を加算する", "為替換算前後の金額を混同する"],
+    extra: "課税価格は関税額計算の土台です。何を足すか、何を足さないかを分ける力が得点に直結します。"
+  },
+  {
+    slug: "additions",
+    title: "課税価格の加算要素",
+    unitId: "u010",
+    focus: "現実支払価格に加えるべき運賃、保険料、手数料、無償提供物等を見分ける",
+    tag: "加算要素",
+    type: "single",
+    steps: ["価格に含まれていない費用を探す", "本邦到着までの費用か確認する", "買手負担か条件を確認する", "二重加算にならないか見直す"],
+    keyPoints: ["加算は条件付きで判断する", "既に価格に含まれる費用は二重加算しない", "本邦到着までの運賃・保険料に注意する", "無償提供物やロイヤルティは条件を読む"],
+    confusing: ["加算要素と別払費用", "買手負担と売手負担", "価格込みと別建て"],
+    traps: ["CIF価格に運賃を二重加算する", "買手負担の加算要素を落とす", "条件を見ずにすべて加算する"]
+  },
+  {
+    slug: "exclusions",
+    title: "課税価格に算入しない費用",
+    unitId: "u010",
+    focus: "本邦到着後の費用など、課税価格に混ぜない費用を区別する",
+    tag: "控除要素",
+    type: "single",
+    steps: ["費用の発生時点を確認する", "本邦到着後費用か判断する", "価格から区分明示されているか見る", "加算要素と逆にしていないか見直す"],
+    keyPoints: ["本邦到着後の国内運送等は原則混ぜない", "区分明示があるかを確認する", "控除という語だけで機械的に引かない", "課税価格の土台を崩さない"],
+    confusing: ["不算入と控除", "到着前費用と到着後費用", "価格に含まれる費用と別払い費用"],
+    traps: ["到着後費用を加算する", "到着前運賃を不算入にする", "区分されていない費用を勝手に引く"]
+  },
+  {
+    slug: "freight-insurance",
+    title: "運賃・保険料・手数料の扱い",
+    unitId: "u010",
+    focus: "運賃、保険料、手数料を価格条件と本邦到着時点で整理する",
+    tag: "課税価格計算",
+    type: "計算過程",
+    steps: ["価格条件を確認する", "運賃・保険料が含まれているか見る", "手数料の性質を確認する", "本邦到着後費用を除く"],
+    keyPoints: ["FOBかCIFかで処理が変わる", "運賃・保険料は到着までか到着後かを分ける", "手数料は性質と負担者を見る", "二重加算に注意する"],
+    confusing: ["国際運賃と国内運賃", "保険料込み価格と別建て保険料", "買付手数料とその他手数料"],
+    traps: ["国内運賃を加算する", "保険料込みなのに再加算する", "手数料名だけで判断する"]
+  },
+  {
+    slug: "free-supplies-royalty",
+    title: "無償提供物・ロイヤルティの扱い",
+    unitId: "u010",
+    focus: "無償提供物やロイヤルティを、輸入貨物との関連性と取引条件から判断する",
+    tag: "加算要素",
+    type: "判断メモ",
+    steps: ["買手が無償または値引き提供したものを探す", "輸入貨物の生産・販売に関連するか見る", "ロイヤルティの支払条件を確認する", "条件を満たす範囲だけ加算する"],
+    keyPoints: ["無償提供物は見落としやすい", "ロイヤルティは名称だけで加算しない", "輸入貨物との関連と取引条件を見る", "金額の範囲を限定して読む"],
+    confusing: ["無償提供物と値引き", "ロイヤルティと通常のサービス料", "関連する費用と無関係な費用"],
+    traps: ["無償だから金額ゼロと考える", "ロイヤルティを常に加算する", "関連性のない支払まで加算する"]
+  },
+  {
+    slug: "duty-calculation",
+    title: "関税額計算の基本",
+    unitId: "u010",
+    focus: "課税価格に税率を適用し、関税額を求める流れを理解する",
+    tag: "関税額計算",
+    type: "計算過程",
+    steps: ["課税価格を確定する", "税番に対応する税率を確認する", "課税価格に税率を掛ける", "端数処理の指示を確認する"],
+    keyPoints: ["関税額は課税価格と税率から求める", "分類が税率を決める", "税率の種類を取り違えない", "端数処理は設問指示を優先する"],
+    confusing: ["課税価格と関税額", "従価税と従量税", "関税率と消費税率"],
+    traps: ["課税価格と関税額を混同する", "税率を別品目のものにする", "端数処理を飛ばす"]
+  },
+  {
+    slug: "consumption-tax",
+    title: "消費税・地方消費税計算の基本",
+    unitId: "u010",
+    focus: "輸入時の消費税等を、課税価格と関税額の流れから整理する",
+    tag: "消費税計算",
+    type: "計算過程",
+    steps: ["課税価格を確認する", "関税額を加える流れを確認する", "消費税の課税標準を作る", "地方消費税への流れを確認する"],
+    keyPoints: ["消費税は関税額計算の後に続く", "課税標準を誤ると連鎖的に失点する", "地方消費税への流れを分ける", "税率や端数処理を取り違えない"],
+    confusing: ["関税額と消費税額", "消費税の課税標準と課税価格", "地方消費税の計算順"],
+    traps: ["消費税の課税標準を誤る", "地方消費税への流れを誤る", "税率の取り違え"]
+  },
+  {
+    slug: "rounding",
+    title: "端数処理の基本",
+    unitId: "u010",
+    focus: "課税価格、関税額、消費税等で、設問指示に沿った端数処理を行う",
+    tag: "税額計算",
+    type: "計算過程",
+    steps: ["どの段階の端数処理か確認する", "設問や資料の指示を読む", "途中計算と最終額を分ける", "処理後の金額を次の式に使う"],
+    keyPoints: ["端数処理は段階ごとに確認する", "途中で丸めるか最後に丸めるかを区別する", "円未満、百円未満など単位を読む", "税額計算では連鎖ミスになりやすい"],
+    confusing: ["切捨て、四捨五入、端数整理", "課税価格の端数と税額の端数", "途中計算と最終計算"],
+    traps: ["丸める段階を誤る", "単位を読み違える", "端数処理前の金額を次に使う"]
+  },
+  {
+    slug: "tax-rate",
+    title: "税率適用の基本",
+    unitId: "u011",
+    focus: "分類結果、原産地、減免税等を踏まえて適用税率を選ぶ",
+    tag: "税率適用",
+    type: "single",
+    steps: ["分類結果を確認する", "税率表の対象行を確認する", "原産地や特例条件を確認する", "適用する税率を一つに決める"],
+    keyPoints: ["分類が税率適用の入口", "税率表の行を読み違えない", "条件付き税率を一般化しない", "関税率と消費税率を分ける"],
+    confusing: ["基本税率と条件付き税率", "税番違いの税率", "関税率と内国消費税率"],
+    traps: ["隣の税番の税率を使う", "条件を満たさない税率を適用する", "税率表の単位を見落とす"]
+  },
+  {
+    slug: "naccs",
+    title: "NACCS入力項目の基本",
+    unitId: "u012",
+    focus: "NACCS入力欄を、申告書作成で整理した情報の置き場所として理解する",
+    tag: "NACCS入力",
+    type: "single",
+    steps: ["申告種別を確認する", "輸出入者・品名・数量・価格を整理する", "税番・統計品目番号・税率を確認する", "入力欄ごとに根拠資料を対応させる"],
+    keyPoints: ["NACCS欄は暗記ではなく情報の置き場所", "輸出と輸入で必要情報が異なる", "品名、数量、価格、税番の根拠資料を対応させる", "入力欄の意味を説明できるようにする"],
+    confusing: ["申告書欄とNACCS欄", "輸出入力と輸入入力", "税番欄と品名欄"],
+    traps: ["欄名だけで機械的に転記する", "輸出と輸入の欄を混同する", "根拠資料がない数値を入力する"]
+  },
+  {
+    slug: "export-exercise",
+    title: "輸出申告ミニ演習",
+    unitId: "u012",
+    focus: "輸出申告の資料読取、分類、統計品目番号のまとめ方、入力順を演習する",
+    tag: "申告書",
+    type: "判断メモ",
+    steps: ["輸出インボイスを読む", "統計品目番号を決める", "同一番号をまとめる", "申告価格順を確認する"],
+    keyPoints: ["輸出では統計情報の整理が重要", "同一番号のまとめ方を確認する", "少額貨物の扱いを分ける", "価格条件と通貨を読む"],
+    confusing: ["輸出価格と輸入課税価格", "同一品名と同一統計番号", "少額一括と通常入力"],
+    traps: ["申告価格の大きい順を誤る", "通貨換算レートを誤る", "少額の一括処理を誤る"]
+  },
+  {
+    slug: "import-exercise",
+    title: "輸入申告ミニ演習",
+    unitId: "u012",
+    focus: "輸入申告の課税価格、税率、関税額、消費税等の流れを演習する",
+    tag: "申告書",
+    type: "計算過程",
+    steps: ["インボイス価格を読む", "加算・不算入を整理する", "税番と税率を確認する", "関税額と消費税等を順に計算する"],
+    keyPoints: ["輸入申告は計算の連鎖を崩さない", "加算要素を先に整理する", "税率表を分類結果と対応させる", "端数処理を最後に確認する"],
+    confusing: ["仕入書価格と課税価格", "課税価格と消費税課税標準", "関税率と消費税率"],
+    traps: ["運賃・保険料の扱いを誤る", "税率の適用を誤る", "関税額から消費税計算への流れを誤る"]
+  },
+  {
+    slug: "customs-value-exercise",
+    title: "課税価格計算ミニ演習",
+    unitId: "u010",
+    focus: "加算要素、不算入要素、為替換算を使って課税価格を組み立てる",
+    tag: "課税価格計算",
+    type: "計算過程",
+    steps: ["現実支払価格を置く", "加算要素を足す", "不算入要素を除く", "円換算と端数を確認する"],
+    keyPoints: ["何を足すか、足さないかを表にする", "到着前後を分ける", "二重加算を防ぐ", "外貨と円を混ぜない"],
+    confusing: ["加算要素と不算入要素", "外貨建て費用と円建て費用", "現実支払価格と課税価格"],
+    traps: ["無償提供物を見落とす", "本邦到着後の費用を加算する", "為替換算前後の金額を混同する"]
+  },
+  {
+    slug: "tax-exercise",
+    title: "税額計算ミニ演習",
+    unitId: "u010",
+    focus: "関税額、消費税、地方消費税の計算順を演習する",
+    tag: "税額計算",
+    type: "計算過程",
+    steps: ["課税価格を確認する", "関税額を計算する", "消費税課税標準を作る", "消費税・地方消費税を順に計算する"],
+    keyPoints: ["計算順を崩さない", "税率を取り違えない", "端数処理の段階を見る", "関税額と消費税額を混同しない"],
+    confusing: ["税額と課税標準", "関税と消費税", "地方消費税の基礎"],
+    traps: ["課税価格と関税額を混同する", "消費税の課税標準を誤る", "端数処理を誤る"]
+  },
+  {
+    slug: "classification-exercise",
+    title: "品目分類ミニ演習",
+    unitId: "u011",
+    focus: "貨物説明から分類候補を出し、注・号注・条件で絞る演習を行う",
+    tag: "品目分類",
+    type: "判断メモ",
+    steps: ["商品名以外の性質を読む", "候補となる類を出す", "注・号注で除外や限定を確認する", "統計細分条件まで見る"],
+    keyPoints: ["商品名だけで決めない", "成分・用途・状態を読む", "近接分類を比較する", "容器容量や添加物など細かい条件に注意する"],
+    confusing: ["食品と飲料", "素材と製品", "部分品と附属品"],
+    traps: ["第20類と第22類のような近接分類を混同する", "統計細分の条件を見落とす", "成分・用途を読まない"]
+  },
+  {
+    slug: "material-exercise",
+    title: "資料読み取りミニ演習",
+    unitId: "u012",
+    focus: "インボイス、運賃、保険料、為替相場、税率表を目的別に読む",
+    tag: "別冊資料読取",
+    type: "手順選択",
+    steps: ["設問要求を確認する", "インボイスから品名・数量・価格を拾う", "運賃・保険料・為替を確認する", "税率表と分類を対応させる"],
+    keyPoints: ["資料は全部読むのではなく目的を持って読む", "通貨・単位・条件を先に見る", "別資料の数値を転記するときは根拠を残す", "最後に資料間の矛盾がないか確認する"],
+    confusing: ["インボイス情報と税率表情報", "運賃資料と価格条件", "為替相場と税率"],
+    traps: ["読み飛ばしをする", "単位を読み違える", "税率表の隣行を読む"]
+  },
+  {
+    slug: "mistake-review",
+    title: "通関実務の頻出ミス総整理",
+    unitId: "u012",
+    focus: "申告書、品目分類、課税価格、税額計算、資料読取、時間配分のミスを総点検する",
+    tag: "ケアレスミス",
+    type: "single",
+    steps: ["過去の誤答タグを見る", "分類・価格・税額・申告書欄に分ける", "同じミスの原因を言語化する", "見直し順を決める"],
+    keyPoints: ["ミスは論点別に分類する", "同じタグが続く箇所を優先する", "計算ミスは式の段階を特定する", "時間不足は解く順番を見直す"],
+    confusing: ["知識不足と転記ミス", "計算ミスと端数処理ミス", "分類ミスと税率ミス"],
+    traps: ["正解だけ見て原因を残さない", "毎回違う順番で解く", "見直しを最後の数分に残しすぎる"]
+  }
+];
+
+function makePracticalLesson(topic, index) {
+  const title = topic.title;
+  const isExercise = /演習|模試/.test(title);
+  const lecture = [
+    `まず結論は、${topic.focus}ことです。通関実務では、知識を思い出すだけでなく、資料を読む順番、式を作る順番、入力欄へ落とす順番が点数を左右します。`,
+    topic.extra || `${title}では、インボイス、税率表、運賃・保険料、為替相場などの資料から必要な情報だけを取り出し、申告書作成や計算へつなげます。`,
+    `試験での問われ方は、${topic.traps.slice(0, 3).join("、")}です。選択肢や資料に正しい語句があっても、通貨、単位、条件、発生時点、入力順が一つずれると失点します。`,
+    isExercise ? "ミニ演習では、正答そのものよりも、どの順番で資料を見て、どこで確認したかを残すことを重視します。" : "講義を読んだ後は、確認問題で判断手順を声に出せるか確認します。"
+  ].join("\n\n");
+  return makeLesson({
+    id: topic.id || `lesson-practical-${topic.slug}`,
+    courseId: "course-practical-intro",
+    subject: "通関実務",
+    title,
+    order: index + 1,
+    level: "基礎",
+    estimatedMinutes: isExercise ? 22 : 16,
+    relatedUnitId: topic.unitId,
+    intro: `${title}の結論は、${topic.focus}ことです。`,
+    goal: `${title}について、資料の見る場所、解く手順、ミス防止ポイントを説明できる状態を目標にします。`,
+    lecture,
+    keyPoints: topic.keyPoints,
+    solveSteps: topic.steps,
+    confusingPoints: topic.confusing,
+    traps: topic.traps,
+    examTips: [
+      "「すべて」「常に」「当然に」などの断定語を確認する",
+      "通貨、単位、価格条件、発生時点を丸で囲むつもりで読む",
+      "正しい語句でも、輸出・輸入、分類・税率、価格・税額が入れ替わっていないか確認する"
+    ],
+    practicalNotes: [
+      "資料を読む前に、何を求める問題かを確認します。",
+      "計算は小さな式に分け、根拠資料を一つずつ対応させます。",
+      "メモは補助として使い、講義・演習・解説を先に進めます。"
+    ],
+    penaltyTips: [
+      "ミス防止メモ: 通貨、単位、価格条件、端数、入力順を最後にチェックします。",
+      `弱点タグ: ${topic.tag}`
+    ],
+    miniSummary: `${title}は、${topic.focus}ことが中心です。誤答した場合は、${topic.tag}の弱点タグとして復習してください。`,
+    questions: makePracticalQuestions(topic, index + 1)
+  });
+}
+
+function makePracticalQuestions(topic, lessonNumber) {
+  const rightStep = topic.steps.join(" → ");
+  return [
+    makeQuestion(
+      "q1",
+      `${topic.title}で最初に意識すべき処理として最も適切なものはどれか。`,
+      uniqueOptions([topic.steps[0], topic.traps[0], "資料をすべて読んでから設問を見る", "金額だけを先に計算する"], topic.steps[0]).slice(0, 4),
+      topic.steps[0],
+      `${topic.title}では、まず「${topic.steps[0]}」から始めると、資料読取や計算の目的がぶれません。`,
+      `${topic.traps[0]}というミスは、最初の確認を飛ばしたときに起きやすいです。`,
+      topic.tag,
+      ["判断メモ", "計算過程", "手順選択"].includes(topic.type) ? topic.type : topic.type === "truefalse" ? "truefalse" : "single"
+    ),
+    makeQuestion(
+      "q2",
+      `${topic.title}について、ミスしやすい読み方はどれか。`,
+      uniqueOptions([topic.traps[1] || topic.traps[0], topic.keyPoints[0], topic.steps[1] || topic.steps[0], "設問要求と資料を対応させる"], topic.traps[1] || topic.traps[0]).slice(0, 4),
+      topic.traps[1] || topic.traps[0],
+      `${topic.traps[1] || topic.traps[0]}は、実務問題でよくある失点パターンです。資料のどこから判断したかを確認します。`,
+      "もっともらしい数値や品名があっても、条件・単位・通貨・時点が違えば誤りになります。",
+      topic.tag,
+      "single"
+    ),
+    makeQuestion(
+      "q3",
+      `次のうち、${topic.title}の標準的な解く手順として最も近いものはどれか。`,
+      uniqueOptions([rightStep, `${topic.steps.slice().reverse().join(" → ")}`, "税額計算 → 品目分類 → 設問要求確認", "メモ作成 → 採点 → 資料確認"], rightStep).slice(0, 4),
+      rightStep,
+      `手順は「${rightStep}」です。順番を固定すると、読み飛ばし、二重加算、税率取り違えを減らせます。`,
+      "手順問題では、正しい作業名が並んでいても順番が崩されます。先に要求確認、次に資料、最後に計算・入力確認です。",
+      topic.tag,
+      "procedure"
+    )
+  ];
+}
+
+function makePracticalMiniExamLesson() {
+  const examTopics = [
+    ["輸出申告で同じ統計品目番号の貨物をまとめる場面がある。", "正しい", "統計品目番号"],
+    ["輸入申告では、仕入書価格と課税価格が常に同じである。", "誤り", "課税価格"],
+    ["インボイス読取では、品名・数量・単価・金額・価格条件・通貨を確認する。", "正しい", "インボイス読取"],
+    ["品目分類は商品名だけで判断すれば足りる。", "誤り", "品目分類"],
+    ["類注・号注は分類判断で確認すべき資料である。", "正しい", "品目分類ミス"],
+    ["FOB価格の場合、輸入課税価格では運賃・保険料の加算を検討する。", "正しい", "課税価格計算"],
+    ["CIF価格に含まれている運賃を、根拠なくもう一度加算してよい。", "誤り", "加算要素"],
+    ["本邦到着後の国内運送費は、原則として到着までの運賃と同じ扱いで加算する。", "誤り", "控除要素"],
+    ["外貨建て金額は、設問で指定された為替相場を確認して円換算する。", "正しい", "為替換算"],
+    ["関税額は、課税価格と適用税率をもとに計算する。", "正しい", "関税額計算"],
+    ["消費税計算では、関税額からの流れを無視してインボイス価格だけを使えばよい。", "誤り", "消費税計算"],
+    ["端数処理は、どの段階で行うかを設問指示に従って確認する。", "正しい", "税額計算"],
+    ["税率適用では、分類結果と税率表の対応を確認する。", "正しい", "税率適用"],
+    ["NACCS入力項目は、申告書作成で整理した情報の置き場所として理解するとよい。", "正しい", "NACCS入力"],
+    ["実務問題では、分からない箇所に固執しすぎると時間不足が失点原因になる。", "正しい", "時間不足"]
+  ];
+  return makeLesson({
+    id: "lesson-practical-mini-exam",
+    courseId: "course-practical-intro",
+    subject: "通関実務",
+    title: "通関実務ミニ模試",
+    order: 30,
+    level: "基礎",
+    estimatedMinutes: 35,
+    relatedUnitId: "u012",
+    intro: "通関実務全体から、申告書、インボイス、品目分類、課税価格、税額計算、NACCS、時間配分を横断確認します。",
+    goal: "15問で通関実務の基礎処理を点検し、13〜15問でA、9〜12問でB、0〜8問でC判定にします。",
+    lecture: "まず結論は、通関実務は処理順の科目です。輸出申告、輸入申告、品目分類、課税価格、税額計算、資料読取、NACCS入力を横断して、何を先に確認するかを固定します。\n\nミニ模試では、正誤問題、手順判断、計算過程の確認を混ぜます。C判定の場合は、復習対象として今日のメニューと復習画面に出やすくします。",
+    keyPoints: ["13〜15問正解でA判定", "9〜12問正解でB判定", "0〜8問正解でC判定", "C判定は復習対象"],
+    solveSteps: ["設問要求を確認する", "資料を目的別に読む", "分類・価格・税額を順に処理する", "通貨・端数・入力順を見直す"],
+    confusingPoints: ["輸出申告と輸入申告", "品目分類と税率適用", "課税価格と関税額", "消費税と地方消費税"],
+    traps: ["商品名だけで分類する", "加算要素と不算入要素を逆にする", "端数処理を誤る", "時間配分を崩す"],
+    examTips: ["問題要求を最初に確認する", "資料の通貨・単位・条件を確認する", "分からない箇所は印を付けて次へ進む"],
+    practicalNotes: ["ミニ模試の誤答タグを、次の復習順に使います。"],
+    penaltyTips: ["ミス防止メモ: 誤答した問題の弱点タグを確認し、対応レッスンへ戻ります。"],
+    miniSummary: "通関実務ミニ模試は、処理順とミス防止の総点検です。B判定以下なら、失点タグのレッスンから復習します。",
+    questions: examTopics.map(([question, answer, tag], index) => makeQuestion(
+      `q${index + 1}`,
+      question,
+      ["正しい", "誤り"],
+      answer,
+      answer === "正しい" ? "通関実務の基本処理として正しい内容です。資料・条件・手順と結びつけて覚えます。" : "この表現は通関実務で狙われる典型的な誤りです。条件や処理順を確認します。",
+      "正しい語句が含まれていても、「常に」「だけ」「同じ扱い」などで処理を単純化していないか確認します。",
+      tag,
+      "truefalse"
+    ))
+  });
+}
+
+const PRACTICAL_LESSONS = [
+  ...PRACTICAL_TOPIC_BASES.map(makePracticalLesson),
+  makePracticalMiniExamLesson()
+];
+
 const CURRICULUM_LESSONS = [
   ...TSUKANGYOHO_LESSONS,
   ...KANZEIHOU_LESSONS,
-  makeStandardLesson("lesson-practical-overview", "course-practical-intro", "通関実務", "通関実務の全体像", 1, "u012", "実務問題の全体像", ["申告書、分類、計算を別々に解きすぎる", "資料読み取りの前提を飛ばす", "時間配分を記録しない"]),
-  makeStandardLesson("lesson-practical-declaration", "course-practical-intro", "通関実務", "申告書作成の基本", 2, "u012", "申告書欄の意味と入力判断", ["欄の意味を暗記だけで処理する", "インボイス情報の転記ミス", "税額計算とのつながりを切る"]),
-  makeStandardLesson("lesson-practical-classification", "course-practical-intro", "通関実務", "品目分類の基本", 3, "u011", "品目分類の判断手順", ["見た目だけで分類する", "部注・類注・通則の順序を飛ばす", "統計品目番号と税番を雑に扱う"]),
-  makeStandardLesson("lesson-practical-customs-value", "course-practical-intro", "通関実務", "課税価格計算の基本", 4, "u010", "課税価格計算の入口", ["加算要素を落とす", "控除要素を加算する", "為替換算と端数処理を雑に行う"]),
-  makeStandardLesson("lesson-practical-time-management", "course-practical-intro", "通関実務", "実務問題の時間配分", 5, "u012", "実務問題の時間配分", ["難問に時間を使い切る", "見直し時間を確保しない", "分類と計算の順序を固定しすぎる"])
+  ...PRACTICAL_LESSONS
 ];
 
 const state = {
@@ -1303,6 +1821,11 @@ function calculateLessonUnderstanding(lesson, progress) {
     if (correct >= 9) return "B";
     return "C";
   }
+  if (lesson.id === "lesson-practical-mini-exam") {
+    if (correct >= 13) return "A";
+    if (correct >= 9) return "B";
+    return "C";
+  }
   if (lesson.id === "lesson-tsukangyoho-mini-exam") {
     if (correct >= 9) return "A";
     if (correct >= 6) return "B";
@@ -1357,6 +1880,12 @@ function getLessonReviewReason(lessonId) {
   const wrongTags = getWrongLessonTags(lessonId);
   if (progress.understanding === "C") return "C判定のため最優先復習";
   if (progress.understanding === "B") return "B判定のため確認復習";
+  if (lessonId === "lesson-practical-mini-exam" && wrongTags.length) return "ミニ模試で失点";
+  if (wrongTags.some((tag) => /品目分類|統計品目番号|税率適用/.test(tag))) return "品目分類で誤答";
+  if (wrongTags.some((tag) => /課税価格|加算要素|控除要素|為替換算/.test(tag))) return "課税価格で誤答";
+  if (wrongTags.some((tag) => /申告書|インボイス|NACCS/.test(tag))) return "申告書作成で誤答";
+  if (wrongTags.some((tag) => /関税額|消費税|税額計算|端数/.test(tag))) return "税額計算で誤答";
+  if (wrongTags.some((tag) => /時間不足/.test(tag))) return "時間配分が未理解";
   if (lessonId === "lesson-kanzeihou-mini-exam" && wrongTags.length) return "ミニ模試で失点";
   if (wrongTags.some((tag) => /保税/.test(tag))) return "保税制度で誤答";
   if (wrongTags.some((tag) => /課税価格|加算要素|控除要素/.test(tag))) return "課税価格で誤答";
@@ -1369,6 +1898,8 @@ function getLessonReviewReason(lessonId) {
 }
 
 function getRecommendedLesson() {
+  const practicalPriority = getPracticalPriorityLessons()[0];
+  if (practicalPriority) return practicalPriority;
   const kanzeiPriority = getKanzeihouPriorityLessons()[0];
   if (kanzeiPriority) return kanzeiPriority;
   const tsukanPriority = getTsukangyohoPriorityLessons()[0];
@@ -1393,6 +1924,10 @@ function getTsukangyohoLessons() {
 
 function getKanzeihouLessons() {
   return getLessonsByCourse("course-kanzeihou-intro");
+}
+
+function getPracticalLessons() {
+  return getLessonsByCourse("course-practical-intro");
 }
 
 function getTsukangyohoPriorityLessons() {
@@ -1451,6 +1986,81 @@ function getKanzeihouPriorityLessons() {
     candidates.push({ lesson: next, progress: getLessonProgress(next.id), reason: "未着手の次レッスン", type: "レッスン学習", priorityScore: 90 });
   }
   return candidates.sort((a, b) => (b.priorityScore || 0) - (a.priorityScore || 0) || a.lesson.order - b.lesson.order);
+}
+
+function getPracticalPriorityLessons() {
+  const lessons = getPracticalLessons();
+  const candidates = [];
+  lessons.forEach((lesson) => {
+    const progress = getLessonProgress(lesson.id);
+    const wrongTags = getWrongLessonTags(lesson.id);
+    const relatedLogs = getRelatedPracticalLogsForLesson(lesson);
+    const logWeak = relatedLogs.some((log) => ["×", "△"].includes(log.result) || log.retry || log.priority === "高");
+    const frequentWeak = wrongTags.some((tag) => /品目分類|課税価格|加算要素|申告書|税額計算|時間不足/.test(tag));
+    if (progress.understanding === "C") {
+      candidates.push({ lesson, progress, reason: "C判定のため復習", type: "レッスン復習", priorityScore: 120 });
+    } else if (progress.reviewNeeded) {
+      candidates.push({ lesson, progress, reason: "復習対象の通関実務レッスン", type: "レッスン復習", priorityScore: 105 });
+    } else if (lesson.id === "lesson-practical-mini-exam" && ["B", "C"].includes(progress.understanding)) {
+      candidates.push({ lesson, progress, reason: "実務ミニ模試がB判定以下", type: "レッスン復習", priorityScore: 100 });
+    } else if (frequentWeak) {
+      const reason = wrongTags.some((tag) => /品目分類/.test(tag)) ? "品目分類で誤答あり"
+        : wrongTags.some((tag) => /課税価格|加算要素/.test(tag)) ? "課税価格の加算要素で誤答あり"
+        : wrongTags.some((tag) => /申告書/.test(tag)) ? "申告書作成で誤答あり"
+        : wrongTags.some((tag) => /時間不足/.test(tag)) ? "時間配分レッスン未理解"
+        : "頻出論点で誤答あり";
+      candidates.push({ lesson, progress, reason, type: "レッスン復習", priorityScore: 94 });
+    } else if (logWeak) {
+      candidates.push({ lesson, progress, reason: "関連実務ログに×または△あり", type: "レッスン復習", priorityScore: 88 });
+    } else if (progress.lastStudiedAt && daysSinceIso(progress.lastStudiedAt) > 14) {
+      candidates.push({ lesson, progress, reason: "最終学習日が古いレッスン", type: "レッスン復習", priorityScore: 60 - Math.min(daysSinceIso(progress.lastStudiedAt), 45) });
+    }
+  });
+  const next = lessons.find((lesson) => getLessonProgress(lesson.id).status === "未着手");
+  if (next) {
+    candidates.push({ lesson: next, progress: getLessonProgress(next.id), reason: "未着手の次レッスン", type: "レッスン学習", priorityScore: 98 });
+  }
+  return candidates.sort((a, b) => (b.priorityScore || 0) - (a.priorityScore || 0) || a.lesson.order - b.lesson.order);
+}
+
+function getRelatedPracticalLogsForLesson(lesson) {
+  const keywords = [lesson.title, lesson.relatedUnitId, ...(lesson.keyPoints || []), ...(lesson.traps || []), ...(lesson.confusingPoints || [])].join(" ");
+  return state.practicalLogs.filter((log) => {
+    const haystack = [
+      log.practicalType,
+      log.relatedUnitId,
+      log.relatedUnitTitle,
+      log.declarationType,
+      log.calculationType,
+      log.classificationMemo,
+      log.calculationMemo,
+      log.invoiceMemo,
+      log.exchangeRateMemo,
+      log.taxRateMemo,
+      log.nacssMemo,
+      log.materialReadingMemo,
+      log.mistakeField,
+      log.mistakeReason,
+      ...(log.weaknessTags || [])
+    ].join(" ");
+    return log.relatedUnitId === lesson.relatedUnitId ||
+      (lesson.subject === "通関実務" && (log.weaknessTags || []).some((tag) => keywords.includes(tag) || haystack.includes(tag))) ||
+      practicalLessonKeywordMatch(lesson.title, haystack);
+  });
+}
+
+function practicalLessonKeywordMatch(title, text) {
+  const pairs = [
+    [/輸出申告/, /輸出申告|申告書作成/],
+    [/輸入申告/, /輸入申告|課税価格|消費税/],
+    [/インボイス/, /インボイス|資料読み取り/],
+    [/品目分類|統計品目番号|税番/, /品目分類|統計品目番号|税率適用/],
+    [/課税価格|加算|算入しない|運賃|保険料|無償|ロイヤルティ/, /課税価格|加算要素|控除要素|運賃|保険料/],
+    [/関税額|消費税|端数|税率/, /関税額|消費税|地方消費税|端数|税率/],
+    [/NACCS/, /NACCS入力/],
+    [/時間配分/, /時間不足/]
+  ];
+  return pairs.some(([titlePattern, textPattern]) => titlePattern.test(title) && textPattern.test(text));
 }
 
 function getWrongLessonTags(lessonId) {
@@ -1574,6 +2184,19 @@ function generateTodayMenu(duration = "30分") {
 
 function buildTodayLessonItems() {
   const items = [];
+  const practicalPriorityItems = getPracticalPriorityLessons().map(({ lesson, progress, reason, type, priorityScore }) => makeTodayMenuItem({
+    id: `lesson-${lesson.id}`,
+    type,
+    title: lesson.title,
+    description: `${lesson.subject} / ${lesson.estimatedMinutes}分 / 理解度 ${progress.understanding}`,
+    reason,
+    priority: progress.understanding === "C" || reason.includes("C判定") ? "最優先" : reason.includes("未着手") ? "中" : "高",
+    priorityScore,
+    estimatedMinutes: lesson.estimatedMinutes,
+    relatedUnitId: lesson.relatedUnitId,
+    relatedLessonId: lesson.id
+  }));
+  items.push(...practicalPriorityItems);
   const kanzeiPriorityItems = getKanzeihouPriorityLessons().map(({ lesson, progress, reason, type, priorityScore }) => makeTodayMenuItem({
     id: `lesson-${lesson.id}`,
     type,
@@ -2326,13 +2949,16 @@ function renderLessonDetail() {
           <h4>試験での問われ方</h4>
           ${lesson.lecture.split("\n").filter(Boolean).map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join("")}
         </section>
+        ${renderLessonListSection("解く手順", lesson.solveSteps || [], "procedure-list")}
         ${renderLessonListSection("重要ポイント", lesson.keyPoints, "key-point-list")}
         ${renderLessonListSection("混同ポイント", lesson.confusingPoints, "confusing-list")}
-        ${renderLessonListSection("引っかけ注意", lesson.traps, "trap-list")}
+        ${renderLessonListSection("ミスしやすいポイント", lesson.traps, "trap-list")}
         ${renderLessonListSection("原則と例外", lesson.principleExceptions || [], "principle-list")}
         ${renderLessonListSection("主体・期限・手続の区別", [...(lesson.distinctions || []), ...(lesson.timeLimits || [])], "distinction-list")}
         ${renderLessonListSection("試験で狙われる表現", lesson.examTips, "exam-tip-list")}
-        ${renderLessonListSection("罰則・処分・手続の区別", lesson.penaltyTips, "penalty-list")}
+        ${renderLessonListSection("実務上の注意", lesson.practicalNotes || [], "practical-note-list")}
+        ${renderLessonListSection(lesson.subject === "通関実務" ? "ミス防止メモ" : "罰則・処分・手続の区別", lesson.penaltyTips, "penalty-list")}
+        ${lesson.subject === "通関実務" ? renderRelatedPracticalLogsForLesson(lesson) : ""}
         <section class="panel lesson-section">
           <div class="panel-heading flush"><h3>確認問題</h3></div>
           <div class="question-list">
@@ -2345,12 +2971,31 @@ function renderLessonDetail() {
                 ${CURRICULUM_UNDERSTANDING.map((value) => `<option value="${escapeAttribute(value)}" ${value === progress.understanding ? "selected" : ""}>${escapeHtml(value)}</option>`).join("")}
               </select>
             </label>
-            <p class="muted">${lesson.id === "lesson-kanzeihou-mini-exam" ? "13〜15問正解:A / 9〜12問正解:B / 0〜8問正解:C。" : lesson.id === "lesson-tsukangyoho-mini-exam" ? "9〜10問正解:A / 6〜8問正解:B / 0〜5問正解:C。" : "全問正解:A / 約7割正解:B / それ未満:C。"}B/Cは自動で復習対象になります。</p>
+            <p class="muted">${lesson.id === "lesson-kanzeihou-mini-exam" || lesson.id === "lesson-practical-mini-exam" ? "13〜15問正解:A / 9〜12問正解:B / 0〜8問正解:C。" : lesson.id === "lesson-tsukangyoho-mini-exam" ? "9〜10問正解:A / 6〜8問正解:B / 0〜5問正解:C。" : "全問正解:A / 約7割正解:B / それ未満:C。"}B/Cは自動で復習対象になります。</p>
           </div>
         </section>
         <section class="panel lesson-section"><h4>ミニまとめ</h4><p>${escapeHtml(lesson.miniSummary)}</p></section>
       </div>
     </div>
+  `;
+}
+
+function renderRelatedPracticalLogsForLesson(lesson) {
+  const logs = getRelatedPracticalLogsForLesson(lesson).slice(0, 4);
+  return `
+    <section class="panel lesson-section related-practical-logs">
+      <h4>関連する実務ログ</h4>
+      ${logs.length ? `
+        <div class="mini-list">
+          ${logs.map((log) => `
+            <button class="compact-item ghost-button" type="button" data-edit-practical-log="${escapeAttribute(log.id)}">
+              <span>${escapeHtml([log.studiedAt, log.practicalType, log.questionRef].filter(Boolean).join(" / ") || "実務ログ")}</span>
+              <span>${escapeHtml([log.result, log.mistakeField, (log.weaknessTags || []).slice(0, 2).join("・")].filter(Boolean).join(" / "))}</span>
+            </button>
+          `).join("")}
+        </div>
+      ` : `<p class="muted">関連する実務ログはまだありません。実務ログで×や△を記録すると、近いレッスンの復習判断に反映されます。</p>`}
+    </section>
   `;
 }
 
@@ -2373,6 +3018,7 @@ function renderLessonQuestion(lesson, question, index) {
       <div class="question-head">
         <span class="badge">問${index}</span>
         ${result ? `<span class="badge ${result.correct ? "ok" : "priority"}">${result.correct ? "正解" : "不正解"}</span>` : `<span class="badge">未回答</span>`}
+        <span class="badge">${escapeHtml(questionTypeLabel(question.type))}</span>
       </div>
       <p class="question-text">${escapeHtml(question.question)}</p>
       <div class="choice-list">
@@ -2383,6 +3029,12 @@ function renderLessonQuestion(lesson, question, index) {
           </label>
         `).join("")}
       </div>
+      ${["procedure", "判断メモ", "計算過程", "手順選択"].includes(question.type) ? `
+        <label class="field-wide memo-support">
+          判断メモ
+          <textarea placeholder="資料の見る順番、計算過程、迷った条件を短くメモできます。採点は選択肢で行います。"></textarea>
+        </label>
+      ` : ""}
       <div class="card-actions">
         <button class="primary-button" type="button" data-grade-question="${escapeAttribute(lesson.id)}:${escapeAttribute(question.id)}">採点する</button>
       </div>
@@ -2394,12 +3046,24 @@ function renderLessonQuestion(lesson, question, index) {
             <div><dt>あなたの回答</dt><dd>${escapeHtml(result.userAnswer)}</dd></div>
             <div><dt>関連弱点タグ</dt><dd>${escapeHtml(question.weaknessTag)}</dd></div>
           </dl>
-          <p>${escapeHtml(question.explanation)}</p>
-          <p class="trap-note">${escapeHtml(question.trapExplanation)}</p>
+          <p><strong>通常解説：</strong>${escapeHtml(question.explanation)}</p>
+          <p class="trap-note"><strong>ミス防止解説：</strong>${escapeHtml(question.trapExplanation)}</p>
         </div>
       ` : ""}
     </article>
   `;
+}
+
+function questionTypeLabel(type) {
+  const labels = {
+    single: "4択単一選択",
+    truefalse: "正誤問題",
+    procedure: "手順選択問題",
+    "判断メモ": "判断メモ型",
+    "計算過程": "計算過程確認",
+    "手順選択": "手順選択問題"
+  };
+  return labels[type] || "確認問題";
 }
 
 function getNextLesson(lessonId) {
@@ -2947,6 +3611,7 @@ function renderCurriculumAnalysis() {
   const stats = getCurriculumStats();
   const tsukan = buildTsukangyohoCurriculumAnalysis();
   const kanzei = buildKanzeihouCurriculumAnalysis();
+  const practical = buildPracticalCurriculumAnalysis();
   const subjectRows = ANALYSIS_SUBJECTS
     .filter((subject) => subject !== "未設定")
     .map((subject) => {
@@ -2962,6 +3627,24 @@ function renderCurriculumAnalysis() {
   const cLessons = CURRICULUM_LESSONS.filter((lesson) => getLessonProgress(lesson.id).understanding === "C");
   return `
     <div class="analysis-card-grid two-col">
+      <article class="analysis-card">
+        <h4>通関実務カリキュラム分析</h4>
+        <dl class="analysis-facts">
+          <div><dt>レッスン総数</dt><dd>${practical.total}</dd></div>
+          <div><dt>完了数</dt><dd>${practical.completed}</dd></div>
+          <div><dt>未着手数</dt><dd>${practical.notStarted}</dd></div>
+          <div><dt>復習対象数</dt><dd>${practical.reviewCount}</dd></div>
+          <div><dt>A/B/C/未判定</dt><dd>${practical.understandingCounts.A || 0}/${practical.understandingCounts.B || 0}/${practical.understandingCounts.C || 0}/${practical.understandingCounts["未判定"] || 0}</dd></div>
+          <div><dt>ミニ模試結果</dt><dd>${escapeHtml(practical.miniExamText)}</dd></div>
+          <div><dt>ミスパターン問題の正答率</dt><dd>${escapeHtml(practical.trapAccuracy)}</dd></div>
+          <div><dt>品目分類系レッスン正答率</dt><dd>${escapeHtml(practical.classificationAccuracy)}</dd></div>
+          <div><dt>課税価格系レッスン正答率</dt><dd>${escapeHtml(practical.customsValueAccuracy)}</dd></div>
+          <div><dt>税額計算系レッスン正答率</dt><dd>${escapeHtml(practical.taxCalculationAccuracy)}</dd></div>
+          <div><dt>申告書作成系正答率</dt><dd>${escapeHtml(practical.declarationAccuracy)}</dd></div>
+          <div><dt>時間配分系理解度</dt><dd>${escapeHtml(practical.timeManagementUnderstanding)}</dd></div>
+          <div><dt>実務ログ連動</dt><dd>${escapeHtml(practical.logLinkText)}</dd></div>
+        </dl>
+      </article>
       <article class="analysis-card">
         <h4>関税法等カリキュラム分析</h4>
         <dl class="analysis-facts">
@@ -3000,6 +3683,15 @@ function renderCurriculumAnalysis() {
           <div><dt>復習対象レッスン数</dt><dd>${stats.reviewCount}</dd></div>
           <div><dt>ひっかけ問題の正答率</dt><dd>${trapRate}</dd></div>
         </dl>
+      </article>
+      <article class="analysis-card">
+        <h4>通関実務 苦手レッスン上位</h4>
+        ${practical.weakLessons.length ? practical.weakLessons.map(({ lesson, progress, correct, reason }) => `
+          <button class="compact-item ghost-button" type="button" data-open-lesson="${escapeAttribute(lesson.id)}">
+            <span>${escapeHtml(lesson.title)}</span>
+            <span>${escapeHtml(`${progress.understanding} / ${correct}/${lesson.questions.length} / ${reason}`)}</span>
+          </button>
+        `).join("") : `<p class="muted">苦手レッスンはありません。</p>`}
       </article>
       <article class="analysis-card">
         <h4>関税法等 苦手レッスン上位</h4>
@@ -3122,6 +3814,54 @@ function buildKanzeihouCurriculumAnalysis() {
     bondedAccuracy: rate(rows.filter((row) => /保税/.test(`${row.lesson.title}${row.question.weaknessTag}`))),
     taxDeclarationAccuracy: rate(rows.filter((row) => /納税|申告|更正|期限|加算税/.test(`${row.lesson.title}${row.question.weaknessTag}`))),
     customsValueAccuracy: rate(rows.filter((row) => /課税価格|加算要素|控除要素/.test(`${row.lesson.title}${row.question.weaknessTag}`))),
+    weakLessons
+  };
+}
+
+function buildPracticalCurriculumAnalysis() {
+  const lessons = getPracticalLessons();
+  const progresses = lessons.map((lesson) => getLessonProgress(lesson.id));
+  const countByUnderstanding = CURRICULUM_UNDERSTANDING.reduce((acc, value) => {
+    acc[value] = progresses.filter((progress) => progress.understanding === value).length;
+    return acc;
+  }, {});
+  const mini = getLessonById("lesson-practical-mini-exam");
+  const miniProgress = getLessonProgress("lesson-practical-mini-exam");
+  const miniCorrect = mini ? mini.questions.filter((question) => miniProgress.questionResults.some((result) => result.questionId === question.id && result.correct)).length : 0;
+  const rows = lessons.flatMap((lesson) => lesson.questions.map((question) => ({
+    lesson,
+    question,
+    result: getLessonQuestionResult(lesson.id, question.id)
+  }))).filter((row) => row.result);
+  const rate = (targetRows) => targetRows.length ? `${Math.round((targetRows.filter((row) => row.result.correct).length / targetRows.length) * 100)}%（${targetRows.filter((row) => row.result.correct).length}/${targetRows.length}）` : "未回答";
+  const lessonRate = (pattern) => rate(rows.filter((row) => pattern.test(`${row.lesson.title}${row.question.weaknessTag}${row.question.explanation}`)));
+  const weakLessons = lessons.map((lesson) => {
+    const progress = getLessonProgress(lesson.id);
+    const correct = lesson.questions.filter((question) => progress.questionResults.some((result) => result.questionId === question.id && result.correct)).length;
+    return { lesson, progress, correct, reason: getLessonReviewReason(lesson.id) };
+  }).filter((item) => item.progress.understanding === "C" || item.progress.reviewNeeded || item.correct < item.lesson.questions.length || getRelatedPracticalLogsForLesson(item.lesson).some((log) => ["×", "△"].includes(log.result)))
+    .sort((a, b) => {
+      const order = { C: 3, B: 2, "未判定": 1, A: 0 };
+      return (order[b.progress.understanding] || 0) - (order[a.progress.understanding] || 0) || a.correct - b.correct || a.lesson.order - b.lesson.order;
+    })
+    .slice(0, 6);
+  const timeLesson = getLessonById("lesson-practical-time-management");
+  const timeProgress = timeLesson ? getLessonProgress(timeLesson.id) : { understanding: "未判定" };
+  const practicalLogWeakCount = state.practicalLogs.filter((log) => ["×", "△"].includes(log.result) || log.retry || log.priority === "高").length;
+  return {
+    total: lessons.length,
+    completed: progresses.filter((progress) => progress.status === "完了").length,
+    notStarted: progresses.filter((progress) => progress.status === "未着手").length,
+    reviewCount: progresses.filter((progress) => progress.reviewNeeded || ["B", "C"].includes(progress.understanding)).length,
+    understandingCounts: countByUnderstanding,
+    miniExamText: mini ? `${miniCorrect}/${mini.questions.length} 正解 / 理解度 ${miniProgress.understanding}` : "未実装",
+    trapAccuracy: rate(rows.filter((row) => /ミス|読み飛ばし|混同|誤|二重|端数|時間不足|ひっかけ/.test(`${row.question.trapExplanation}${row.question.weaknessTag}${row.lesson.traps.join(" ")}`))),
+    classificationAccuracy: lessonRate(/品目分類|統計品目番号|税番|税率適用/),
+    customsValueAccuracy: lessonRate(/課税価格|加算要素|控除要素|運賃|保険料|ロイヤルティ/),
+    taxCalculationAccuracy: lessonRate(/関税額|消費税|地方消費税|端数|税額計算/),
+    declarationAccuracy: lessonRate(/申告書|輸出申告|輸入申告|インボイス|NACCS/),
+    timeManagementUnderstanding: timeProgress.understanding,
+    logLinkText: `${state.practicalLogs.length}件中 ${practicalLogWeakCount}件が×・△・再演習・高優先度`,
     weakLessons
   };
 }
@@ -4256,6 +4996,8 @@ function renderAiTargetSelect() {
     ? "通関業法20レッスンの進捗、誤答、弱点タグ、ミニ模試、復習対象を使います。"
     : state.aiForm.targetType === "関税法等カリキュラム"
     ? "関税法等30レッスンの進捗、誤答、弱点タグ、ミニ模試、保税・納税・課税価格の苦手状況を使います。"
+    : state.aiForm.targetType === "通関実務カリキュラム"
+    ? "通関実務30レッスンの進捗、誤答、弱点タグ、ミニ模試、品目分類・課税価格・申告書・税額計算・時間配分の苦手状況を使います。"
     : state.aiForm.targetType === "復習対象"
     ? "現在の復習対象単元を最大10件まで使います。"
     : "単元・演習ログ・過去問ログ・実務ログ・今日のメニューの集計値を使います。";
@@ -4360,6 +5102,8 @@ function generateAiPrompt() {
 function buildAiPromptText(promptType, target, additionalConditions) {
   const points = state.aiForm.targetType === "通関業法カリキュラム"
     ? ["通関業法レッスン進捗の評価", "A/B/C判定の偏り", "間違えた確認問題から見える弱点", "弱点タグの優先順位", "ミニ模試結果の評価", "復習対象レッスンの優先順位", "罰則・処分系トラップへの耐性", "30分でできる通関業法復習メニュー"]
+    : state.aiForm.targetType === "通関実務カリキュラム"
+    ? ["通関実務レッスン進捗の評価", "A/B/C判定の偏り", "間違えた確認問題から見える弱点", "弱点タグの優先順位", "ミニ模試結果の評価", "復習対象レッスンの優先順位", "品目分類、課税価格、申告書、税額計算、時間配分の苦手状況", "30分でできる通関実務復習メニュー"]
     : state.aiForm.targetType === "実務ログ"
     ? ["申告書作成上のミス原因", "計算過程のどこで崩れたか", "品目分類・資料読み取りの弱点", "NACCS入力項目の理解不足", "時間配分の問題", "次に解くべき実務問題タイプ", "本試験で失点しやすいポイント", "30分でできる実務復習メニュー"]
     : (AI_ANALYSIS_POINTS[promptType] || AI_ANALYSIS_POINTS["総合学習相談"]);
@@ -4417,6 +5161,9 @@ function buildAiTargetData() {
   }
   if (state.aiForm.targetType === "関税法等カリキュラム") {
     return { id: "course-kanzeihou-intro", title: "関税法等カリキュラム", body: buildKanzeihouPromptData() };
+  }
+  if (state.aiForm.targetType === "通関実務カリキュラム") {
+    return { id: "course-practical-intro", title: "通関実務カリキュラム", body: buildPracticalCurriculumPromptData() };
   }
   return { id: "", title: "全体サマリー", body: buildOverallSummaryPromptData() };
 }
@@ -4552,6 +5299,39 @@ function buildKanzeihouPromptData() {
     ["間違えた確認問題の弱点タグ", rankFromValues(wrongTags).map((item) => `${item.label}(${item.count})`).join(" / ") || "なし"],
     ["復習対象レッスン", reviewLessons],
     ["苦手状況", `保税:${analysis.bondedAccuracy} / 納税:${analysis.taxDeclarationAccuracy} / 課税価格:${analysis.customsValueAccuracy} / 減免税:${lessonLines.includes("減免税") ? "レッスンあり" : "未収録"}`],
+    ["レッスン別進捗", lessonLines]
+  ]);
+}
+
+function buildPracticalCurriculumPromptData() {
+  const analysis = buildPracticalCurriculumAnalysis();
+  const lessons = getPracticalLessons();
+  const lessonLines = lessons.map((lesson) => {
+    const progress = getLessonProgress(lesson.id);
+    const wrongQuestions = lesson.questions
+      .filter((question) => progress.questionResults.some((result) => result.questionId === question.id && !result.correct))
+      .map((question) => `${question.question} / 正答:${question.answer} / 弱点:${question.weaknessTag}`);
+    const correct = lesson.questions.filter((question) => progress.questionResults.some((result) => result.questionId === question.id && result.correct)).length;
+    const relatedLogs = getRelatedPracticalLogsForLesson(lesson).filter((log) => ["×", "△"].includes(log.result) || log.retry || log.priority === "高");
+    return `${lesson.order}. ${lesson.title} / 状態:${progress.status} / 理解度:${progress.understanding} / 正答:${correct}/${lesson.questions.length} / 復習:${progress.reviewNeeded ? "対象" : "対象外"} / 誤答:${wrongQuestions.join(" || ") || "なし"} / 関連実務ログ弱点:${relatedLogs.length}件`;
+  }).join("\n");
+  const wrongTags = lessons.flatMap((lesson) => getWrongLessonTags(lesson.id));
+  const reviewLessons = getReviewLessons()
+    .filter(({ lesson }) => lesson.courseId === "course-practical-intro")
+    .map(({ lesson, progress, reason }) => `${lesson.title}:${progress.understanding}/${reason}`)
+    .join("\n") || "なし";
+  return keyValueLines([
+    ["対象", "通関実務カリキュラム"],
+    ["レッスン総数", analysis.total],
+    ["完了数", analysis.completed],
+    ["未着手数", analysis.notStarted],
+    ["復習対象数", analysis.reviewCount],
+    ["A/B/C/未判定", `A:${analysis.understandingCounts.A || 0} / B:${analysis.understandingCounts.B || 0} / C:${analysis.understandingCounts.C || 0} / 未判定:${analysis.understandingCounts["未判定"] || 0}`],
+    ["ミニ模試結果", analysis.miniExamText],
+    ["間違えた確認問題の弱点タグ", rankFromValues(wrongTags).map((item) => `${item.label}(${item.count})`).join(" / ") || "なし"],
+    ["復習対象レッスン", reviewLessons],
+    ["苦手状況", `品目分類:${analysis.classificationAccuracy} / 課税価格:${analysis.customsValueAccuracy} / 申告書:${analysis.declarationAccuracy} / 税額計算:${analysis.taxCalculationAccuracy} / 時間配分:${analysis.timeManagementUnderstanding}`],
+    ["実務ログ連動", analysis.logLinkText],
     ["レッスン別進捗", lessonLines]
   ]);
 }

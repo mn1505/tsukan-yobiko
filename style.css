@@ -1369,8 +1369,15 @@ button:focus-visible {
 .trap-list,
 .penalty-list,
 .principle-list,
-.distinction-list {
+.distinction-list,
+.procedure-list,
+.practical-note-list,
+.related-practical-logs {
   border-color: rgba(184, 111, 42, 0.38);
+}
+
+.procedure-list {
+  background: #f2f8f7;
 }
 
 .trap-list {
@@ -1387,6 +1394,11 @@ button:focus-visible {
 
 .penalty-list {
   background: #fffdf5;
+}
+
+.practical-note-list,
+.related-practical-logs {
+  background: #f8faf7;
 }
 
 .question-list {
