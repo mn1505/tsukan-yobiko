@@ -117,8 +117,8 @@ function validatePayload(payload) {
   if (typeof payload.prompt !== "string") return "promptは文字列で送信してください。";
   if (!payload.prompt.trim()) return "promptが空です。内容を入力してください。";
   if (payload.prompt.length > MAX_PROMPT_CHARS) return "プロンプトが長すぎます。内容を短くしてください。";
-  if (!["v1.5", "v1.6"].includes(String(payload.version || ""))) {
-    return "対応していないversionです。v1.5またはv1.6で送信してください。";
+  if (!["v1.5", "v1.6", "v1.7"].includes(String(payload.version || ""))) {
+    return "対応していないversionです。v1.5、v1.6、v1.7のいずれかで送信してください。";
   }
   return "";
 }

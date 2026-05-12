@@ -1,4 +1,4 @@
-const APP_VERSION = "v1.6";
+const APP_VERSION = "v1.7";
 const AI_API_TIMEOUT_MS = 30000;
 const AI_HEALTH_TIMEOUT_MS = 10000;
 const STORAGE_KEYS = {
@@ -129,6 +129,27 @@ const AI_OUTPUT_FORMATS = {
   default: ["総評", "良い点", "問題点", "弱点タグ候補", "本試験での危険ポイント", "次に復習すべきこと", "A判定に上げる条件"],
   "類似問題作成": ["問題", "選択肢", "正答", "解説", "引っかけポイント", "復習すべき知識"],
   "復習指示": ["最優先", "通常復習", "余裕があれば", "30分メニュー", "1時間メニュー"]
+};
+const AI_TUTOR_TARGET_TYPES = ["現在のレッスン", "確認問題", "模試問題", "今日のメニュー", "弱点タグ", "自由質問"];
+const AI_TUTOR_QUESTION_TYPES = ["やさしく説明", "本試験向けに説明", "なぜ間違えたか分析", "ひっかけポイント解説", "類似問題を出す", "暗記方法を教える", "30分復習メニューを作る", "A判定に上げる方法", "質問に直接回答"];
+const AI_TUTOR_EXPLANATION_LEVELS = ["初学者向け", "標準", "本試験直前", "詳しめ", "一問一答風"];
+const AI_TUTOR_OUTPUT_FORMATS = {
+  "なぜ間違えたか分析": ["誤答原因", "不足している知識", "混同している論点", "本試験での危険ポイント", "次の復習メニュー"],
+  "類似問題を出す": ["問題", "選択肢", "正答", "解説", "ひっかけポイント"],
+  "30分復習メニューを作る": ["最優先", "10分", "20分", "30分", "余裕があれば"],
+  "A判定に上げる方法": ["現状評価", "A判定に足りない点", "具体的にやること", "確認問題", "復習基準"],
+  default: ["結論", "理由", "試験での問われ方", "ひっかけ注意", "次に復習すること"]
+};
+const AI_TUTOR_QUESTION_INSTRUCTIONS = {
+  "やさしく説明": "初心者向けに、制度趣旨と全体像から説明してください。",
+  "本試験向けに説明": "本試験の選択肢でどう問われるか、誤り選択肢を見抜く観点を説明してください。",
+  "なぜ間違えたか分析": "誤答原因を、暗記不足・理解不足・用語混同・選択肢読解ミスに分けて分析してください。",
+  "ひっかけポイント解説": "本試験で狙われる表現、混同ポイント、罰則・処分・手続の違いを説明してください。",
+  "類似問題を出す": "同じ論点のオリジナル問題を1〜3問作ってください。市販教材や過去問本文を丸写ししないでください。",
+  "暗記方法を教える": "単純な語呂合わせだけでなく、制度趣旨・対比表・判断軸で覚える方法を提案してください。",
+  "30分復習メニューを作る": "現在の対象データから、30分で何をするかを具体化してください。",
+  "A判定に上げる方法": "B/C判定または未判定からA判定に上げるための条件を示してください。",
+  "質問に直接回答": "ユーザーの自由質問へ、通関士試験対策として簡潔に回答してください。"
 };
 
 const CURRICULUM_STATUS = ["未着手", "学習中", "完了", "復習中"];
@@ -1224,6 +1245,22 @@ const state = {
     sending: false,
     highlightSend: false
   },
+  aiTutorForm: {
+    targetType: "現在のレッスン",
+    targetId: "",
+    questionType: "質問に直接回答",
+    explanationLevel: "標準",
+    userQuestion: "",
+    promptText: "",
+    currentAnalysisId: "",
+    apiStatus: "未送信",
+    apiResponseText: "",
+    apiModel: "",
+    apiUsage: {},
+    apiError: "",
+    sending: false,
+    sentViaApi: false
+  },
   mockExam: {
     selectedMode: "light15",
     active: null,
@@ -1662,6 +1699,12 @@ function normalizeAiAnalysis(item) {
     promptText: "",
     responseText: "",
     resultMemo: "",
+    questionType: "",
+    explanationLevel: "",
+    userQuestion: "",
+    savedAsReviewMemo: false,
+    markedAsWeaknessSuggestion: false,
+    markedForNextReview: false,
     sentViaApi: false,
     model: "",
     usage: {},
@@ -1672,10 +1715,16 @@ function normalizeAiAnalysis(item) {
   if (!normalized.createdAt) normalized.createdAt = new Date().toISOString();
   if (!normalized.resultMemo) normalized.resultMemo = "";
   normalized.sentViaApi = Boolean(normalized.sentViaApi);
+  normalized.savedAsReviewMemo = Boolean(normalized.savedAsReviewMemo);
+  normalized.markedAsWeaknessSuggestion = Boolean(normalized.markedAsWeaknessSuggestion);
+  normalized.markedForNextReview = Boolean(normalized.markedForNextReview);
   normalized.usage = normalized.usage && typeof normalized.usage === "object" ? normalized.usage : {};
   normalized.error = String(normalized.error || "");
   normalized.responseText = String(normalized.responseText || "");
   normalized.model = String(normalized.model || "");
+  normalized.questionType = String(normalized.questionType || "");
+  normalized.explanationLevel = String(normalized.explanationLevel || "");
+  normalized.userQuestion = String(normalized.userQuestion || "");
   return normalized;
 }
 
@@ -3055,13 +3104,22 @@ function renderDashboard() {
     `;
   }
 
+  const aiTutorItems = state.aiAnalyses.filter((item) => item.promptType === "AI講師");
+  const recentTutor = [...aiTutorItems].sort(compareAiAnalyses)[0];
+  const unsavedTutor = aiTutorItems.filter((item) => item.responseText && !item.savedAsReviewMemo && !item.markedAsWeaknessSuggestion && !item.markedForNextReview).length;
   const recentAi = [...state.aiAnalyses]
     .sort(compareAiAnalyses)
     .slice(0, 3);
   document.querySelector("#homeAiHistory").innerHTML = `
+    <dl class="summary-list">
+      <div><dt>直近のAI講師質問</dt><dd>${escapeHtml(recentTutor ? truncateText(recentTutor.userQuestion || recentTutor.targetTitle, 42) : "なし")}</dd></div>
+      <div><dt>AI講師利用回数</dt><dd>${aiTutorItems.length}回</dd></div>
+      <div><dt>未保存のAI回答</dt><dd>${unsavedTutor}件</dd></div>
+      <div><dt>利用状態</dt><dd>${state.aiSettings.enabled && state.aiSettings.endpointUrl.trim() ? "API送信可能" : "手動コピー"}</dd></div>
+    </dl>
     <div class="action-card-list">
-      <button class="record-link" type="button" data-view-shortcut="ai"><strong>今日の学習相談</strong><span>メニュー・弱点・復習計画をプロンプト化</span></button>
-      <button class="record-link" type="button" data-ai-quick="mock"><strong>最新模試を分析</strong><span>${latestMock ? `${latestMock.scoreRate}% ${latestMock.resultLevel}` : "模試未実施"}</span></button>
+      <button class="record-link" type="button" data-ai-today-consult><strong>AI講師へ相談する</strong><span>レッスン・確認問題・今日のメニューを質問</span></button>
+      <button class="record-link" type="button" data-ai-quick="mock"><strong>最新模試をAI講師に分析</strong><span>${latestMock ? `${latestMock.scoreRate}% ${latestMock.resultLevel}` : "模試未実施"}</span></button>
     </div>
     <div class="mini-list">
       ${recentAi.length ? recentAi.slice(0, 2).map((item) => `
@@ -3203,6 +3261,11 @@ function renderTodayView() {
       <span>${completion.rate}%</span>
     </div>
     <p class="muted">チェックした項目は今日のstudyPlanに保存されます。</p>
+    <div class="form-actions">
+      <button class="primary-button" type="button" data-ai-today-consult>今日の勉強をAI講師に相談</button>
+      <button class="ghost-button" type="button" data-ai-today-review>30分メニューを作り直す</button>
+      <button class="ghost-button" type="button" data-ai-today-priority>未完了項目の優先順位を聞く</button>
+    </div>
   `;
   document.querySelector("#todayMemo").value = plan.memo || "";
 }
@@ -3231,6 +3294,7 @@ function todayMenuCard(item, compact = false) {
         ${item.relatedLogId ? `<button class="ghost-button" type="button" data-open-today-log="${escapeAttribute(item.type)}:${escapeAttribute(item.relatedLogId)}">ログを開く</button>` : ""}
         ${item.mockMode ? `<button class="primary-button" type="button" data-start-mock="${escapeAttribute(item.mockMode)}">開始</button>` : ""}
         ${item.relatedMockResultId ? `<button class="ghost-button" type="button" data-show-mock-result="${escapeAttribute(item.relatedMockResultId)}">模試詳細</button>` : ""}
+        <button class="ghost-button" type="button" data-ai-today-consult>AI講師に相談</button>
       </div>
     </article>
   `;
@@ -3454,7 +3518,7 @@ function renderLessonDetail() {
             <div class="form-actions">
               <button class="primary-button" type="button" data-complete-lesson="${escapeAttribute(lesson.id)}">レッスン完了</button>
               <button class="ghost-button" type="button" data-review-lesson="${escapeAttribute(lesson.id)}">復習に回す</button>
-              <button class="ghost-button" type="button" data-ai-lesson="${escapeAttribute(lesson.id)}">このレッスンをAIに質問</button>
+              <button class="ghost-button" type="button" data-ai-lesson="${escapeAttribute(lesson.id)}">このレッスンをAI講師に質問</button>
               ${nextLesson ? `<button class="ghost-button" type="button" data-open-lesson="${escapeAttribute(nextLesson.id)}">次のレッスンへ進む</button>` : ""}
             </div>
           </div>
@@ -3470,6 +3534,10 @@ function renderLessonDetail() {
           <p>${escapeHtml(lesson.goal)}</p>
           <h4>講義</h4>
           ${lesson.lecture.split("\n").filter(Boolean).map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join("")}
+          <div class="ai-tutor-inline-actions">
+            <button class="primary-button" type="button" data-ai-lesson="${escapeAttribute(lesson.id)}">このレッスンをAI講師に質問</button>
+            <button class="ghost-button" type="button" data-ai-lesson-trap="${escapeAttribute(lesson.id)}">このひっかけをAIに説明してもらう</button>
+          </div>
         </section>
         ${renderLessonListSection("重要ポイント", lesson.keyPoints, "key-point-list")}
         ${renderLessonListSection("ひっかけ注意", lesson.traps, "trap-list")}
@@ -3494,7 +3562,7 @@ function renderLessonDetail() {
                 ${CURRICULUM_UNDERSTANDING.map((value) => `<option value="${escapeAttribute(value)}" ${value === progress.understanding ? "selected" : ""}>${escapeHtml(value)}</option>`).join("")}
               </select>
             </label>
-            <p class="muted">${lesson.id === "lesson-kanzeihou-mini-exam" || lesson.id === "lesson-practical-mini-exam" ? "13〜15問正解:A / 9〜12問正解:B / 0〜8問正解:C。" : lesson.id === "lesson-tsukangyoho-mini-exam" ? "9〜10問正解:A / 6〜8問正解:B / 0〜5問正解:C。" : "全問正解:A / 約7割正解:B / それ未満:C。"}B/Cは自動で復習対象になります。</p>
+          <p class="muted">${lesson.id === "lesson-kanzeihou-mini-exam" || lesson.id === "lesson-practical-mini-exam" ? "13〜15問正解:A / 9〜12問正解:B / 0〜8問正解:C。" : lesson.id === "lesson-tsukangyoho-mini-exam" ? "9〜10問正解:A / 6〜8問正解:B / 0〜5問正解:C。" : "全問正解:A / 約7割正解:B / それ未満:C。"}B/Cは自動で復習対象になります。</p>
           </div>
         </section>
         <section class="panel lesson-section lesson-finish-bar">
@@ -3502,6 +3570,7 @@ function renderLessonDetail() {
           <div class="form-actions">
             <button class="primary-button" type="button" data-complete-lesson="${escapeAttribute(lesson.id)}">レッスン完了</button>
             <button class="ghost-button" type="button" data-review-lesson="${escapeAttribute(lesson.id)}">復習に回す</button>
+            <button class="ghost-button" type="button" data-ai-lesson="${escapeAttribute(lesson.id)}">レッスン完了前にAI講師へ質問</button>
             ${nextLesson ? `<button class="primary-button" type="button" data-open-lesson="${escapeAttribute(nextLesson.id)}">次のレッスンへ進む</button>` : ""}
           </div>
         </section>
@@ -3582,8 +3651,10 @@ function renderLessonQuestion(lesson, question, index) {
           <p><strong>通常解説：</strong>${escapeHtml(question.explanation)}</p>
           <p class="trap-note"><strong>ミス防止解説：</strong>${escapeHtml(question.trapExplanation)}</p>
           ${!result.correct ? `
-            <div class="card-actions">
-              <button class="ghost-button" type="button" data-ai-wrong-question="${escapeAttribute(lesson.id)}:${escapeAttribute(question.id)}">この誤答をAIに解説してもらう</button>
+            <div class="card-actions ai-tutor-inline-actions">
+              <button class="ghost-button" type="button" data-ai-wrong-question="${escapeAttribute(lesson.id)}:${escapeAttribute(question.id)}">なぜ間違えたかAI講師に聞く</button>
+              <button class="ghost-button" type="button" data-ai-similar-question="${escapeAttribute(lesson.id)}:${escapeAttribute(question.id)}">同じ論点の類似問題を作る</button>
+              <button class="ghost-button" type="button" data-ai-trap-question="${escapeAttribute(lesson.id)}:${escapeAttribute(question.id)}">本試験でのひっかけを確認する</button>
             </div>
           ` : ""}
         </div>
@@ -4970,6 +5041,9 @@ function renderWeaknessRanking(items) {
               <div><dt>関連過去問ログ数</dt><dd>${item.pastExamLogCount}</dd></div>
               <div><dt>関連実務ログ数</dt><dd>${item.practicalLogCount}</dd></div>
             </dl>
+            <div class="card-actions">
+              <button class="ghost-button" type="button" data-ai-weakness-tag="${escapeAttribute(item.tag)}">この弱点をAI講師に相談</button>
+            </div>
           </div>
         </article>
       `).join("")}
@@ -5718,7 +5792,9 @@ function renderMockResultArea(resultId = state.mockExam.lastResultId) {
       <p>${escapeHtml(getMockNextAction(result))}</p>
       <div class="card-actions">
         <button class="primary-button" type="button" data-open-cross-review>横断復習を見る</button>
-        <button class="ghost-button" type="button" data-ai-mock-result="${escapeAttribute(result.id)}">この模試結果をAIに分析してもらう</button>
+        <button class="ghost-button" type="button" data-ai-mock-result="${escapeAttribute(result.id)}">この模試結果をAI講師に分析してもらう</button>
+        <button class="ghost-button" type="button" data-ai-mock-wrong="${escapeAttribute(result.id)}">間違えた問題だけAI解説</button>
+        <button class="ghost-button" type="button" data-ai-mock-review="${escapeAttribute(result.id)}">次の30分復習メニューを作る</button>
       </div>
     </div>
     <div class="mock-explanations">
@@ -5780,6 +5856,7 @@ function renderMockHistory() {
       </dl>
       <div class="card-actions">
         <button class="ghost-button" type="button" data-show-mock-result="${escapeAttribute(result.id)}">詳細</button>
+        <button class="ghost-button" type="button" data-ai-mock-result="${escapeAttribute(result.id)}">AI講師に相談</button>
         <button class="danger-button" type="button" data-delete-mock-result="${escapeAttribute(result.id)}">削除</button>
       </div>
     </article>
@@ -5827,9 +5904,99 @@ function renderAiView() {
   renderAiTargetSelect();
   document.querySelector("#aiAdditionalConditions").value = state.aiForm.additionalConditions;
   document.querySelector("#aiPromptResult").value = state.aiForm.promptText;
+  renderAiTutorView();
   renderAiResponse();
   renderAiApiLogSummary();
   renderAiHistory();
+}
+
+function renderAiTutorView() {
+  fillSelect("#aiTutorTargetType", AI_TUTOR_TARGET_TYPES, state.aiTutorForm.targetType);
+  fillSelect("#aiTutorQuestionType", AI_TUTOR_QUESTION_TYPES, state.aiTutorForm.questionType);
+  fillSelect("#aiTutorExplanationLevel", AI_TUTOR_EXPLANATION_LEVELS, state.aiTutorForm.explanationLevel);
+  renderAiTutorTargetSelect();
+  const questionInput = document.querySelector("#aiTutorQuestionInput");
+  const promptInput = document.querySelector("#aiTutorPromptResult");
+  if (questionInput && document.activeElement !== questionInput) questionInput.value = state.aiTutorForm.userQuestion;
+  if (promptInput && document.activeElement !== promptInput) promptInput.value = state.aiTutorForm.promptText;
+  renderAiTutorModeHint();
+  renderAiTutorResponse();
+  renderAiTutorHistory();
+}
+
+function renderAiTutorTargetSelect() {
+  const select = document.querySelector("#aiTutorTargetSelect");
+  if (!select) return;
+  const options = getAiTutorTargetOptions(state.aiTutorForm.targetType);
+  const needsSelect = state.aiTutorForm.targetType !== "自由質問";
+  select.disabled = !needsSelect;
+  select.innerHTML = needsSelect
+    ? (options.length ? options.map((option) => `<option value="${escapeAttribute(option.value)}">${escapeHtml(option.label)}</option>`).join("") : `<option value="">対象データがありません</option>`)
+    : `<option value="">自由質問</option>`;
+  if (!needsSelect) {
+    state.aiTutorForm.targetId = "";
+    return;
+  }
+  if (!options.some((option) => option.value === state.aiTutorForm.targetId)) state.aiTutorForm.targetId = options[0]?.value || "";
+  select.value = state.aiTutorForm.targetId;
+}
+
+function getAiTutorTargetOptions(targetType) {
+  if (targetType === "現在のレッスン") {
+    return CURRICULUM_LESSONS.map((lesson) => ({ value: lesson.id, label: `${lesson.subject} / ${lesson.title}` }));
+  }
+  if (targetType === "確認問題") {
+    return CURRICULUM_LESSONS.flatMap((lesson) => lesson.questions.map((question, index) => ({
+      value: `${lesson.id}:${question.id}`,
+      label: `${lesson.subject} / ${lesson.title} / 問${index + 1} / ${question.weaknessTag}`
+    })));
+  }
+  if (targetType === "模試問題") {
+    const latest = getLatestMockResult();
+    if (!latest) return state.mockExamResults.map((result) => ({ value: result.id, label: `${formatDateTime(result.completedAt)} / ${result.title}` }));
+    const wrong = latest.answers.filter((answer) => !answer.correct);
+    return (wrong.length ? wrong : latest.answers).map((answer, index) => {
+      const question = getMockQuestionById(answer.questionId);
+      return {
+        value: `${latest.id}:${answer.questionId}`,
+        label: `${latest.title} / ${answer.correct ? "正解" : "不正解"} / ${question?.topic || answer.topic || `問${index + 1}`}`
+      };
+    });
+  }
+  if (targetType === "今日のメニュー") return [{ value: "today", label: "今日の学習メニュー" }];
+  if (targetType === "弱点タグ") {
+    const ranked = buildWeaknessRanking();
+    const tags = ranked.length ? ranked.map((item) => item.tag) : WEAKNESS_TAGS;
+    return tags.map((tag) => ({ value: tag, label: tag }));
+  }
+  return [];
+}
+
+function renderAiTutorModeHint() {
+  const host = document.querySelector("#aiTutorModeHint");
+  if (!host) return;
+  const available = Boolean(state.aiSettings.enabled && state.aiSettings.endpointUrl.trim());
+  host.innerHTML = available
+    ? `<span class="badge ok">API送信可能</span><span class="muted"> AI講師に質問ボタンで中継サーバーへ送信します。</span>`
+    : `<span class="badge priority">手動コピーのみ</span><span class="muted"> AI API連携を使うには設定画面で中継サーバーURLを設定してください。</span>`;
+}
+
+function renderAiTutorResponse() {
+  const meta = document.querySelector("#aiTutorResponseMeta");
+  const text = document.querySelector("#aiTutorResponseText");
+  const error = document.querySelector("#aiTutorResponseError");
+  if (!meta || !text || !error) return;
+  meta.innerHTML = `
+    <div><dt>送信状態</dt><dd>${escapeHtml(state.aiTutorForm.apiStatus || "未送信")}</dd></div>
+    <div><dt>対象</dt><dd>${escapeHtml(state.aiTutorForm.targetType)}</dd></div>
+    <div><dt>質問タイプ</dt><dd>${escapeHtml(state.aiTutorForm.questionType)}</dd></div>
+    <div><dt>説明レベル</dt><dd>${escapeHtml(state.aiTutorForm.explanationLevel)}</dd></div>
+    <div><dt>使用モデル</dt><dd>${escapeHtml(state.aiTutorForm.apiModel || "未取得")}</dd></div>
+    <div><dt>token使用量</dt><dd>${escapeHtml(formatUsage(state.aiTutorForm.apiUsage))}</dd></div>
+  `;
+  text.textContent = state.aiTutorForm.apiResponseText || "AI講師の回答はまだありません。API連携OFFの場合は、下の手動コピー用プロンプトを使ってください。";
+  error.textContent = state.aiTutorForm.apiError || "";
+  document.querySelector("#askAiTutorButton")?.toggleAttribute("disabled", Boolean(state.aiTutorForm.sending));
 }
 
 function renderAiTargetSelect() {
@@ -5930,6 +6097,192 @@ function renderAiHistory() {
       </article>
     `).join("")
     : `<div class="empty-state"><p class="muted">生成履歴はまだありません。</p></div>`;
+}
+
+function renderAiTutorHistory() {
+  const host = document.querySelector("#aiTutorHistoryList");
+  if (!host) return;
+  const items = state.aiAnalyses
+    .filter((item) => item.promptType === "AI講師")
+    .sort(compareAiAnalyses)
+    .slice(0, 30);
+  host.innerHTML = items.length
+    ? items.map((item) => `
+      <article class="ai-history-card ai-tutor-history-card">
+        <div>
+          <p class="eyebrow">${escapeHtml(formatDateTime(item.createdAt))}</p>
+          <h3>${escapeHtml(item.targetTitle || item.targetType || "対象なし")}</h3>
+        </div>
+        <div class="card-meta">
+          <span class="badge">${escapeHtml(item.targetType || "対象なし")}</span>
+          <span class="badge">${escapeHtml(item.questionType || "質問タイプなし")}</span>
+          <span class="badge">${escapeHtml(item.explanationLevel || "説明レベルなし")}</span>
+          <span class="badge">${item.sentViaApi ? "API送信" : "手動"}</span>
+          <span class="badge">${item.responseText ? "回答あり" : "回答なし"}</span>
+          ${item.savedAsReviewMemo ? `<span class="badge ok">復習メモ</span>` : ""}
+          ${item.markedAsWeaknessSuggestion ? `<span class="badge normal">弱点提案</span>` : ""}
+          ${item.markedForNextReview ? `<span class="badge priority">次回復習</span>` : ""}
+        </div>
+        <p class="muted">${escapeHtml(truncateText(item.userQuestion || item.promptText, 120) || "質問なし")}</p>
+        <div class="card-actions">
+          <button class="ghost-button" type="button" data-show-ai-tutor="${escapeAttribute(item.id)}">再表示</button>
+          <button class="primary-button" type="button" data-repeat-ai-tutor="${escapeAttribute(item.id)}">同じ条件でもう一度質問</button>
+          <button class="danger-button" type="button" data-delete-ai-analysis="${escapeAttribute(item.id)}">削除</button>
+        </div>
+      </article>
+    `).join("")
+    : `<div class="empty-state"><p class="muted">AI講師履歴はまだありません。</p></div>`;
+}
+
+function generateAiTutorPrompt() {
+  const target = buildAiTutorTargetData();
+  const promptText = buildAiTutorPromptText(target);
+  state.aiTutorForm.promptText = promptText;
+  state.aiTutorForm.currentAnalysisId = "";
+  state.aiTutorForm.apiStatus = "未送信";
+  state.aiTutorForm.apiResponseText = "";
+  state.aiTutorForm.apiModel = "";
+  state.aiTutorForm.apiUsage = {};
+  state.aiTutorForm.apiError = "";
+  state.aiTutorForm.sentViaApi = false;
+  const promptInput = document.querySelector("#aiTutorPromptResult");
+  if (promptInput) promptInput.value = promptText;
+  renderAiTutorResponse();
+  return { target, promptText };
+}
+
+function buildAiTutorPromptText(target) {
+  const questionType = state.aiTutorForm.questionType;
+  const output = AI_TUTOR_OUTPUT_FORMATS[questionType] || AI_TUTOR_OUTPUT_FORMATS.default;
+  return [
+    "【1. 役割】",
+    "あなたは通関士試験のプロ講師です。",
+    "私は通関士試験の独学者です。",
+    "本アプリをメイン教材として学習しています。",
+    "市販教材は辞書・補助演習として使っています。",
+    "本試験で正答できる力をつけるために、以下の質問に答えてください。",
+    "",
+    "【2. 学習者の前提】",
+    `説明レベル: ${state.aiTutorForm.explanationLevel}`,
+    "目標: A/B/C到達判定を改善し、本試験の選択肢で正答できる状態にする。",
+    "",
+    "【3. 対象データ】",
+    target.body,
+    "",
+    "【4. 質問タイプ】",
+    `${questionType}: ${AI_TUTOR_QUESTION_INSTRUCTIONS[questionType] || "通関士試験対策として回答してください。"}`,
+    "",
+    "【5. ユーザーの質問】",
+    state.aiTutorForm.userQuestion.trim() || "対象データについて、通関士試験で得点するために重要な点を教えてください。",
+    "",
+    "【6. 出力形式】",
+    bulletLines(output),
+    "",
+    "【7. 注意事項】",
+    bulletLines([
+      "市販教材や過去問本文を丸写ししない",
+      "通関士試験の本試験で使える形で説明する",
+      "暗記不足と理解不足を分ける",
+      "ひっかけ表現を明示する",
+      "必要なら類似問題をオリジナルで作る",
+      "条文・制度趣旨・試験上の問われ方を意識する",
+      "最後に次にやるべきことを示す"
+    ])
+  ].join("\n");
+}
+
+function buildAiTutorTargetData() {
+  const type = state.aiTutorForm.targetType;
+  if (type === "現在のレッスン") {
+    const lesson = getLessonById(state.aiTutorForm.targetId) || getLessonById(state.activeLessonId) || getRecommendedLesson()?.lesson || CURRICULUM_LESSONS[0];
+    return { id: lesson?.id || "", title: lesson?.title || "現在のレッスン", body: lesson ? buildLessonPromptData(lesson) : "対象レッスンなし" };
+  }
+  if (type === "確認問題") {
+    const [lessonId, questionId] = String(state.aiTutorForm.targetId || "").split(":");
+    const lesson = getLessonById(lessonId) || getLessonById(state.activeLessonId) || CURRICULUM_LESSONS[0];
+    const question = lesson?.questions.find((item) => item.id === questionId) || lesson?.questions[0];
+    return { id: `${lesson?.id || ""}:${question?.id || ""}`, title: `${lesson?.title || "確認問題"} / ${question?.weaknessTag || ""}`, body: lesson && question ? buildAiTutorQuestionData(lesson, question) : "対象問題なし" };
+  }
+  if (type === "模試問題") {
+    const [resultId, questionId] = String(state.aiTutorForm.targetId || "").split(":");
+    const result = state.mockExamResults.find((item) => item.id === resultId) || getLatestMockResult();
+    const answer = result?.answers.find((item) => item.questionId === questionId) || result?.answers.find((item) => !item.correct) || result?.answers[0];
+    return { id: `${result?.id || ""}:${answer?.questionId || ""}`, title: `${result?.title || "模試問題"} / ${answer?.topic || ""}`, body: result && answer ? buildAiTutorMockQuestionData(result, answer) : "模試結果または対象問題なし" };
+  }
+  if (type === "今日のメニュー") {
+    return { id: "today", title: "今日のメニュー", body: buildAiTutorTodayData() };
+  }
+  if (type === "弱点タグ") {
+    const tag = state.aiTutorForm.targetId || buildWeaknessRanking()[0]?.tag || "";
+    return { id: tag, title: tag || "弱点タグ", body: buildAiTutorWeaknessTagData(tag) };
+  }
+  return { id: "free", title: "自由質問", body: "自由質問です。通関士試験の学習支援として、質問内容を本試験対策に結びつけて回答してください。" };
+}
+
+function buildAiTutorQuestionData(lesson, question) {
+  const result = getLessonQuestionResult(lesson.id, question.id);
+  return keyValueLines([
+    ["レッスン名", lesson.title],
+    ["科目", lesson.subject],
+    ["問題文", question.question],
+    ["選択肢", question.choices.join(" / ")],
+    ["自分の回答", result?.userAnswer || "未回答"],
+    ["正答", question.answer],
+    ["通常解説", question.explanation],
+    ["ひっかけ解説", question.trapExplanation],
+    ["弱点タグ", question.weaknessTag],
+    ["確認問題結果", result ? (result.correct ? "正解" : "不正解") : "未回答"]
+  ]);
+}
+
+function buildAiTutorMockQuestionData(result, answer) {
+  const question = getMockQuestionById(answer.questionId);
+  return keyValueLines([
+    ["模試モード", result.title],
+    ["科目", answer.subject || question?.subject],
+    ["論点", answer.topic || question?.topic],
+    ["問題文", question?.question],
+    ["選択肢", (question?.choices || []).join(" / ")],
+    ["自分の回答", answer.userAnswer || "未回答"],
+    ["正答", question?.answer],
+    ["解説", question?.explanation],
+    ["ひっかけ解説", question?.trapExplanation],
+    ["弱点タグ", answer.weaknessTag || question?.weaknessTag],
+    ["模試判定", `${result.scoreRate}% / ${result.resultLevel}`]
+  ]);
+}
+
+function buildAiTutorTodayData() {
+  const menu = state.todayMenu || generateTodayMenu(getTodayPlan().selectedDuration);
+  const latest = getLatestMockResult();
+  return [
+    buildTodayPromptSummary(),
+    keyValueLines([
+      ["復習候補", getCrossReviewItems().slice(0, 8).map((item) => `${item.type}:${item.title} / ${item.reason}`).join("\n") || "なし"],
+      ["直近の模試結果", latest ? `${latest.title} / ${latest.scoreRate}% / ${latest.resultLevel}` : "未実施"]
+    ])
+  ].join("\n");
+}
+
+function buildAiTutorWeaknessTagData(tag) {
+  const relatedLessons = CURRICULUM_LESSONS.filter((lesson) => [
+    lesson.title,
+    lesson.focus,
+    ...(lesson.keyPoints || []),
+    ...(lesson.traps || []),
+    ...(lesson.questions || []).map((question) => question.weaknessTag).join(" ")
+  ].join(" ").includes(tag)).slice(0, 8);
+  const mockMisses = state.mockExamResults.flatMap((result) => result.answers
+    .filter((answer) => !answer.correct && (answer.weaknessTag === tag || getMockQuestionById(answer.questionId)?.weaknessTag === tag))
+    .map((answer) => `${result.title} / ${answer.subject} / ${answer.topic} / 自分:${answer.userAnswer || "未回答"}`));
+  return keyValueLines([
+    ["選択した弱点タグ", tag || "未選択"],
+    ["関連レッスン", relatedLessons.map((lesson) => `${lesson.subject} / ${lesson.title}`).join("\n") || "なし"],
+    ["関連模試ミス", mockMisses.slice(0, 8).join("\n") || "なし"],
+    ["関連演習ログ", state.practiceLogs.filter((log) => log.weaknessTags.includes(tag)).slice(0, 6).map((log) => `${log.studiedAt} / ${log.unitTitle} / ${log.result} / ${log.mistakeReason}`).join("\n") || "なし"],
+    ["関連過去問ログ", state.pastExamLogs.filter((log) => log.weaknessTags.includes(tag)).slice(0, 6).map((log) => `${log.studiedAt} / ${log.examRound} / ${log.subject} / ${log.result} / ${log.topic}`).join("\n") || "なし"],
+    ["関連実務ログ", state.practicalLogs.filter((log) => log.weaknessTags.includes(tag)).slice(0, 6).map((log) => `${log.studiedAt} / ${log.practicalType} / ${log.result} / ${log.mistakeField}`).join("\n") || "なし"]
+  ]);
 }
 
 function renderAiResponse() {
@@ -6626,6 +6979,24 @@ function buildAiApiPayload(mode, promptText) {
   };
 }
 
+function buildAiTutorApiPayload(mode, promptText, target) {
+  return {
+    app: "TSUKAN_YOBIKO",
+    version: APP_VERSION,
+    mode,
+    promptType: "AI講師",
+    targetType: state.aiTutorForm.targetType,
+    targetTitle: target?.title || "",
+    prompt: promptText,
+    metadata: {
+      questionType: state.aiTutorForm.questionType,
+      explanationLevel: state.aiTutorForm.explanationLevel,
+      targetId: target?.id || state.aiTutorForm.targetId,
+      createdAt: new Date().toISOString()
+    }
+  };
+}
+
 function resolveAiSubject(target) {
   if (state.aiForm.targetType === "レッスン") return getLessonById(state.aiForm.targetId)?.subject || "";
   if (state.aiForm.targetType === "単元") return state.units.find((unit) => unit.id === state.aiForm.targetId)?.subject || "";
@@ -6795,6 +7166,136 @@ async function sendCurrentAiPromptToApi() {
   }
 }
 
+async function askAiTutor() {
+  state.aiTutorForm.userQuestion = document.querySelector("#aiTutorQuestionInput")?.value.trim() || "";
+  const { target, promptText } = generateAiTutorPrompt();
+  if (!promptText) return;
+  if (!state.aiSettings.enabled || !state.aiSettings.endpointUrl.trim()) {
+    state.aiTutorForm.apiStatus = "手動コピー待ち";
+    state.aiTutorForm.apiError = "AI API連携を使うには設定画面で中継サーバーURLを設定してください。";
+    saveAiTutorAnalysis({ target, sentViaApi: false });
+    renderAiTutorView();
+    showToast("手動コピー用プロンプトを生成しました。");
+    return;
+  }
+  state.aiTutorForm.sending = true;
+  state.aiTutorForm.apiStatus = "送信中";
+  state.aiTutorForm.apiResponseText = "";
+  state.aiTutorForm.apiModel = "";
+  state.aiTutorForm.apiUsage = {};
+  state.aiTutorForm.apiError = "";
+  renderAiTutorResponse();
+  try {
+    const data = await postAiApiRequest(buildAiTutorApiPayload("chat", promptText, target));
+    state.aiTutorForm.apiStatus = "応答取得済み";
+    state.aiTutorForm.apiResponseText = String(data.text || "");
+    state.aiTutorForm.apiModel = String(data.model || "");
+    state.aiTutorForm.apiUsage = data.usage && typeof data.usage === "object" ? data.usage : {};
+    state.aiTutorForm.apiError = "";
+    state.aiTutorForm.sentViaApi = true;
+    saveAiTutorAnalysis({ target, sentViaApi: true });
+    saveUnits();
+    render();
+    showToast("AI講師の回答を受け取りました。");
+  } catch (error) {
+    state.aiTutorForm.apiStatus = "接続失敗";
+    state.aiTutorForm.apiError = error.message || "AI通信に失敗しました。";
+    saveAiTutorAnalysis({ target, sentViaApi: true, error: state.aiTutorForm.apiError });
+    saveUnits();
+    render();
+  } finally {
+    state.aiTutorForm.sending = false;
+    renderAiTutorResponse();
+  }
+}
+
+function saveAiTutorAnalysis({ target = null, sentViaApi = state.aiTutorForm.sentViaApi, error = state.aiTutorForm.apiError } = {}) {
+  const resolvedTarget = target || buildAiTutorTargetData();
+  const values = normalizeAiAnalysis({
+    id: state.aiTutorForm.currentAnalysisId || makeAiAnalysisId(),
+    createdAt: new Date().toISOString(),
+    promptType: "AI講師",
+    questionType: state.aiTutorForm.questionType,
+    explanationLevel: state.aiTutorForm.explanationLevel,
+    targetType: state.aiTutorForm.targetType,
+    targetId: resolvedTarget.id,
+    targetTitle: resolvedTarget.title,
+    promptText: state.aiTutorForm.promptText,
+    responseText: state.aiTutorForm.apiResponseText,
+    sentViaApi,
+    model: state.aiTutorForm.apiModel,
+    usage: state.aiTutorForm.apiUsage,
+    error: error || "",
+    userQuestion: state.aiTutorForm.userQuestion,
+    savedAsReviewMemo: false,
+    markedAsWeaknessSuggestion: false,
+    markedForNextReview: false
+  });
+  const existing = state.aiAnalyses.find((item) => item.id === values.id);
+  if (existing) {
+    Object.assign(existing, values, {
+      savedAsReviewMemo: existing.savedAsReviewMemo,
+      markedAsWeaknessSuggestion: existing.markedAsWeaknessSuggestion,
+      markedForNextReview: existing.markedForNextReview
+    });
+  } else {
+    state.aiAnalyses.unshift(values);
+  }
+  state.aiTutorForm.currentAnalysisId = values.id;
+  return values;
+}
+
+function saveCurrentAiTutorResponse() {
+  if (!state.aiTutorForm.promptText) generateAiTutorPrompt();
+  const item = saveAiTutorAnalysis();
+  saveUnits();
+  render();
+  showToast(item.responseText || item.error ? "AI講師の回答を保存しました。" : "AI講師プロンプトを履歴に保存しました。");
+}
+
+function setAiTutorFlag(flag) {
+  if (!state.aiTutorForm.currentAnalysisId) saveCurrentAiTutorResponse();
+  const item = state.aiAnalyses.find((analysis) => analysis.id === state.aiTutorForm.currentAnalysisId);
+  if (!item) return;
+  item[flag] = true;
+  saveUnits();
+  render();
+  showToast("AI講師履歴に反映しました。");
+}
+
+function showAiTutorAnalysis(analysisId) {
+  const item = state.aiAnalyses.find((analysis) => analysis.id === analysisId);
+  if (!item) return;
+  state.aiTutorForm.targetType = item.targetType || "自由質問";
+  state.aiTutorForm.targetId = item.targetId || "";
+  state.aiTutorForm.questionType = item.questionType || "質問に直接回答";
+  state.aiTutorForm.explanationLevel = item.explanationLevel || "標準";
+  state.aiTutorForm.userQuestion = item.userQuestion || "";
+  state.aiTutorForm.promptText = item.promptText || "";
+  state.aiTutorForm.currentAnalysisId = item.id;
+  state.aiTutorForm.apiStatus = item.sentViaApi ? (item.error ? "接続失敗" : "応答取得済み") : "手動";
+  state.aiTutorForm.apiResponseText = item.responseText || "";
+  state.aiTutorForm.apiModel = item.model || "";
+  state.aiTutorForm.apiUsage = item.usage || {};
+  state.aiTutorForm.apiError = item.error || "";
+  state.aiTutorForm.sentViaApi = Boolean(item.sentViaApi);
+  switchView("ai");
+  renderAiView();
+  document.querySelector("#aiTutorResponseText")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function repeatAiTutorAnalysis(analysisId) {
+  showAiTutorAnalysis(analysisId);
+  state.aiTutorForm.currentAnalysisId = "";
+  state.aiTutorForm.apiStatus = "未送信";
+  state.aiTutorForm.apiResponseText = "";
+  state.aiTutorForm.apiModel = "";
+  state.aiTutorForm.apiUsage = {};
+  state.aiTutorForm.apiError = "";
+  generateAiTutorPrompt();
+  document.querySelector("#aiTutorPromptResult")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 function cancelAiSend() {
   if (state.aiAbortController) {
     state.aiAbortController.abort();
@@ -6921,6 +7422,25 @@ function openAiForTarget(targetType, targetId, promptType) {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+function openAiTutorForTarget(targetType, targetId, questionType, explanationLevel = "標準", userQuestion = "") {
+  state.aiTutorForm.targetType = targetType;
+  state.aiTutorForm.targetId = targetId || "";
+  state.aiTutorForm.questionType = questionType || "質問に直接回答";
+  state.aiTutorForm.explanationLevel = explanationLevel;
+  state.aiTutorForm.userQuestion = userQuestion;
+  state.aiTutorForm.promptText = "";
+  state.aiTutorForm.currentAnalysisId = "";
+  state.aiTutorForm.apiStatus = "未送信";
+  state.aiTutorForm.apiResponseText = "";
+  state.aiTutorForm.apiModel = "";
+  state.aiTutorForm.apiUsage = {};
+  state.aiTutorForm.apiError = "";
+  generateAiTutorPrompt();
+  switchView("ai");
+  renderAiView();
+  document.querySelector("#aiTutorTargetType")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 function gradeLessonQuestion(lessonId, questionId) {
   const lesson = getLessonById(lessonId);
   const question = lesson?.questions.find((item) => item.id === questionId);
@@ -6979,64 +7499,30 @@ function setLessonUnderstanding(lessonId, understanding) {
 }
 
 function openAiForLesson(lessonId) {
-  state.aiForm.additionalConditions = "このレッスンの制度趣旨、重要ポイント、ひっかけ、確認問題の誤答状況をもとに、試験で同じ論点を落とさないための復習順を提案してください。";
-  openAiForTarget("レッスン", lessonId, "単元理解チェック");
+  openAiTutorForTarget("現在のレッスン", lessonId, "本試験向けに説明", "標準", "このレッスンを本試験で得点できる形で説明してください。");
 }
 
 function openAiForMockResult(resultId) {
-  state.aiForm.additionalConditions = "科目別正答率、間違えた問題、弱点タグをもとに、次回の模試までに優先すべき復習順と30分メニューを提案してください。";
-  openAiForTarget("総合模試結果", resultId, "弱点抽出");
+  const result = state.mockExamResults.find((item) => item.id === resultId);
+  const wrong = result?.answers.find((answer) => !answer.correct) || result?.answers[0];
+  openAiTutorForTarget("模試問題", wrong ? `${result.id}:${wrong.questionId}` : resultId, "なぜ間違えたか分析", "本試験直前", "この模試結果から、間違えた問題を中心に追加解説してください。");
 }
 
-function openAiForWrongLessonQuestion(lessonId, questionId) {
+function openAiForWrongLessonQuestion(lessonId, questionId, questionType = "なぜ間違えたか分析", explanationLevel = "標準") {
   const lesson = getLessonById(lessonId);
   const question = lesson?.questions.find((item) => item.id === questionId);
   const result = getLessonQuestionResult(lessonId, questionId);
   if (!lesson || !question || !result) return;
-  state.aiForm.promptType = "誤答分析";
-  state.aiForm.targetType = "レッスン";
-  state.aiForm.targetId = lessonId;
-  state.aiForm.additionalConditions = [
-    "次の誤答について、なぜこの回答が誤りか、どの知識が不足しているか、本試験で同じミスを防ぐには何を覚えるべきかを説明してください。",
-    "最後に、同じ論点の類似問題を1〜3問作ってください。",
-    "",
-    `間違えた問題文: ${question.question}`,
-    `自分の回答: ${result.userAnswer}`,
-    `正答: ${question.answer}`,
-    `通常解説: ${question.explanation}`,
-    `ミス防止解説: ${question.trapExplanation}`,
-    `弱点タグ: ${question.weaknessTag}`
-  ].join("\n");
-  prepareAiPromptDraft();
-  switchView("ai");
-  renderAiView();
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  openAiTutorForTarget("確認問題", `${lessonId}:${questionId}`, questionType, explanationLevel, `自分の回答「${result.userAnswer}」がなぜ誤りか、本試験で同じミスを防ぐ観点で教えてください。`);
 }
 
 function openAiForAnalysisConsult() {
-  state.aiForm.promptType = "総合学習相談";
-  state.aiForm.targetType = "全体サマリー";
-  state.aiForm.targetId = "";
-  state.aiForm.additionalConditions = "現在の弱点分析ダッシュボードをもとに、合格可能性を上げるために、今週やるべき学習メニューを優先順位付きで提案してください。";
-  state.aiForm.promptText = "";
-  state.aiForm.currentAnalysisId = "";
-  prepareAiPromptDraft();
-  switchView("ai");
-  renderAiView();
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  const tag = buildWeaknessRanking()[0]?.tag || "";
+  openAiTutorForTarget(tag ? "弱点タグ" : "今日のメニュー", tag || "today", "30分復習メニューを作る", "標準", "現在の弱点分析をもとに、優先順位付きの復習メニューを作ってください。");
 }
 
 function openAiForTodayConsult() {
-  state.aiForm.promptType = "総合学習相談";
-  state.aiForm.targetType = "全体サマリー";
-  state.aiForm.targetId = "";
-  state.aiForm.additionalConditions = "今日の学習メニュー、未完了項目、弱点タグ、過去問・実務の失点状況を踏まえて、次にやるべき学習を30分・1時間のメニューに分けて提案してください。";
-  state.aiForm.promptText = "";
-  state.aiForm.currentAnalysisId = "";
-  prepareAiPromptDraft();
-  switchView("ai");
-  renderAiView();
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  openAiTutorForTarget("今日のメニュー", "today", "30分復習メニューを作る", "標準", "今日のメニューの優先順位を見直して、30分でやる順番を提案してください。");
 }
 
 function toggleTodayCompleted(itemId, checked) {
@@ -7122,6 +7608,28 @@ async function copyAiPrompt() {
     if (!navigator.clipboard?.writeText) throw new Error("clipboard unavailable");
     await navigator.clipboard.writeText(text);
     showToast("コピーしました。");
+  } catch (error) {
+    textarea.focus();
+    textarea.select();
+    showToast("コピーできませんでした。選択中の本文を手動でコピーしてください。");
+  }
+}
+
+async function copyAiTutorPrompt() {
+  if (!state.aiTutorForm.promptText) generateAiTutorPrompt();
+  const textarea = document.querySelector("#aiTutorPromptResult");
+  const text = textarea.value || state.aiTutorForm.promptText;
+  if (!text.trim()) {
+    showToast("コピーするAI講師プロンプトがありません。");
+    return;
+  }
+  try {
+    if (!navigator.clipboard?.writeText) throw new Error("clipboard unavailable");
+    await navigator.clipboard.writeText(text);
+    saveAiTutorAnalysis({ sentViaApi: false });
+    saveUnits();
+    renderAiTutorHistory();
+    showToast("AI講師プロンプトをコピーしました。");
   } catch (error) {
     textarea.focus();
     textarea.select();
@@ -7851,11 +8359,22 @@ function renderSettings() {
   if (aiEndpoint && document.activeElement !== aiEndpoint) aiEndpoint.value = state.aiSettings.endpointUrl;
   const aiStatus = document.querySelector("#aiApiStatusDetails");
   if (aiStatus) {
+    const endpointSet = Boolean(state.aiSettings.endpointUrl.trim());
+    const tutorMode = state.aiSettings.enabled && endpointSet ? "利用可能" : "手動コピーのみ";
     aiStatus.innerHTML = `
-      <div><dt>接続状態</dt><dd>${escapeHtml(state.aiSettings.lastStatus || "未テスト")}</dd></div>
+      <div><dt>AI API連携</dt><dd>${state.aiSettings.enabled ? "ON" : "OFF"}</dd></div>
+      <div><dt>中継サーバーURL</dt><dd>${endpointSet ? "設定済み" : "未設定"}</dd></div>
       <div><dt>最終接続テスト日時</dt><dd>${escapeHtml(formatDateTime(state.aiSettings.lastTestedAt))}</dd></div>
       <div><dt>最終エラー</dt><dd>${escapeHtml(state.aiSettings.lastError || "なし")}</dd></div>
     `;
+    const tutorStatus = document.querySelector("#aiTutorStatusDetails");
+    if (tutorStatus) {
+      tutorStatus.innerHTML = `
+        <div><dt>AI講師モード</dt><dd>${escapeHtml(tutorMode)}</dd></div>
+        <div><dt>直近のAI接続状態</dt><dd>${escapeHtml(state.aiSettings.lastStatus || "未テスト")}</dd></div>
+        <div><dt>AI講師履歴数</dt><dd>${state.aiAnalyses.filter((item) => item.promptType === "AI講師").length}件</dd></div>
+      `;
+    }
   }
   renderAiApiLogSummary();
   document.querySelector("#storageStatus").textContent = `${state.units.length}単元・${CURRICULUM_LESSONS.length}レッスン・模試${state.mockExamResults.length}件 / 約${sizeKb}KBをこのブラウザに保存`;
@@ -8247,6 +8766,47 @@ function attachEvents() {
   document.querySelector("#aiPromptResult").addEventListener("input", (event) => {
     state.aiForm.promptText = event.target.value;
   });
+  document.querySelector("#aiTutorTargetType").addEventListener("change", (event) => {
+    state.aiTutorForm.targetType = event.target.value;
+    state.aiTutorForm.targetId = "";
+    generateAiTutorPrompt();
+    renderAiTutorView();
+  });
+  document.querySelector("#aiTutorTargetSelect").addEventListener("change", (event) => {
+    state.aiTutorForm.targetId = event.target.value;
+    generateAiTutorPrompt();
+    renderAiTutorView();
+  });
+  document.querySelector("#aiTutorQuestionType").addEventListener("change", (event) => {
+    state.aiTutorForm.questionType = event.target.value;
+    generateAiTutorPrompt();
+    renderAiTutorView();
+  });
+  document.querySelector("#aiTutorExplanationLevel").addEventListener("change", (event) => {
+    state.aiTutorForm.explanationLevel = event.target.value;
+    generateAiTutorPrompt();
+    renderAiTutorView();
+  });
+  document.querySelector("#aiTutorQuestionInput").addEventListener("input", (event) => {
+    state.aiTutorForm.userQuestion = event.target.value;
+    generateAiTutorPrompt();
+  });
+  document.querySelector("#aiTutorPromptResult").addEventListener("input", (event) => {
+    state.aiTutorForm.promptText = event.target.value;
+  });
+  document.querySelector("#askAiTutorButton").addEventListener("click", askAiTutor);
+  document.querySelector("#copyAiTutorPromptButton").addEventListener("click", copyAiTutorPrompt);
+  document.querySelector("#saveAiTutorResponseButton").addEventListener("click", saveCurrentAiTutorResponse);
+  document.querySelector("#makeAiTutorSimilarButton").addEventListener("click", () => {
+    state.aiTutorForm.questionType = "類似問題を出す";
+    state.aiTutorForm.explanationLevel = "本試験直前";
+    generateAiTutorPrompt();
+    renderAiTutorView();
+    showToast("類似問題作成用に切り替えました。");
+  });
+  document.querySelector("#saveAiTutorReviewMemoButton").addEventListener("click", () => setAiTutorFlag("savedAsReviewMemo"));
+  document.querySelector("#holdAiTutorWeaknessButton").addEventListener("click", () => setAiTutorFlag("markedAsWeaknessSuggestion"));
+  document.querySelector("#markAiTutorNextReviewButton").addEventListener("click", () => setAiTutorFlag("markedForNextReview"));
   document.querySelector("#analysisAiConsultButton").addEventListener("click", openAiForAnalysisConsult);
   document.querySelector("#todayAiConsultButton").addEventListener("click", openAiForTodayConsult);
   document.querySelector("#saveTodayMemoButton").addEventListener("click", saveTodayMemo);
@@ -8270,6 +8830,18 @@ function attachEvents() {
     if (event.target.closest("[data-open-learning]")) {
       switchView("learning");
       window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    if (event.target.closest("[data-ai-today-consult]")) {
+      openAiForTodayConsult();
+      return;
+    }
+    if (event.target.closest("[data-ai-today-review]")) {
+      openAiTutorForTarget("今日のメニュー", "today", "30分復習メニューを作る", "標準", "今日のメニューを30分用に作り直してください。");
+      return;
+    }
+    if (event.target.closest("[data-ai-today-priority]")) {
+      openAiTutorForTarget("今日のメニュー", "today", "質問に直接回答", "標準", "未完了項目の優先順位を、得点に直結する順で教えてください。");
       return;
     }
     const aiQuickButton = event.target.closest("[data-ai-quick]");
@@ -8352,6 +8924,18 @@ function attachEvents() {
       openAiForMockResult(aiMockButton.dataset.aiMockResult);
       return;
     }
+    const aiMockWrongButton = event.target.closest("[data-ai-mock-wrong]");
+    if (aiMockWrongButton) {
+      openAiForMockResult(aiMockWrongButton.dataset.aiMockWrong);
+      return;
+    }
+    const aiMockReviewButton = event.target.closest("[data-ai-mock-review]");
+    if (aiMockReviewButton) {
+      const result = state.mockExamResults.find((item) => item.id === aiMockReviewButton.dataset.aiMockReview);
+      const wrong = result?.answers.find((answer) => !answer.correct) || result?.answers[0];
+      openAiTutorForTarget("模試問題", wrong ? `${result.id}:${wrong.questionId}` : "", "30分復習メニューを作る", "本試験直前", "この模試結果から次の30分復習メニューを作ってください。");
+      return;
+    }
     const gradeButton = event.target.closest("[data-grade-question]");
     if (gradeButton) {
       const [lessonId, questionId] = gradeButton.dataset.gradeQuestion.split(":");
@@ -8373,10 +8957,27 @@ function attachEvents() {
       openAiForLesson(aiLessonButton.dataset.aiLesson);
       return;
     }
+    const aiLessonTrapButton = event.target.closest("[data-ai-lesson-trap]");
+    if (aiLessonTrapButton) {
+      openAiTutorForTarget("現在のレッスン", aiLessonTrapButton.dataset.aiLessonTrap, "ひっかけポイント解説", "本試験直前", "このレッスンのひっかけポイントを、本試験で狙われる表現に絞って説明してください。");
+      return;
+    }
     const wrongLessonAiButton = event.target.closest("[data-ai-wrong-question]");
     if (wrongLessonAiButton) {
       const [lessonId, questionId] = wrongLessonAiButton.dataset.aiWrongQuestion.split(":");
       openAiForWrongLessonQuestion(lessonId, questionId);
+      return;
+    }
+    const similarLessonAiButton = event.target.closest("[data-ai-similar-question]");
+    if (similarLessonAiButton) {
+      const [lessonId, questionId] = similarLessonAiButton.dataset.aiSimilarQuestion.split(":");
+      openAiForWrongLessonQuestion(lessonId, questionId, "類似問題を出す", "本試験直前");
+      return;
+    }
+    const trapLessonAiButton = event.target.closest("[data-ai-trap-question]");
+    if (trapLessonAiButton) {
+      const [lessonId, questionId] = trapLessonAiButton.dataset.aiTrapQuestion.split(":");
+      openAiForWrongLessonQuestion(lessonId, questionId, "ひっかけポイント解説", "本試験直前");
       return;
     }
     const todayLogButton = event.target.closest("[data-open-today-log]");
@@ -8413,6 +9014,11 @@ function attachEvents() {
       openAiForTarget("実務ログ", aiPracticalButton.dataset.aiPracticalLog, "誤答分析");
       return;
     }
+    const aiWeaknessButton = event.target.closest("[data-ai-weakness-tag]");
+    if (aiWeaknessButton) {
+      openAiTutorForTarget("弱点タグ", aiWeaknessButton.dataset.aiWeaknessTag, "30分復習メニューを作る", "標準", "この弱点タグを本試験で落とさないための復習メニューを作ってください。");
+      return;
+    }
     const aiUnitButton = event.target.closest("[data-ai-unit]");
     if (aiUnitButton) {
       const unit = getActiveUnit();
@@ -8428,6 +9034,16 @@ function attachEvents() {
     const showAiResponseButton = event.target.closest("[data-show-ai-response]");
     if (showAiResponseButton) {
       showAiResponseAnalysis(showAiResponseButton.dataset.showAiResponse);
+      return;
+    }
+    const showTutorButton = event.target.closest("[data-show-ai-tutor]");
+    if (showTutorButton) {
+      showAiTutorAnalysis(showTutorButton.dataset.showAiTutor);
+      return;
+    }
+    const repeatTutorButton = event.target.closest("[data-repeat-ai-tutor]");
+    if (repeatTutorButton) {
+      repeatAiTutorAnalysis(repeatTutorButton.dataset.repeatAiTutor);
       return;
     }
     const saveAiMemoButton = event.target.closest("[data-save-ai-result-memo]");

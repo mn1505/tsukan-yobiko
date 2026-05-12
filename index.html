@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="TSUKAN YOBIKO v1.6 - AI中継サーバー・Cloudflare Workers対応版">
+    <meta name="description" content="TSUKAN YOBIKO v1.7 - AI講師モード版">
     <meta name="theme-color" content="#1f5f5b">
     <title>TSUKAN YOBIKO</title>
     <link rel="stylesheet" href="style.css">
@@ -15,7 +15,7 @@
           <p class="eyebrow">通関士試験 個人予備校</p>
           <h1>TSUKAN YOBIKO</h1>
         </div>
-        <span class="version-pill">v1.6</span>
+        <span class="version-pill">v1.7</span>
       </header>
 
       <main class="app-main">
@@ -583,6 +583,69 @@
           </div>
 
           <div class="ai-layout">
+            <section class="panel ai-tutor-panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">AI Tutor</p>
+                  <h3>AI講師モード</h3>
+                </div>
+              </div>
+              <div class="ai-tutor-form">
+                <label>
+                  質問対象
+                  <select id="aiTutorTargetType"></select>
+                </label>
+                <label>
+                  対象データ
+                  <select id="aiTutorTargetSelect"></select>
+                </label>
+                <label>
+                  質問タイプ
+                  <select id="aiTutorQuestionType"></select>
+                </label>
+                <label>
+                  説明レベル
+                  <select id="aiTutorExplanationLevel"></select>
+                </label>
+                <label class="field-wide">
+                  質問入力
+                  <textarea id="aiTutorQuestionInput" class="ai-tutor-question" placeholder="例：この論点を本試験で落とさないために、どこを覚えるべきですか。"></textarea>
+                </label>
+                <div id="aiTutorModeHint" class="ai-tutor-mode-hint field-wide" aria-live="polite"></div>
+                <div class="form-actions field-wide">
+                  <button id="askAiTutorButton" class="primary-button ai-tutor-submit" type="button">AI講師に質問</button>
+                  <button id="copyAiTutorPromptButton" class="ghost-button" type="button">手動プロンプトをコピー</button>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel ai-tutor-response-panel">
+              <div class="panel-heading">
+                <h3>AI講師の回答</h3>
+              </div>
+              <div class="ai-tutor-response">
+                <dl id="aiTutorResponseMeta" class="info-list compact"></dl>
+                <div id="aiTutorResponseText" class="ai-response-text" aria-live="polite"></div>
+                <p id="aiTutorResponseError" class="form-message" role="status" aria-live="polite"></p>
+                <div class="form-actions">
+                  <button id="saveAiTutorResponseButton" class="primary-button" type="button">回答を保存</button>
+                  <button id="makeAiTutorSimilarButton" class="ghost-button" type="button">類似問題を作る</button>
+                  <button id="saveAiTutorReviewMemoButton" class="ghost-button" type="button">復習メモとして保存</button>
+                  <button id="holdAiTutorWeaknessButton" class="ghost-button" type="button">弱点提案として保留</button>
+                  <button id="markAiTutorNextReviewButton" class="ghost-button" type="button">次回復習候補にする</button>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel ai-tutor-prompt-panel">
+              <div class="panel-heading">
+                <h3>手動コピー用プロンプト</h3>
+              </div>
+              <div class="ai-result">
+                <textarea id="aiTutorPromptResult" class="ai-prompt-textarea" aria-label="生成されたAI講師プロンプト"></textarea>
+              </div>
+            </section>
+
             <section class="panel ai-form-panel">
               <div class="panel-heading">
                 <h3>用途別AI相談</h3>
@@ -656,6 +719,11 @@
           <details class="panel details-panel ai-history-panel">
             <summary>生成履歴</summary>
             <div id="aiHistoryList" class="ai-history-list details-body"></div>
+          </details>
+
+          <details class="panel details-panel ai-history-panel" open>
+            <summary>AI講師履歴</summary>
+            <div id="aiTutorHistoryList" class="ai-history-list details-body"></div>
           </details>
         </section>
 
@@ -843,8 +911,8 @@
               </div>
               <dl class="info-list">
                 <div><dt>アプリ名</dt><dd>TSUKAN YOBIKO</dd></div>
-                <div><dt>現在のバージョン</dt><dd>v1.6</dd></div>
-                <div><dt>状態</dt><dd>AI中継サーバー・Cloudflare Workers対応版</dd></div>
+                <div><dt>現在のバージョン</dt><dd>v1.7</dd></div>
+                <div><dt>状態</dt><dd>AI講師モード版</dd></div>
                 <div><dt>公開前提</dt><dd>GitHub Pagesで公開して使う静的アプリです。</dd></div>
                 <div><dt>保存方式</dt><dd id="storageStatus">確認中</dd></div>
               </dl>
@@ -855,11 +923,10 @@
                 <h3>今後の予定</h3>
               </div>
               <ul class="note-list">
-                <li>v1.7：AI講師モード</li>
                 <li>v1.8：AI自動添削・弱点提案</li>
                 <li>v1.9：試験直前モード</li>
                 <li>v2.0：本格予備校版</li>
-                <li>将来：PWA対応</li>
+                <li>v2.1：PWA対応</li>
                 <li>将来：スマホ・PC間同期</li>
               </ul>
             </section>
@@ -883,6 +950,7 @@
                   <button id="testAiConnectionButton" class="ghost-button" type="button">AI接続テスト</button>
                 </div>
                 <dl id="aiApiStatusDetails" class="info-list compact"></dl>
+                <dl id="aiTutorStatusDetails" class="info-list compact"></dl>
                 <p id="aiConnectionTestResult" class="form-message" role="status" aria-live="polite"></p>
                 <ul class="note-list compact">
                   <li>Cloudflare Workerの /api/ai URLを入力してください。</li>
