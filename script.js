@@ -1,5 +1,6 @@
-const APP_VERSION = "v1.5";
+const APP_VERSION = "v1.6";
 const AI_API_TIMEOUT_MS = 30000;
+const AI_HEALTH_TIMEOUT_MS = 10000;
 const STORAGE_KEYS = {
   units: "tsukanYobiko.units",
   version: "tsukanYobiko.version",
@@ -6660,12 +6661,84 @@ async function postAiApiRequest(payload) {
       throw new Error("AI通信がタイムアウトしました。中継サーバーの状態やネットワークを確認してください。");
     }
     if (error instanceof TypeError) {
-      throw new Error("AI通信に失敗しました。中継サーバーURL、CORS設定、ネットワーク状態を確認してください。");
+      throw new Error(buildAiConnectionHint("AI通信に失敗しました。"));
     }
     throw error;
   } finally {
     window.clearTimeout(timer);
     if (state.aiAbortController === controller) state.aiAbortController = null;
+  }
+}
+
+function buildAiConnectionHint(prefix) {
+  if (String(prefix || "").includes("Worker URLが正しいか確認してください。")) return prefix;
+  return [
+    prefix,
+    "Worker URLが正しいか確認してください。",
+    "/api/ai まで含めて入力してください。",
+    "Cloudflare WorkerのCORS設定を確認してください。",
+    "OPENAI_API_KEY Secretが設定されているか確認してください。"
+  ].join(" ");
+}
+
+function inferAiHealthUrl(endpointUrl) {
+  try {
+    const url = new URL(endpointUrl);
+    url.pathname = "/health";
+    url.search = "";
+    url.hash = "";
+    return url.toString();
+  } catch (error) {
+    return "";
+  }
+}
+
+async function checkAiWorkerHealth() {
+  saveAiSettingsFromInputs(false);
+  const result = document.querySelector("#aiConnectionTestResult");
+  if (!state.aiSettings.endpointUrl.trim()) {
+    state.aiSettings.lastStatus = "接続失敗";
+    state.aiSettings.lastError = "中継サーバーURLを設定してください。";
+    if (result) result.textContent = state.aiSettings.lastError;
+    saveUnits();
+    renderSettings();
+    return;
+  }
+  const healthUrl = inferAiHealthUrl(state.aiSettings.endpointUrl);
+  if (!healthUrl) {
+    state.aiSettings.lastStatus = "接続失敗";
+    state.aiSettings.lastError = "Worker URLを読み取れませんでした。/api/ai まで含むURLを入力してください。";
+    if (result) result.textContent = state.aiSettings.lastError;
+    saveUnits();
+    renderSettings();
+    return;
+  }
+  if (result) result.textContent = "/health を確認中です。";
+  const controller = new AbortController();
+  const timer = window.setTimeout(() => controller.abort(), AI_HEALTH_TIMEOUT_MS);
+  try {
+    const response = await fetch(healthUrl, { method: "GET", signal: controller.signal });
+    const data = await response.json();
+    if (!response.ok || data?.ok === false) {
+      throw new Error(data?.error || `HTTP ${response.status}でhealth checkに失敗しました。`);
+    }
+    state.aiSettings.lastTestedAt = new Date().toISOString();
+    state.aiSettings.lastStatus = "Health OK";
+    state.aiSettings.lastError = "";
+    if (result) result.textContent = `Health OK：${data.status || "healthy"}`;
+    saveUnits();
+    renderSettings();
+  } catch (error) {
+    state.aiSettings.lastTestedAt = new Date().toISOString();
+    state.aiSettings.lastStatus = "接続失敗";
+    state.aiSettings.lastError = error?.name === "AbortError"
+      ? "health checkがタイムアウトしました。Worker URLを確認してください。"
+      : buildAiConnectionHint(error.message || "health checkに失敗しました。");
+    if (result) result.textContent = state.aiSettings.lastError;
+    saveUnits();
+    renderSettings();
+  } finally {
+    window.clearTimeout(timer);
   }
 }
 
@@ -6802,7 +6875,7 @@ async function testAiConnection() {
   } catch (error) {
     state.aiSettings.lastTestedAt = new Date().toISOString();
     state.aiSettings.lastStatus = "接続失敗";
-    state.aiSettings.lastError = error.message || "接続テストに失敗しました。";
+    state.aiSettings.lastError = buildAiConnectionHint(error.message || "接続テストに失敗しました。");
     if (result) result.textContent = state.aiSettings.lastError;
     saveUnits();
     renderSettings();
@@ -8443,6 +8516,7 @@ function attachEvents() {
   });
   document.querySelector("#exportButton").addEventListener("click", exportBackup);
   document.querySelector("#saveAiSettingsButton").addEventListener("click", () => saveAiSettingsFromInputs(true));
+  document.querySelector("#checkAiHealthButton").addEventListener("click", checkAiWorkerHealth);
   document.querySelector("#testAiConnectionButton").addEventListener("click", testAiConnection);
   document.querySelector("#importInput").addEventListener("change", (event) => {
     importBackup(event.target.files[0]);

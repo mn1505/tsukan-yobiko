@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="TSUKAN YOBIKO v1.5 - AI API連携準備版">
+    <meta name="description" content="TSUKAN YOBIKO v1.6 - AI中継サーバー・Cloudflare Workers対応版">
     <meta name="theme-color" content="#1f5f5b">
     <title>TSUKAN YOBIKO</title>
     <link rel="stylesheet" href="style.css">
@@ -15,7 +15,7 @@
           <p class="eyebrow">通関士試験 個人予備校</p>
           <h1>TSUKAN YOBIKO</h1>
         </div>
-        <span class="version-pill">v1.5</span>
+        <span class="version-pill">v1.6</span>
       </header>
 
       <main class="app-main">
@@ -843,8 +843,8 @@
               </div>
               <dl class="info-list">
                 <div><dt>アプリ名</dt><dd>TSUKAN YOBIKO</dd></div>
-                <div><dt>現在のバージョン</dt><dd>v1.5</dd></div>
-                <div><dt>状態</dt><dd>AI API連携準備版</dd></div>
+                <div><dt>現在のバージョン</dt><dd>v1.6</dd></div>
+                <div><dt>状態</dt><dd>AI中継サーバー・Cloudflare Workers対応版</dd></div>
                 <div><dt>公開前提</dt><dd>GitHub Pagesで公開して使う静的アプリです。</dd></div>
                 <div><dt>保存方式</dt><dd id="storageStatus">確認中</dd></div>
               </dl>
@@ -855,7 +855,6 @@
                 <h3>今後の予定</h3>
               </div>
               <ul class="note-list">
-                <li>v1.6：AI中継サーバー構築手順・Cloudflare Workers対応</li>
                 <li>v1.7：AI講師モード</li>
                 <li>v1.8：AI自動添削・弱点提案</li>
                 <li>v1.9：試験直前モード</li>
@@ -880,14 +879,16 @@
                 </label>
                 <div class="form-actions">
                   <button id="saveAiSettingsButton" class="primary-button" type="button">AI API設定を保存</button>
+                  <button id="checkAiHealthButton" class="ghost-button" type="button">Worker health確認</button>
                   <button id="testAiConnectionButton" class="ghost-button" type="button">AI接続テスト</button>
                 </div>
                 <dl id="aiApiStatusDetails" class="info-list compact"></dl>
                 <p id="aiConnectionTestResult" class="form-message" role="status" aria-live="polite"></p>
                 <ul class="note-list compact">
-                  <li>OpenAI APIキーはこのアプリには入力・保存しません。</li>
-                  <li>通信先はユーザーが設定したAI中継サーバーURLのみです。</li>
-                  <li>CORS設定やサーバー停止時は接続失敗として表示されます。</li>
+                  <li>Cloudflare Workerの /api/ai URLを入力してください。</li>
+                  <li>OpenAI APIキーはここには入力しません。GitHub Pages、script.js、localStorageにも保存しません。</li>
+                  <li>APIキーはCloudflare Worker側のSecretに OPENAI_API_KEY として設定します。</li>
+                  <li>CORS設定、Worker URL、OPENAI_API_KEY Secretに問題がある場合は接続失敗として表示されます。</li>
                 </ul>
               </div>
             </section>
