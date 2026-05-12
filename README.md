@@ -1,62 +1,42 @@
 # TSUKAN YOBIKO
 
-TSUKAN YOBIKOは、通関士試験をアプリ内で体系的に学ぶスマホファースト個人予備校アプリです。現在のバージョンはv1.7です。
+TSUKAN YOBIKOは、通関士試験をアプリ内で体系的に学ぶスマホファースト個人予備校アプリです。現在のバージョンはv1.8です。
 
-v1.7は「AI講師モード版」です。従来のAIプロンプト生成とCloudflare Workers経由のAI送信を維持しながら、レッスン中・確認問題の誤答直後・模試結果・今日のメニュー・弱点タグから、その場でAI講師に質問できる学習導線を追加しました。
+v1.8は「AI自動添削・弱点提案版」です。AI講師の回答を読むだけで終わらせず、AIが提案した弱点タグ、A/B/C理解度、復習対象、次にやるべきレッスンを、ユーザー確認後に学習データへ反映できるようにしました。
 
 ## このアプリの位置づけ
 
 - 通関士試験学習の中心に置くスマホファースト個人予備校アプリ
-- 記録管理アプリではなく、講義・確認問題・解説・復習・模試をアプリ内で進める予備校アプリ
+- 記録管理だけでなく、講義・確認問題・解説・復習・模試をアプリ内で進める予備校アプリ
 - 市販教材や過去問本文の大量複製ではなく、オリジナル要約講義と自作確認問題で論点を整理
 - GitHub Pagesで公開できるHTML/CSS/JavaScriptのみの静的アプリ
 
-## v1.7で追加した内容
+## v1.8で追加した内容
 
-- AI講師モード
-- 質問対象選択
-- 質問タイプ選択
-- 説明レベル選択
-- レッスン中のAI質問
-- 確認問題誤答からAI解説
-- 類似問題生成依頼
-- 模試結果からAI分析
-- 今日のメニューからAI相談
-- 弱点タグからAI相談
-- AI講師履歴
-- AI講師回答保存
-- AI回答から復習メモ・弱点提案・次回復習候補への準備
+- AI添削・弱点提案モード
+- 添削対象選択
+- 添削タイプ選択
+- AI構造化提案
+- AI提案パーサー
+- 弱点タグ提案
+- A/B/C判定提案
+- 復習対象提案
+- 次にやること提案
+- ユーザー確認後の反映
+- AI提案履歴
+- ホーム・分析画面へのAI提案サマリー
 
-## v1.6で追加した内容
-
-- Cloudflare Workers用 `worker.js`
-- Wrangler設定例 `wrangler.toml.example`
-- Workerの `POST /api/ai` エンドポイント
-- Workerの `GET /health` エンドポイント
-- CORS対応
-- OPTIONSプリフライト対応
-- OpenAI Responses API呼び出し
-- Secretによる `OPENAI_API_KEY` 管理
-- prompt最大長チェックなどの簡易入力制限
-- TSUKAN YOBIKO本体からのAI送信対応強化
-- Worker health確認ボタン
-- CORS、Worker URL、Secret設定に関するエラー表示改善
+AI提案は自動反映ではありません。AI分析、提案表示、ユーザー確認、反映項目選択、反映ボタン、保存という流れで扱います。
 
 ## 既存機能
 
-- 通関業法 基礎編20レッスン
-- 関税法等 基礎編30レッスン
-- 通関実務 基礎編30レッスン
-- 各科目ミニ模試
-- 15問ライト模試、30問標準模試、弱点集中模試
-- 総合模試履歴、採点、解説、ひっかけ解説
-- 横断復習、弱点タグ分析、今日の学習メニュー
-- AIプロンプト生成と手動コピペ利用
-- AI中継サーバーURL設定、AI接続テスト、AI応答履歴保存
-- 単元管理、演習ログ、過去問ログ、実務ログ
-- localStorage保存
-- JSONバックアップ/復元
-- 初期データリセット
+- AI API連携設定、AI中継サーバーURL設定、AI接続テスト
+- AIプロンプト生成、AI講師モード、AI講師履歴、AI応答履歴保存
+- レッスン中のAI質問、確認問題誤答からAI解説、模試結果からAI分析
+- 通関業法、関税法等、通関実務のカリキュラム
+- 今日の学習メニュー、分析画面、復習画面、設定画面
+- 総合模試、横断復習、弱点タグ分析
+- JSONバックアップ/復元、localStorage保存
 
 ## GitHub Pagesでの利用前提
 
@@ -79,17 +59,30 @@ v1.7は「AI講師モード版」です。従来のAIプロンプト生成とClo
 - レッスン進捗用: `tsukanYobiko.curriculumProgress`
 - 総合模試結果用: `tsukanYobiko.mockExamResults`
 
-`aiSettings`に保存するのは、`enabled`、`endpointUrl`、`lastTestedAt`、`lastStatus`、`lastError`のみです。APIキーは保存しません。古いバックアップに`aiSettings`がなくても復元できます。
+エクスポートJSONには、`units`、`practiceLogs`、`pastExamLogs`、`practicalLogs`、`aiAnalyses`、`studyPlans`、`curriculumProgress`、`mockExamResults`、`aiSettings`を含めます。古いバックアップにAI提案関連フィールドがなくても復元できます。
 
 ## AI機能について
 
-v1.7では、AI画面に従来の用途別AI相談とAI講師モードの両方があります。AI講師モードは、通関士試験の学習補助に特化し、条文・制度趣旨・試験上の問われ方・ひっかけポイント・誤答原因・次に復習すべき内容を出す前提でプロンプトを生成します。
+AI添削・弱点提案モードでは、AI回答末尾の `TSUKAN_YOBIKO_SUGGESTION:` ブロックからJSON風の構造化提案を抽出します。JSON.parseに成功した場合は、提案理解度、復習対象提案、弱点タグ候補、次にやるべきレッスン、具体的アクション、AIの自信度として表示します。解析に失敗してもAI回答本文は表示され、手動確認できます。
 
-AI講師モードは、AI API連携ONかつ中継サーバーURL設定済みの場合はCloudflare Worker経由で送信します。AI API連携OFFまたは未設定の場合は、手動コピー用プロンプトを表示し、ChatGPTなどへ貼り付けて使えます。
+AI API連携ONかつ中継サーバーURL設定済みの場合はCloudflare Worker経由で送信します。AI API連携OFFまたは未設定の場合は、手動コピー用プロンプトを表示し、ChatGPTなどへ貼り付けて使えます。
+
+AI提案は学習補助です。法令、通達、試験公告、公式解答などの最終確認は、必ず公式情報や信頼できる最新資料で行ってください。
+
+## セキュリティ方針
+
+- OpenAI APIキーをフロントエンドに置かない
+- APIキー入力欄を作らない
+- OpenAI APIキーを`script.js`に書かない
+- OpenAI APIキーをlocalStorageに保存しない
+- WorkerコードにAPIキーを直書きしない
+- Publicリポジトリに`.env`や`.dev.vars`をコミットしない
+- ブラウザからOpenAI APIへ直接Bearer token付きで通信しない
+- `OPENAI_API_KEY`はCloudflare WorkerのSecretとして設定する
+
+## Cloudflare Workers
 
 このリポジトリにはCloudflare Workers用のAI中継サーバーコードを同梱しています。
-
-通信経路は次の想定です。
 
 ```text
 TSUKAN YOBIKO on GitHub Pages
@@ -101,115 +94,24 @@ OpenAI Responses API
 
 TSUKAN YOBIKOの設定画面には、Cloudflare Workerの `/api/ai` URLを入力します。例: `https://your-worker-name.your-subdomain.workers.dev/api/ai`
 
-AI API連携がOFF、または中継サーバーURLが未設定の場合でも、従来どおり生成プロンプトをコピーしてChatGPTなどへ手動で貼り付けて使えます。OpenAI APIキーはフロントエンドに置きません。
-
-AI講師の回答は学習補助です。法改正、通達、試験公告、公式解答などの最終確認は、必ず公式情報や信頼できる最新資料で行ってください。
-
-## セキュリティ方針
-
-- OpenAI APIキーをGitHub Pages側に置かない
-- OpenAI APIキーを`script.js`に書かない
-- OpenAI APIキーをlocalStorageに保存しない
-- WorkerコードにAPIキーを直書きしない
-- Publicリポジトリに`.env`や`.dev.vars`をコミットしない
-- ブラウザからOpenAI APIへ直接Bearer token付きで通信しない
-- `OPENAI_API_KEY`はCloudflare WorkerのSecretとして設定する
-
-## Cloudflare Workersデプロイ手順
-
-1. Cloudflareにログインします。
-2. Workers & Pagesを開きます。
-3. Workerを新規作成します。
-4. `worker.js`の内容を貼り付けるか、Wranglerでデプロイします。
-5. WorkerのSettings → Variables and Secretsを開きます。
-6. Secretとして `OPENAI_API_KEY` を追加します。本物のAPIキーをファイルには書かないでください。
-7. Workerをデプロイします。
-8. `https://your-worker-name.your-subdomain.workers.dev/health` にアクセスし、次のようなJSONが返ることを確認します。
-
-```json
-{
-  "ok": true,
-  "app": "TSUKAN_YOBIKO_AI_WORKER",
-  "status": "healthy"
-}
-```
-
-9. `https://your-worker-name.your-subdomain.workers.dev/api/ai` をTSUKAN YOBIKOの設定画面に入力します。
-10. TSUKAN YOBIKOで「Worker health確認」と「AI接続テスト」を実行します。
-
-## Wranglerを使う場合
-
-`wrangler.toml.example`を参考にして、必要に応じて`wrangler.toml`を作成します。
-
-```toml
-name = "tsukan-yobiko-ai-worker"
-main = "worker.js"
-compatibility_date = "2026-01-01"
-
-[vars]
-ALLOWED_ORIGIN = "*"
-```
-
-`ALLOWED_ORIGIN = "*"` は開発しやすさを優先した初期値です。本番運用では、GitHub PagesのURLに限定してください。例: `https://your-github-user.github.io`
-
-Secretはファイルに書かず、Cloudflare DashboardまたはWranglerで設定します。
-
-```bash
-wrangler secret put OPENAI_API_KEY
-wrangler deploy
-```
-
-`worker.js`内のモデル名は `DEFAULT_MODEL` 定数で管理しています。利用できるモデルや運用方針に合わせて、必要なら `DEFAULT_MODEL` を変更してください。
-
-## Worker API
-
-### GET /health
-
-Workerの簡易ヘルスチェックです。OpenAI APIには接続しません。
-
 ### POST /api/ai
 
-TSUKAN YOBIKO本体から次のようなJSONを送信します。`version`は`v1.7`を送信します。
+TSUKAN YOBIKO本体から送信するJSONの `version` は `v1.8` です。
 
 ```json
 {
   "app": "TSUKAN_YOBIKO",
-  "version": "v1.7",
+  "version": "v1.8",
   "mode": "chat",
-  "promptType": "総合学習相談",
-  "targetType": "レッスン",
-  "targetTitle": "信用失墜行為と罰則トラップ",
+  "promptType": "AI添削・弱点提案",
+  "targetType": "模試結果",
+  "targetTitle": "15問ライト模試",
   "prompt": "生成済みプロンプト本文",
   "metadata": {
-    "subject": "通関業法",
-    "lessonId": "",
-    "unitId": "",
+    "correctionType": "弱点タグ提案",
+    "targetId": "",
     "createdAt": ""
   }
-}
-```
-
-成功時は次の形式で返します。
-
-```json
-{
-  "ok": true,
-  "text": "AIの回答本文",
-  "model": "gpt-5.5",
-  "usage": {
-    "input_tokens": 0,
-    "output_tokens": 0,
-    "total_tokens": 0
-  }
-}
-```
-
-失敗時は次の形式で返します。
-
-```json
-{
-  "ok": false,
-  "error": "エラー内容"
 }
 ```
 
@@ -221,12 +123,12 @@ TSUKAN YOBIKO本体から次のようなJSONを送信します。`version`は`v1
 - 定期的にJSONバックアップを取ってください
 - 個人情報、秘密情報、非公開情報を初期データとしてコードに書き込まないでください
 - 市販教材や過去問本文をそのまま大量に初期データへ入れないでください
-- 法改正があるため、AI講師の回答だけで判断せず、最新法令や公式情報を別途確認してください
+- AI提案だけで法令・公式情報を判断しないでください
 
 ## 今後の拡張予定
 
-- v1.8：AI自動添削・弱点提案
 - v1.9：試験直前モード
 - v2.0：本格予備校版
 - v2.1：PWA対応
-- 将来：スマホ・PC間同期
+- v2.2：スマホ・PC間同期検討
+- 将来：講義データ外部JSON化

@@ -1,4 +1,4 @@
-const APP_VERSION = "v1.7";
+const APP_VERSION = "v1.8";
 const AI_API_TIMEOUT_MS = 30000;
 const AI_HEALTH_TIMEOUT_MS = 10000;
 const STORAGE_KEYS = {
@@ -150,6 +150,20 @@ const AI_TUTOR_QUESTION_INSTRUCTIONS = {
   "30分復習メニューを作る": "現在の対象データから、30分で何をするかを具体化してください。",
   "A判定に上げる方法": "B/C判定または未判定からA判定に上げるための条件を示してください。",
   "質問に直接回答": "ユーザーの自由質問へ、通関士試験対策として簡潔に回答してください。"
+};
+
+const AI_SUGGESTION_TARGET_TYPES = ["レッスン確認問題", "レッスン理解度", "模試結果", "今日のメニュー", "弱点タグ", "通関業法カリキュラム", "関税法等カリキュラム", "通関実務カリキュラム", "自由入力"];
+const AI_SUGGESTION_TYPES = ["回答添削", "誤答原因分析", "弱点タグ提案", "A/B/C判定提案", "復習対象提案", "次にやること提案", "総合診断", "類似問題提案"];
+const AI_SUGGESTION_MARKER = "TSUKAN_YOBIKO_SUGGESTION:";
+const AI_SUGGESTION_TYPE_INSTRUCTIONS = {
+  "回答添削": "回答の正誤、理由づけ、用語、試験上の失点可能性を添削してください。",
+  "誤答原因分析": "誤答原因を、暗記不足・理解不足・用語混同・選択肢読解・ケアレスミスに分けて分析してください。",
+  "弱点タグ提案": "アプリに追加すべき弱点タグ候補を、既存タグと具体タグの両方で提案してください。",
+  "A/B/C判定提案": "A/B/C理解度を提案し、その根拠とA判定に上げる条件を示してください。",
+  "復習対象提案": "復習対象にすべきかを提案し、復習理由と優先度を示してください。",
+  "次にやること提案": "次にやるべきレッスン、復習順、具体的アクションを優先順位つきで提案してください。",
+  "総合診断": "現状、弱点、理解度、復習対象、次にやることを総合診断してください。",
+  "類似問題提案": "市販教材や過去問本文を複製せず、論点だけを使って類似問題案と復習観点を提案してください。"
 };
 
 const CURRICULUM_STATUS = ["未着手", "学習中", "完了", "復習中"];
@@ -1261,6 +1275,25 @@ const state = {
     sending: false,
     sentViaApi: false
   },
+  aiSuggestionForm: {
+    targetType: "レッスン確認問題",
+    targetId: "",
+    suggestionType: "弱点タグ提案",
+    memo: "",
+    promptText: "",
+    currentAnalysisId: "",
+    apiStatus: "未送信",
+    apiResponseText: "",
+    apiModel: "",
+    apiUsage: {},
+    apiError: "",
+    sending: false,
+    sentViaApi: false,
+    suggestionParsed: false,
+    suggestionObject: null,
+    rawSuggestionText: "",
+    appliedFields: []
+  },
   mockExam: {
     selectedMode: "light15",
     active: null,
@@ -1709,6 +1742,12 @@ function normalizeAiAnalysis(item) {
     model: "",
     usage: {},
     error: "",
+    suggestionParsed: false,
+    suggestionObject: null,
+    rawSuggestionText: "",
+    appliedAt: "",
+    appliedFields: [],
+    correctionType: "",
     ...(item || {})
   };
   if (!normalized.id) normalized.id = makeAiAnalysisId();
@@ -1725,6 +1764,12 @@ function normalizeAiAnalysis(item) {
   normalized.questionType = String(normalized.questionType || "");
   normalized.explanationLevel = String(normalized.explanationLevel || "");
   normalized.userQuestion = String(normalized.userQuestion || "");
+  normalized.suggestionParsed = Boolean(normalized.suggestionParsed);
+  normalized.suggestionObject = normalized.suggestionObject && typeof normalized.suggestionObject === "object" ? normalized.suggestionObject : null;
+  normalized.rawSuggestionText = String(normalized.rawSuggestionText || "");
+  normalized.appliedAt = String(normalized.appliedAt || "");
+  normalized.appliedFields = normalizeArray(normalized.appliedFields).map(String).filter(Boolean);
+  normalized.correctionType = String(normalized.correctionType || "");
   return normalized;
 }
 
@@ -3105,7 +3150,10 @@ function renderDashboard() {
   }
 
   const aiTutorItems = state.aiAnalyses.filter((item) => item.promptType === "AI講師");
+  const aiSuggestions = state.aiAnalyses.filter((item) => item.promptType === "AI添削・弱点提案");
   const recentTutor = [...aiTutorItems].sort(compareAiAnalyses)[0];
+  const latestSuggestion = [...aiSuggestions].sort(compareAiAnalyses)[0];
+  const pendingSuggestions = aiSuggestions.filter((item) => !item.appliedAt).length;
   const unsavedTutor = aiTutorItems.filter((item) => item.responseText && !item.savedAsReviewMemo && !item.markedAsWeaknessSuggestion && !item.markedForNextReview).length;
   const recentAi = [...state.aiAnalyses]
     .sort(compareAiAnalyses)
@@ -3114,11 +3162,13 @@ function renderDashboard() {
     <dl class="summary-list">
       <div><dt>直近のAI講師質問</dt><dd>${escapeHtml(recentTutor ? truncateText(recentTutor.userQuestion || recentTutor.targetTitle, 42) : "なし")}</dd></div>
       <div><dt>AI講師利用回数</dt><dd>${aiTutorItems.length}回</dd></div>
-      <div><dt>未保存のAI回答</dt><dd>${unsavedTutor}件</dd></div>
+      <div><dt>未反映のAI提案</dt><dd>${pendingSuggestions}件</dd></div>
       <div><dt>利用状態</dt><dd>${state.aiSettings.enabled && state.aiSettings.endpointUrl.trim() ? "API送信可能" : "手動コピー"}</dd></div>
+      <div><dt>最新のAI提案</dt><dd>${escapeHtml(latestSuggestion ? truncateText(latestSuggestion.targetTitle || latestSuggestion.correctionType, 42) : "なし")}</dd></div>
     </dl>
     <div class="action-card-list">
       <button class="record-link" type="button" data-ai-today-consult><strong>AI講師へ相談する</strong><span>レッスン・確認問題・今日のメニューを質問</span></button>
+      <button class="record-link" type="button" data-open-ai-suggestions><strong>AI提案を確認する</strong><span>未反映 ${pendingSuggestions}件 / AI添削・弱点提案</span></button>
       <button class="record-link" type="button" data-ai-quick="mock"><strong>最新模試をAI講師に分析</strong><span>${latestMock ? `${latestMock.scoreRate}% ${latestMock.resultLevel}` : "模試未実施"}</span></button>
     </div>
     <div class="mini-list">
@@ -3653,6 +3703,7 @@ function renderLessonQuestion(lesson, question, index) {
           ${!result.correct ? `
             <div class="card-actions ai-tutor-inline-actions">
               <button class="ghost-button" type="button" data-ai-wrong-question="${escapeAttribute(lesson.id)}:${escapeAttribute(question.id)}">なぜ間違えたかAI講師に聞く</button>
+              <button class="primary-button" type="button" data-ai-suggest-wrong-question="${escapeAttribute(lesson.id)}:${escapeAttribute(question.id)}">AIに弱点を判定してもらう</button>
               <button class="ghost-button" type="button" data-ai-similar-question="${escapeAttribute(lesson.id)}:${escapeAttribute(question.id)}">同じ論点の類似問題を作る</button>
               <button class="ghost-button" type="button" data-ai-trap-question="${escapeAttribute(lesson.id)}:${escapeAttribute(question.id)}">本試験でのひっかけを確認する</button>
             </div>
@@ -4902,13 +4953,19 @@ function buildRetryTargets() {
 
 function buildAiUsage() {
   const sorted = [...state.aiAnalyses].sort(compareAiAnalyses);
+  const suggestions = sorted.filter((item) => item.promptType === "AI添削・弱点提案");
   return {
     total: sorted.length,
     promptTypes: groupCount(sorted, "promptType"),
     targetTypes: groupCount(sorted, "targetType"),
     resultMemoCount: sorted.filter((item) => String(item.resultMemo || "").trim()).length,
     recentDate: sorted[0]?.createdAt || "",
-    recentItems: sorted.slice(0, 3)
+    recentItems: sorted.slice(0, 3),
+    suggestionTotal: suggestions.length,
+    suggestionApplied: suggestions.filter((item) => item.appliedAt).length,
+    suggestionPending: suggestions.filter((item) => !item.appliedAt).length,
+    suggestionWeaknessTags: rankFromValues(suggestions.flatMap((item) => suggestionList(item.suggestionObject?.suggestedWeaknessTags))).slice(0, 6),
+    suggestionNextLessons: rankFromValues(suggestions.flatMap((item) => suggestionList(item.suggestionObject?.suggestedNextLessons))).slice(0, 6)
   };
 }
 
@@ -5191,7 +5248,6 @@ function renderRetryTargets(targets) {
 }
 
 function renderAiUsage(usage) {
-  if (!usage.total) return `<p class="muted">AI解析プロンプトはまだ生成されていません。</p>`;
   return `
     <div class="analysis-card-grid two-col">
       <article class="analysis-card">
@@ -5202,16 +5258,21 @@ function renderAiUsage(usage) {
           <div><dt>対象種別別件数</dt><dd>${escapeHtml(formatGroupCounts(usage.targetTypes))}</dd></div>
           <div><dt>AI返答メモあり件数</dt><dd>${usage.resultMemoCount}</dd></div>
           <div><dt>直近のAI利用日</dt><dd>${escapeHtml(formatDateTime(usage.recentDate))}</dd></div>
+          <div><dt>AI提案件数</dt><dd>${usage.suggestionTotal}</dd></div>
+          <div><dt>未反映提案件数</dt><dd>${usage.suggestionPending}</dd></div>
+          <div><dt>反映済み提案件数</dt><dd>${usage.suggestionApplied}</dd></div>
+          <div><dt>よく提案される弱点タグ</dt><dd>${escapeHtml(usage.suggestionWeaknessTags.map((item) => `${item.label}(${item.count})`).join(" / ") || "なし")}</dd></div>
+          <div><dt>AIがよく提案する次レッスン</dt><dd>${escapeHtml(usage.suggestionNextLessons.map((item) => `${item.label}(${item.count})`).join(" / ") || "なし")}</dd></div>
         </dl>
       </article>
       <article class="analysis-card">
         <h4>直近のAI履歴3件</h4>
-        ${usage.recentItems.map((item) => `
+        ${usage.recentItems.length ? usage.recentItems.map((item) => `
           <div class="mini-item">
             <span>${escapeHtml(formatDateTime(item.createdAt))} / ${escapeHtml(item.promptType || "種別なし")}</span>
             <small>${escapeHtml(item.targetTitle || "対象なし")}</small>
           </div>
-        `).join("")}
+        `).join("") : `<p class="muted">AI履歴はまだありません。</p>`}
       </article>
     </div>
   `;
@@ -5793,6 +5854,8 @@ function renderMockResultArea(resultId = state.mockExam.lastResultId) {
       <div class="card-actions">
         <button class="primary-button" type="button" data-open-cross-review>横断復習を見る</button>
         <button class="ghost-button" type="button" data-ai-mock-result="${escapeAttribute(result.id)}">この模試結果をAI講師に分析してもらう</button>
+        <button class="primary-button" type="button" data-ai-suggest-mock-tags="${escapeAttribute(result.id)}">AIに弱点タグを提案してもらう</button>
+        <button class="ghost-button" type="button" data-ai-suggest-mock-next="${escapeAttribute(result.id)}">AIに次の復習順を作ってもらう</button>
         <button class="ghost-button" type="button" data-ai-mock-wrong="${escapeAttribute(result.id)}">間違えた問題だけAI解説</button>
         <button class="ghost-button" type="button" data-ai-mock-review="${escapeAttribute(result.id)}">次の30分復習メニューを作る</button>
       </div>
@@ -5905,9 +5968,152 @@ function renderAiView() {
   document.querySelector("#aiAdditionalConditions").value = state.aiForm.additionalConditions;
   document.querySelector("#aiPromptResult").value = state.aiForm.promptText;
   renderAiTutorView();
+  renderAiSuggestionView();
   renderAiResponse();
   renderAiApiLogSummary();
   renderAiHistory();
+}
+
+function renderAiSuggestionView() {
+  fillSelect("#aiSuggestionTargetType", AI_SUGGESTION_TARGET_TYPES, state.aiSuggestionForm.targetType);
+  fillSelect("#aiSuggestionType", AI_SUGGESTION_TYPES, state.aiSuggestionForm.suggestionType);
+  renderAiSuggestionTargetSelect();
+  const memo = document.querySelector("#aiSuggestionMemo");
+  const prompt = document.querySelector("#aiSuggestionPromptResult");
+  if (memo && document.activeElement !== memo) memo.value = state.aiSuggestionForm.memo;
+  if (prompt && document.activeElement !== prompt) prompt.value = state.aiSuggestionForm.promptText;
+  renderAiSuggestionModeHint();
+  renderAiSuggestionResponse();
+  renderAiSuggestionHistory();
+}
+
+function renderAiSuggestionTargetSelect() {
+  const select = document.querySelector("#aiSuggestionTargetSelect");
+  const label = document.querySelector("#aiSuggestionTargetSelectLabel");
+  if (!select || !label) return;
+  const options = getAiSuggestionTargetOptions(state.aiSuggestionForm.targetType);
+  const needsSelect = !["今日のメニュー", "通関業法カリキュラム", "関税法等カリキュラム", "通関実務カリキュラム", "自由入力"].includes(state.aiSuggestionForm.targetType);
+  label.classList.toggle("is-hidden", !needsSelect);
+  if (!needsSelect) {
+    select.innerHTML = `<option value="">自動選択</option>`;
+    if (state.aiSuggestionForm.targetType !== "自由入力") state.aiSuggestionForm.targetId = "";
+    return;
+  }
+  select.innerHTML = options.length
+    ? options.map((option) => `<option value="${escapeAttribute(option.value)}">${escapeHtml(option.label)}</option>`).join("")
+    : `<option value="">対象データがありません</option>`;
+  if (!options.some((option) => option.value === state.aiSuggestionForm.targetId)) state.aiSuggestionForm.targetId = options[0]?.value || "";
+  select.value = state.aiSuggestionForm.targetId;
+}
+
+function getAiSuggestionTargetOptions(targetType) {
+  if (targetType === "レッスン確認問題") {
+    return CURRICULUM_LESSONS.flatMap((lesson) => lesson.questions.map((question, index) => ({
+      value: `${lesson.id}:${question.id}`,
+      label: `${lesson.subject} / ${lesson.title} / 問${index + 1} / ${question.weaknessTag}`
+    })));
+  }
+  if (targetType === "レッスン理解度") {
+    return CURRICULUM_LESSONS.map((lesson) => {
+      const progress = getLessonProgress(lesson.id);
+      return { value: lesson.id, label: `${lesson.subject} / ${lesson.title} / ${progress.understanding}` };
+    });
+  }
+  if (targetType === "模試結果") {
+    return [...state.mockExamResults].sort((a, b) => (b.completedAt || "").localeCompare(a.completedAt || "")).map((result) => ({
+      value: result.id,
+      label: `${formatDateTime(result.completedAt)} / ${result.title} / ${result.scoreRate}% / ${result.resultLevel}`
+    }));
+  }
+  if (targetType === "弱点タグ") {
+    const ranked = buildWeaknessRanking();
+    const tags = ranked.length ? ranked.map((item) => item.tag) : WEAKNESS_TAGS;
+    return tags.map((tag) => ({ value: tag, label: tag }));
+  }
+  return [];
+}
+
+function renderAiSuggestionModeHint() {
+  const host = document.querySelector("#aiSuggestionModeHint");
+  if (!host) return;
+  const available = Boolean(state.aiSettings.enabled && state.aiSettings.endpointUrl.trim());
+  host.innerHTML = available
+    ? `<span class="badge ok">API送信可能</span><span class="muted"> AI提案は反映前に必ず確認します。</span>`
+    : `<span class="badge priority">手動コピーのみ</span><span class="muted"> API連携OFFでもプロンプトをコピーして使えます。</span>`;
+}
+
+function renderAiSuggestionResponse() {
+  const meta = document.querySelector("#aiSuggestionResponseMeta");
+  const text = document.querySelector("#aiSuggestionAnswerText");
+  const parsedHost = document.querySelector("#aiSuggestionParsedView");
+  const raw = document.querySelector("#aiSuggestionRawBlock");
+  const error = document.querySelector("#aiSuggestionResponseError");
+  const manual = document.querySelector("#aiSuggestionManualResponse");
+  if (!meta || !text || !parsedHost || !raw || !error) return;
+  const target = buildAiSuggestionTargetData();
+  meta.innerHTML = `
+    <div><dt>送信状態</dt><dd>${escapeHtml(state.aiSuggestionForm.apiStatus || "未送信")}</dd></div>
+    <div><dt>対象</dt><dd>${escapeHtml(state.aiSuggestionForm.targetType)}</dd></div>
+    <div><dt>添削タイプ</dt><dd>${escapeHtml(state.aiSuggestionForm.suggestionType)}</dd></div>
+    <div><dt>対象名</dt><dd>${escapeHtml(target.title || "未選択")}</dd></div>
+    <div><dt>使用モデル</dt><dd>${escapeHtml(state.aiSuggestionForm.apiModel || "未取得")}</dd></div>
+    <div><dt>token使用量</dt><dd>${escapeHtml(formatUsage(state.aiSuggestionForm.apiUsage))}</dd></div>
+  `;
+  text.textContent = getAiSuggestionNaturalText(state.aiSuggestionForm.apiResponseText) || "AI提案はまだありません。API連携OFFの場合は、下の手動コピー用プロンプトを使ってください。";
+  if (manual && document.activeElement !== manual && state.aiSuggestionForm.apiResponseText) manual.value = state.aiSuggestionForm.apiResponseText;
+  const suggestion = state.aiSuggestionForm.suggestionObject;
+  parsedHost.innerHTML = suggestion ? renderSuggestionObject(suggestion) : `<div class="empty-state"><p class="muted">構造化提案は抽出できませんでした。AI回答本文を確認してください。</p></div>`;
+  raw.textContent = state.aiSuggestionForm.rawSuggestionText || "構造化提案ブロックなし";
+  error.textContent = state.aiSuggestionForm.apiError || "";
+  document.querySelector("#runAiSuggestionButton")?.toggleAttribute("disabled", Boolean(state.aiSuggestionForm.sending));
+}
+
+function parseManualAiSuggestionResponse() {
+  const value = document.querySelector("#aiSuggestionManualResponse")?.value.trim() || "";
+  if (!value) {
+    showToast("解析するAI回答を貼り付けてください。");
+    return;
+  }
+  state.aiSuggestionForm.apiStatus = "手動回答解析済み";
+  state.aiSuggestionForm.apiResponseText = value;
+  state.aiSuggestionForm.apiError = "";
+  state.aiSuggestionForm.sentViaApi = false;
+  const extracted = extractAiSuggestion(value);
+  state.aiSuggestionForm.suggestionParsed = extracted.parsed;
+  state.aiSuggestionForm.suggestionObject = extracted.suggestionObject;
+  state.aiSuggestionForm.rawSuggestionText = extracted.rawSuggestionText;
+  saveAiSuggestionAnalysis({ sentViaApi: false });
+  saveUnits();
+  render();
+  showToast(extracted.parsed ? "構造化提案を解析しました。" : "構造化提案は抽出できませんでした。");
+}
+
+function getAiSuggestionNaturalText(responseText) {
+  const text = String(responseText || "");
+  const index = text.indexOf(AI_SUGGESTION_MARKER);
+  return (index >= 0 ? text.slice(0, index) : text).trim();
+}
+
+function renderSuggestionObject(suggestion) {
+  const tags = suggestionList(suggestion.suggestedWeaknessTags);
+  const lessons = suggestionList(suggestion.suggestedNextLessons);
+  const actions = suggestionList(suggestion.suggestedActions);
+  return `
+    <div class="suggestion-card-grid">
+      <article class="suggestion-card"><h4>提案理解度</h4><strong>${escapeHtml(suggestion.suggestedUnderstanding || "未提案")}</strong></article>
+      <article class="suggestion-card"><h4>復習対象提案</h4><strong>${suggestion.suggestedReviewNeeded === true ? "対象" : suggestion.suggestedReviewNeeded === false ? "対象外" : "未提案"}</strong></article>
+      <article class="suggestion-card"><h4>AIの自信度</h4><strong>${escapeHtml(suggestion.confidence || "未提案")}</strong></article>
+      <article class="suggestion-card wide"><h4>弱点タグ候補</h4><p>${escapeHtml(tags.join(" / ") || "未提案")}</p></article>
+      <article class="suggestion-card wide"><h4>次にやるべきレッスン</h4><p>${escapeHtml(lessons.join(" / ") || "未提案")}</p></article>
+      <article class="suggestion-card wide"><h4>具体的アクション</h4><p>${escapeHtml(actions.join(" / ") || "未提案")}</p></article>
+    </div>
+  `;
+}
+
+function suggestionList(value) {
+  if (Array.isArray(value)) return value.map(String).map((item) => item.trim()).filter(Boolean);
+  const text = String(value || "").trim();
+  return text ? text.split(/[、,\n]/).map((item) => item.trim()).filter(Boolean) : [];
 }
 
 function renderAiTutorView() {
@@ -6134,6 +6340,44 @@ function renderAiTutorHistory() {
     : `<div class="empty-state"><p class="muted">AI講師履歴はまだありません。</p></div>`;
 }
 
+function renderAiSuggestionHistory() {
+  const host = document.querySelector("#aiSuggestionHistoryList");
+  if (!host) return;
+  const items = state.aiAnalyses
+    .filter((item) => item.promptType === "AI添削・弱点提案")
+    .sort(compareAiAnalyses)
+    .slice(0, 30);
+  host.innerHTML = items.length ? items.map((item) => {
+    const suggestion = item.suggestionObject || {};
+    const tags = suggestionList(suggestion.suggestedWeaknessTags).slice(0, 4).join(" / ");
+    return `
+      <article class="ai-history-card ai-suggestion-history-card">
+        <div>
+          <p class="eyebrow">${escapeHtml(formatDateTime(item.createdAt))}</p>
+          <h3>${escapeHtml(item.targetTitle || item.targetType || "対象なし")}</h3>
+        </div>
+        <div class="card-meta">
+          <span class="badge">${escapeHtml(item.targetType || "対象なし")}</span>
+          <span class="badge">${escapeHtml(item.correctionType || "添削タイプなし")}</span>
+          <span class="badge">${item.suggestionParsed ? "構造化済み" : "手動確認"}</span>
+          <span class="badge ${item.appliedAt ? "ok" : "priority"}">${item.appliedAt ? "反映済み" : "未反映"}</span>
+        </div>
+        <dl class="review-facts compact">
+          <div><dt>提案理解度</dt><dd>${escapeHtml(suggestion.suggestedUnderstanding || "未提案")}</dd></div>
+          <div><dt>復習対象提案</dt><dd>${suggestion.suggestedReviewNeeded === true ? "対象" : suggestion.suggestedReviewNeeded === false ? "対象外" : "未提案"}</dd></div>
+          <div><dt>弱点タグ候補</dt><dd>${escapeHtml(tags || "未提案")}</dd></div>
+          <div><dt>反映項目</dt><dd>${escapeHtml((item.appliedFields || []).join(" / ") || "なし")}</dd></div>
+        </dl>
+        <div class="card-actions">
+          <button class="ghost-button" type="button" data-show-ai-suggestion="${escapeAttribute(item.id)}">詳細を見る</button>
+          <button class="primary-button" type="button" data-apply-ai-suggestion-history="${escapeAttribute(item.id)}">反映する</button>
+          <button class="danger-button" type="button" data-delete-ai-analysis="${escapeAttribute(item.id)}">削除</button>
+        </div>
+      </article>
+    `;
+  }).join("") : `<div class="empty-state"><p class="muted">AI提案履歴はまだありません。</p></div>`;
+}
+
 function generateAiTutorPrompt() {
   const target = buildAiTutorTargetData();
   const promptText = buildAiTutorPromptText(target);
@@ -6217,6 +6461,143 @@ function buildAiTutorTargetData() {
     return { id: tag, title: tag || "弱点タグ", body: buildAiTutorWeaknessTagData(tag) };
   }
   return { id: "free", title: "自由質問", body: "自由質問です。通関士試験の学習支援として、質問内容を本試験対策に結びつけて回答してください。" };
+}
+
+function buildAiSuggestionTargetData() {
+  const type = state.aiSuggestionForm.targetType;
+  if (type === "レッスン確認問題") {
+    const [lessonId, questionId] = String(state.aiSuggestionForm.targetId || "").split(":");
+    const lesson = getLessonById(lessonId) || getLessonById(state.activeLessonId) || CURRICULUM_LESSONS[0];
+    const question = lesson?.questions.find((item) => item.id === questionId) || lesson?.questions[0];
+    return { id: `${lesson?.id || ""}:${question?.id || ""}`, title: `${lesson?.title || "確認問題"} / ${question?.weaknessTag || ""}`, body: lesson && question ? buildAiSuggestionLessonQuestionData(lesson, question) : "対象問題なし" };
+  }
+  if (type === "レッスン理解度") {
+    const lesson = getLessonById(state.aiSuggestionForm.targetId) || CURRICULUM_LESSONS[0];
+    return { id: lesson?.id || "", title: lesson?.title || "レッスン理解度", body: lesson ? buildAiSuggestionLessonUnderstandingData(lesson) : "対象レッスンなし" };
+  }
+  if (type === "模試結果") {
+    const result = state.mockExamResults.find((item) => item.id === state.aiSuggestionForm.targetId) || getLatestMockResult();
+    return { id: result?.id || "", title: result?.title || "模試結果", body: result ? buildAiSuggestionMockResultData(result) : "模試結果なし" };
+  }
+  if (type === "今日のメニュー") return { id: "today", title: "今日のメニュー", body: buildAiSuggestionTodayData() };
+  if (type === "弱点タグ") {
+    const tag = state.aiSuggestionForm.targetId || buildWeaknessRanking()[0]?.tag || "";
+    return { id: tag, title: tag || "弱点タグ", body: buildAiTutorWeaknessTagData(tag) };
+  }
+  if (type === "通関業法カリキュラム") return { id: "course-tsukangyoho-basic", title: type, body: buildTsukangyohoCurriculumPromptData() };
+  if (type === "関税法等カリキュラム") return { id: "course-kanzeihou-intro", title: type, body: buildKanzeihouCurriculumPromptData() };
+  if (type === "通関実務カリキュラム") return { id: "course-practical-intro", title: type, body: buildPracticalCurriculumPromptData() };
+  return { id: "free", title: "自由入力", body: state.aiSuggestionForm.memo || "自由入力の添削対象が未入力です。" };
+}
+
+function buildAiSuggestionLessonQuestionData(lesson, question) {
+  const progress = getLessonProgress(lesson.id);
+  const result = getLessonQuestionResult(lesson.id, question.id);
+  const unit = state.units.find((item) => item.id === lesson.relatedUnitId);
+  return keyValueLines([
+    ["レッスン名", lesson.title],
+    ["科目", lesson.subject],
+    ["問題文", question.question],
+    ["選択肢", question.choices.join(" / ")],
+    ["自分の回答", result?.userAnswer || "未回答"],
+    ["正答", question.answer],
+    ["解説", question.explanation],
+    ["ひっかけ解説", question.trapExplanation],
+    ["現在の理解度", progress.understanding],
+    ["現在の弱点タグ", [...(unit?.ai?.weaknessTags || []), question.weaknessTag].filter(Boolean).join(" / ") || "なし"]
+  ]);
+}
+
+function buildAiSuggestionLessonUnderstandingData(lesson) {
+  const progress = getLessonProgress(lesson.id);
+  const wrong = lesson.questions.filter((question) => progress.questionResults.some((result) => result.questionId === question.id && !result.correct));
+  const correct = lesson.questions.filter((question) => progress.questionResults.some((result) => result.questionId === question.id && result.correct)).length;
+  return keyValueLines([
+    ["レッスン名", lesson.title],
+    ["科目", lesson.subject],
+    ["確認問題結果", progress.questionResults.map((result) => `${result.questionId}:${result.correct ? "正解" : "不正解"}:${result.userAnswer}`).join(" / ") || "未回答"],
+    ["正答数", `${correct}/${lesson.questions.length}`],
+    ["誤答問題", wrong.map((question) => `${question.question} / 正答:${question.answer} / 弱点:${question.weaknessTag}`).join("\n") || "なし"],
+    ["現在の理解度", progress.understanding],
+    ["復習対象かどうか", progress.reviewNeeded ? "対象" : "対象外"]
+  ]);
+}
+
+function buildAiSuggestionMockResultData(result) {
+  return buildMockExamPromptData(result) + "\n" + keyValueLines([["復習対象かどうか", result.reviewNeeded ? "対象" : "対象外"]]);
+}
+
+function buildAiSuggestionTodayData() {
+  const latest = getLatestMockResult();
+  const menu = state.todayMenu || generateTodayMenu(getTodayPlan().selectedDuration);
+  const incomplete = menu.recommended.filter((item) => !isTodayItemCompleted(item.id));
+  return [
+    buildTodayPromptSummary(),
+    keyValueLines([
+      ["未完了項目", incomplete.map((item) => `${item.type}:${item.title}`).join("\n") || "なし"],
+      ["弱点タグ", getTopWeaknessTags().join(" / ") || "なし"],
+      ["直近の模試結果", latest ? `${latest.title} / ${latest.scoreRate}% / ${latest.resultLevel}` : "未実施"]
+    ])
+  ].join("\n");
+}
+
+function buildAiSuggestionPromptText(target) {
+  return [
+    "【1. 役割】",
+    "あなたは通関士試験の学習データを添削するAI講師です。",
+    "回答は学習補助です。法令・試験情報の最終判断はユーザーが公式情報で確認します。",
+    "",
+    "【2. 添削対象】",
+    `対象種別: ${state.aiSuggestionForm.targetType}`,
+    `対象名: ${target.title}`,
+    target.body,
+    "",
+    "【3. 添削タイプ】",
+    `${state.aiSuggestionForm.suggestionType}: ${AI_SUGGESTION_TYPE_INSTRUCTIONS[state.aiSuggestionForm.suggestionType] || "通関士試験対策として提案してください。"}`,
+    "",
+    "【4. 追加メモ】",
+    state.aiSuggestionForm.memo || "なし",
+    "",
+    "【5. 出力形式】",
+    bulletLines(["AI総評", "提案理解度", "復習対象提案", "弱点タグ候補", "次にやるべきレッスン", "具体的アクション", "AIの自信度"]),
+    "",
+    "【6. 構造化提案】",
+    `回答末尾に必ず ${AI_SUGGESTION_MARKER} から始まるJSON風ブロックを付けてください。`,
+    "キーは suggestedUnderstanding, suggestedReviewNeeded, suggestedWeaknessTags, suggestedNextLessons, suggestedActions, confidence を使ってください。",
+    "例:",
+    AI_SUGGESTION_MARKER,
+    "{",
+    '  "suggestedUnderstanding": "B",',
+    '  "suggestedReviewNeeded": true,',
+    '  "suggestedWeaknessTags": ["罰則", "義務規定と罰則の混同"],',
+    '  "suggestedNextLessons": ["信用失墜行為と罰則トラップ"],',
+    '  "suggestedActions": ["罰則がある義務とない義務を比較する"],',
+    '  "confidence": "中"',
+    "}",
+    "",
+    "【7. 注意事項】",
+    bulletLines(["市販教材や過去問本文を丸写ししない", "勝手に学習データへ反映済みのように書かない", "ユーザーが確認してから反映する前提で提案する"])
+  ].join("\n");
+}
+
+function extractAiSuggestion(responseText) {
+  const text = String(responseText || "");
+  const index = text.indexOf(AI_SUGGESTION_MARKER);
+  if (index < 0) return { parsed: false, suggestionObject: null, rawSuggestionText: "" };
+  return parseAiSuggestionBlock(text.slice(index + AI_SUGGESTION_MARKER.length).trim());
+}
+
+function parseAiSuggestionBlock(blockText) {
+  const raw = String(blockText || "").trim();
+  const start = raw.indexOf("{");
+  const end = raw.lastIndexOf("}");
+  const candidate = start >= 0 && end > start ? raw.slice(start, end + 1) : raw;
+  try {
+    const parsed = JSON.parse(candidate);
+    return { parsed: true, suggestionObject: parsed, rawSuggestionText: raw };
+  } catch (error) {
+    return { parsed: false, suggestionObject: null, rawSuggestionText: raw };
+  }
 }
 
 function buildAiTutorQuestionData(lesson, question) {
@@ -7209,6 +7590,224 @@ async function askAiTutor() {
   }
 }
 
+function generateAiSuggestionPrompt() {
+  const target = buildAiSuggestionTargetData();
+  const promptText = buildAiSuggestionPromptText(target);
+  state.aiSuggestionForm.promptText = promptText;
+  state.aiSuggestionForm.currentAnalysisId = "";
+  state.aiSuggestionForm.apiStatus = "未送信";
+  state.aiSuggestionForm.apiResponseText = "";
+  state.aiSuggestionForm.apiModel = "";
+  state.aiSuggestionForm.apiUsage = {};
+  state.aiSuggestionForm.apiError = "";
+  state.aiSuggestionForm.sentViaApi = false;
+  state.aiSuggestionForm.suggestionParsed = false;
+  state.aiSuggestionForm.suggestionObject = null;
+  state.aiSuggestionForm.rawSuggestionText = "";
+  const promptInput = document.querySelector("#aiSuggestionPromptResult");
+  if (promptInput) promptInput.value = promptText;
+  renderAiSuggestionResponse();
+  return { target, promptText };
+}
+
+async function runAiSuggestion() {
+  state.aiSuggestionForm.memo = document.querySelector("#aiSuggestionMemo")?.value.trim() || "";
+  const { target, promptText } = generateAiSuggestionPrompt();
+  if (!promptText) return;
+  if (!state.aiSettings.enabled || !state.aiSettings.endpointUrl.trim()) {
+    state.aiSuggestionForm.apiStatus = "手動コピー待ち";
+    state.aiSuggestionForm.apiError = "AI API連携を使うには設定画面で中継サーバーURLを設定してください。";
+    saveAiSuggestionAnalysis({ target, sentViaApi: false });
+    renderAiSuggestionView();
+    showToast("手動コピー用プロンプトを生成しました。");
+    return;
+  }
+  state.aiSuggestionForm.sending = true;
+  state.aiSuggestionForm.apiStatus = "送信中";
+  state.aiSuggestionForm.apiResponseText = "";
+  state.aiSuggestionForm.apiModel = "";
+  state.aiSuggestionForm.apiUsage = {};
+  state.aiSuggestionForm.apiError = "";
+  renderAiSuggestionResponse();
+  try {
+    const data = await postAiApiRequest(buildAiSuggestionApiPayload("chat", promptText, target));
+    state.aiSuggestionForm.apiStatus = "応答取得済み";
+    state.aiSuggestionForm.apiResponseText = String(data.text || "");
+    state.aiSuggestionForm.apiModel = String(data.model || "");
+    state.aiSuggestionForm.apiUsage = data.usage && typeof data.usage === "object" ? data.usage : {};
+    state.aiSuggestionForm.apiError = "";
+    state.aiSuggestionForm.sentViaApi = true;
+    const extracted = extractAiSuggestion(state.aiSuggestionForm.apiResponseText);
+    state.aiSuggestionForm.suggestionParsed = extracted.parsed;
+    state.aiSuggestionForm.suggestionObject = extracted.suggestionObject;
+    state.aiSuggestionForm.rawSuggestionText = extracted.rawSuggestionText;
+    saveAiSuggestionAnalysis({ target, sentViaApi: true });
+    saveUnits();
+    render();
+    showToast("AI提案を受け取りました。");
+  } catch (error) {
+    state.aiSuggestionForm.apiStatus = "接続失敗";
+    state.aiSuggestionForm.apiError = error.message || "AI通信に失敗しました。";
+    saveAiSuggestionAnalysis({ target, sentViaApi: true, error: state.aiSuggestionForm.apiError });
+    saveUnits();
+    render();
+  } finally {
+    state.aiSuggestionForm.sending = false;
+    renderAiSuggestionResponse();
+  }
+}
+
+function buildAiSuggestionApiPayload(mode, promptText, target) {
+  return {
+    app: "TSUKAN_YOBIKO",
+    version: APP_VERSION,
+    mode,
+    promptType: "AI添削・弱点提案",
+    targetType: state.aiSuggestionForm.targetType,
+    targetTitle: target?.title || "",
+    prompt: promptText,
+    metadata: {
+      correctionType: state.aiSuggestionForm.suggestionType,
+      targetId: target?.id || state.aiSuggestionForm.targetId,
+      createdAt: new Date().toISOString()
+    }
+  };
+}
+
+function saveAiSuggestionAnalysis({ target = null, sentViaApi = state.aiSuggestionForm.sentViaApi, error = state.aiSuggestionForm.apiError } = {}) {
+  const resolvedTarget = target || buildAiSuggestionTargetData();
+  const values = normalizeAiAnalysis({
+    id: state.aiSuggestionForm.currentAnalysisId || makeAiAnalysisId(),
+    createdAt: new Date().toISOString(),
+    promptType: "AI添削・弱点提案",
+    correctionType: state.aiSuggestionForm.suggestionType,
+    targetType: state.aiSuggestionForm.targetType,
+    targetId: resolvedTarget.id,
+    targetTitle: resolvedTarget.title,
+    promptText: state.aiSuggestionForm.promptText,
+    responseText: state.aiSuggestionForm.apiResponseText,
+    sentViaApi,
+    model: state.aiSuggestionForm.apiModel,
+    usage: state.aiSuggestionForm.apiUsage,
+    error: error || "",
+    resultMemo: "",
+    suggestionParsed: state.aiSuggestionForm.suggestionParsed,
+    suggestionObject: state.aiSuggestionForm.suggestionObject,
+    rawSuggestionText: state.aiSuggestionForm.rawSuggestionText,
+    appliedFields: state.aiSuggestionForm.appliedFields
+  });
+  const existing = state.aiAnalyses.find((item) => item.id === values.id);
+  if (existing) Object.assign(existing, values, { appliedAt: existing.appliedAt, appliedFields: existing.appliedFields });
+  else state.aiAnalyses.unshift(values);
+  state.aiSuggestionForm.currentAnalysisId = values.id;
+  return values;
+}
+
+function showAiSuggestionAnalysis(analysisId) {
+  const item = state.aiAnalyses.find((analysis) => analysis.id === analysisId);
+  if (!item) return;
+  state.aiSuggestionForm.targetType = item.targetType || "自由入力";
+  state.aiSuggestionForm.targetId = item.targetId || "";
+  state.aiSuggestionForm.suggestionType = item.correctionType || "総合診断";
+  state.aiSuggestionForm.memo = item.resultMemo || "";
+  state.aiSuggestionForm.promptText = item.promptText || "";
+  state.aiSuggestionForm.currentAnalysisId = item.id;
+  state.aiSuggestionForm.apiStatus = item.sentViaApi ? (item.error ? "接続失敗" : "応答取得済み") : "手動";
+  state.aiSuggestionForm.apiResponseText = item.responseText || "";
+  state.aiSuggestionForm.apiModel = item.model || "";
+  state.aiSuggestionForm.apiUsage = item.usage || {};
+  state.aiSuggestionForm.apiError = item.error || "";
+  state.aiSuggestionForm.sentViaApi = Boolean(item.sentViaApi);
+  state.aiSuggestionForm.suggestionParsed = Boolean(item.suggestionParsed);
+  state.aiSuggestionForm.suggestionObject = item.suggestionObject || null;
+  state.aiSuggestionForm.rawSuggestionText = item.rawSuggestionText || "";
+  state.aiSuggestionForm.appliedFields = item.appliedFields || [];
+  switchView("ai");
+  renderAiView();
+  document.querySelector("#aiSuggestionParsedView")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function applyCurrentAiSuggestion() {
+  if (!state.aiSuggestionForm.currentAnalysisId) saveAiSuggestionAnalysis();
+  const item = state.aiAnalyses.find((analysis) => analysis.id === state.aiSuggestionForm.currentAnalysisId);
+  if (!item) return;
+  const confirmed = window.confirm("AI提案を学習データに反映します。内容を確認しましたか？");
+  if (!confirmed) return;
+  const suggestion = state.aiSuggestionForm.suggestionObject || item.suggestionObject || {};
+  const applied = collectAiSuggestionApplyFields();
+  const targetType = state.aiSuggestionForm.targetType || item.targetType;
+  const targetId = state.aiSuggestionForm.targetId || item.targetId;
+  if (applied.includes("understanding") || applied.includes("reviewNeeded") || applied.includes("weaknessTags") || applied.includes("nextReview")) {
+    applySuggestionToTarget(targetType, targetId, suggestion, applied);
+  }
+  if (applied.includes("memo")) appendSuggestionMemo(targetType, targetId, suggestion, item.responseText);
+  item.suggestionParsed = Boolean(state.aiSuggestionForm.suggestionObject);
+  item.suggestionObject = state.aiSuggestionForm.suggestionObject;
+  item.rawSuggestionText = state.aiSuggestionForm.rawSuggestionText;
+  item.appliedAt = new Date().toISOString();
+  item.appliedFields = applied;
+  saveUnits();
+  render();
+  showToast("AI提案を反映しました。");
+}
+
+function collectAiSuggestionApplyFields() {
+  return [
+    document.querySelector("#applySuggestionUnderstanding")?.checked ? "understanding" : "",
+    document.querySelector("#applySuggestionReviewNeeded")?.checked ? "reviewNeeded" : "",
+    document.querySelector("#applySuggestionWeaknessTags")?.checked ? "weaknessTags" : "",
+    document.querySelector("#applySuggestionNextReview")?.checked ? "nextReview" : "",
+    document.querySelector("#applySuggestionMemo")?.checked ? "memo" : ""
+  ].filter(Boolean);
+}
+
+function applySuggestionToTarget(targetType, targetId, suggestion, applied) {
+  if (["レッスン確認問題", "レッスン理解度"].includes(targetType)) {
+    const lessonId = targetType === "レッスン確認問題" ? String(targetId || "").split(":")[0] : targetId;
+    const progress = getLessonProgress(lessonId);
+    if (applied.includes("understanding") && CURRICULUM_UNDERSTANDING.includes(suggestion.suggestedUnderstanding)) progress.understanding = suggestion.suggestedUnderstanding;
+    if (applied.includes("reviewNeeded") && typeof suggestion.suggestedReviewNeeded === "boolean") progress.reviewNeeded = suggestion.suggestedReviewNeeded;
+    if (applied.includes("nextReview")) progress.reviewNeeded = true;
+    progress.lastStudiedAt = new Date().toISOString();
+    const lesson = getLessonById(lessonId);
+    const unit = state.units.find((candidate) => candidate.id === lesson?.relatedUnitId);
+    if (unit && applied.includes("weaknessTags")) addWeaknessTagsToUnit(unit, suggestion.suggestedWeaknessTags);
+  }
+  if (targetType === "模試結果") {
+    const result = state.mockExamResults.find((candidate) => candidate.id === targetId);
+    if (result) {
+      if (applied.includes("reviewNeeded") && typeof suggestion.suggestedReviewNeeded === "boolean") result.reviewNeeded = suggestion.suggestedReviewNeeded;
+      if (applied.includes("nextReview")) result.reviewNeeded = true;
+      if (applied.includes("weaknessTags")) result.weaknessTags = uniqueStrings([...result.weaknessTags, ...suggestionList(suggestion.suggestedWeaknessTags)]);
+    }
+  }
+}
+
+function appendSuggestionMemo(targetType, targetId, suggestion, responseText) {
+  const memo = [
+    `[AI提案 ${formatDateTime(new Date().toISOString())}]`,
+    `理解度:${suggestion.suggestedUnderstanding || "未提案"} / 復習:${suggestion.suggestedReviewNeeded === true ? "対象" : suggestion.suggestedReviewNeeded === false ? "対象外" : "未提案"}`,
+    `弱点:${suggestionList(suggestion.suggestedWeaknessTags).join(" / ") || "未提案"}`,
+    `次:${suggestionList(suggestion.suggestedNextLessons).join(" / ") || "未提案"}`,
+    truncateText(responseText || "", 240)
+  ].join("\n");
+  if (targetType === "今日のメニュー") updateTodayPlan((plan) => { plan.memo = [plan.memo, memo].filter(Boolean).join("\n\n"); });
+  if (["レッスン確認問題", "レッスン理解度"].includes(targetType)) {
+    const lessonId = targetType === "レッスン確認問題" ? String(targetId || "").split(":")[0] : targetId;
+    const lesson = getLessonById(lessonId);
+    const unit = state.units.find((candidate) => candidate.id === lesson?.relatedUnitId);
+    if (unit) unit.ai.analysisMemo = [unit.ai.analysisMemo, memo].filter(Boolean).join("\n\n");
+  }
+}
+
+function addWeaknessTagsToUnit(unit, tags) {
+  unit.ai.weaknessTags = uniqueStrings([...(unit.ai.weaknessTags || []), ...suggestionList(tags)]);
+}
+
+function uniqueStrings(values) {
+  return [...new Set(normalizeArray(values).map((value) => String(value).trim()).filter(Boolean))];
+}
+
 function saveAiTutorAnalysis({ target = null, sentViaApi = state.aiTutorForm.sentViaApi, error = state.aiTutorForm.apiError } = {}) {
   const resolvedTarget = target || buildAiTutorTargetData();
   const values = normalizeAiAnalysis({
@@ -7525,6 +8124,27 @@ function openAiForTodayConsult() {
   openAiTutorForTarget("今日のメニュー", "today", "30分復習メニューを作る", "標準", "今日のメニューの優先順位を見直して、30分でやる順番を提案してください。");
 }
 
+function openAiSuggestionForTarget(targetType, targetId = "", suggestionType = "総合診断", memo = "") {
+  state.aiSuggestionForm.targetType = targetType;
+  state.aiSuggestionForm.targetId = targetId || "";
+  state.aiSuggestionForm.suggestionType = suggestionType;
+  state.aiSuggestionForm.memo = memo;
+  state.aiSuggestionForm.promptText = "";
+  state.aiSuggestionForm.currentAnalysisId = "";
+  state.aiSuggestionForm.apiStatus = "未送信";
+  state.aiSuggestionForm.apiResponseText = "";
+  state.aiSuggestionForm.apiModel = "";
+  state.aiSuggestionForm.apiUsage = {};
+  state.aiSuggestionForm.apiError = "";
+  state.aiSuggestionForm.suggestionParsed = false;
+  state.aiSuggestionForm.suggestionObject = null;
+  state.aiSuggestionForm.rawSuggestionText = "";
+  generateAiSuggestionPrompt();
+  switchView("ai");
+  renderAiView();
+  document.querySelector("#aiSuggestionTargetType")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 function toggleTodayCompleted(itemId, checked) {
   const menu = state.todayMenu || generateTodayMenu(getTodayPlan().selectedDuration);
   const item = menu.allItems.find((candidate) => candidate.id === itemId) || menu.recommended.find((candidate) => candidate.id === itemId);
@@ -7630,6 +8250,28 @@ async function copyAiTutorPrompt() {
     saveUnits();
     renderAiTutorHistory();
     showToast("AI講師プロンプトをコピーしました。");
+  } catch (error) {
+    textarea.focus();
+    textarea.select();
+    showToast("コピーできませんでした。選択中の本文を手動でコピーしてください。");
+  }
+}
+
+async function copyAiSuggestionPrompt() {
+  if (!state.aiSuggestionForm.promptText) generateAiSuggestionPrompt();
+  const textarea = document.querySelector("#aiSuggestionPromptResult");
+  const text = textarea.value || state.aiSuggestionForm.promptText;
+  if (!text.trim()) {
+    showToast("コピーするAI添削プロンプトがありません。");
+    return;
+  }
+  try {
+    if (!navigator.clipboard?.writeText) throw new Error("clipboard unavailable");
+    await navigator.clipboard.writeText(text);
+    saveAiSuggestionAnalysis({ sentViaApi: false });
+    saveUnits();
+    renderAiSuggestionHistory();
+    showToast("AI添削プロンプトをコピーしました。");
   } catch (error) {
     textarea.focus();
     textarea.select();
@@ -8807,6 +9449,32 @@ function attachEvents() {
   document.querySelector("#saveAiTutorReviewMemoButton").addEventListener("click", () => setAiTutorFlag("savedAsReviewMemo"));
   document.querySelector("#holdAiTutorWeaknessButton").addEventListener("click", () => setAiTutorFlag("markedAsWeaknessSuggestion"));
   document.querySelector("#markAiTutorNextReviewButton").addEventListener("click", () => setAiTutorFlag("markedForNextReview"));
+  document.querySelector("#aiSuggestionTargetType").addEventListener("change", (event) => {
+    state.aiSuggestionForm.targetType = event.target.value;
+    state.aiSuggestionForm.targetId = "";
+    generateAiSuggestionPrompt();
+    renderAiSuggestionView();
+  });
+  document.querySelector("#aiSuggestionType").addEventListener("change", (event) => {
+    state.aiSuggestionForm.suggestionType = event.target.value;
+    generateAiSuggestionPrompt();
+    renderAiSuggestionView();
+  });
+  document.querySelector("#aiSuggestionTargetSelect").addEventListener("change", (event) => {
+    state.aiSuggestionForm.targetId = event.target.value;
+    generateAiSuggestionPrompt();
+    renderAiSuggestionView();
+  });
+  document.querySelector("#aiSuggestionMemo").addEventListener("input", (event) => {
+    state.aiSuggestionForm.memo = event.target.value;
+  });
+  document.querySelector("#aiSuggestionPromptResult").addEventListener("input", (event) => {
+    state.aiSuggestionForm.promptText = event.target.value;
+  });
+  document.querySelector("#runAiSuggestionButton").addEventListener("click", runAiSuggestion);
+  document.querySelector("#copyAiSuggestionPromptButton").addEventListener("click", copyAiSuggestionPrompt);
+  document.querySelector("#parseAiSuggestionManualResponseButton").addEventListener("click", parseManualAiSuggestionResponse);
+  document.querySelector("#applyAiSuggestionButton").addEventListener("click", applyCurrentAiSuggestion);
   document.querySelector("#analysisAiConsultButton").addEventListener("click", openAiForAnalysisConsult);
   document.querySelector("#todayAiConsultButton").addEventListener("click", openAiForTodayConsult);
   document.querySelector("#saveTodayMemoButton").addEventListener("click", saveTodayMemo);
@@ -8825,6 +9493,15 @@ function attachEvents() {
     if (event.target.closest("[data-open-today]")) {
       switchView("today");
       window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    if (event.target.closest("[data-open-ai-suggestions]")) {
+      switchView("ai");
+      document.querySelector("#aiSuggestionHistoryList")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    if (event.target.closest("[data-ai-suggest-today]")) {
+      openAiSuggestionForTarget("今日のメニュー", "today", "次にやること提案", "今日の未完了項目と弱点から、現実的な順番に最適化してください。");
       return;
     }
     if (event.target.closest("[data-open-learning]")) {
@@ -8924,6 +9601,16 @@ function attachEvents() {
       openAiForMockResult(aiMockButton.dataset.aiMockResult);
       return;
     }
+    const aiSuggestMockTagsButton = event.target.closest("[data-ai-suggest-mock-tags]");
+    if (aiSuggestMockTagsButton) {
+      openAiSuggestionForTarget("模試結果", aiSuggestMockTagsButton.dataset.aiSuggestMockTags, "弱点タグ提案");
+      return;
+    }
+    const aiSuggestMockNextButton = event.target.closest("[data-ai-suggest-mock-next]");
+    if (aiSuggestMockNextButton) {
+      openAiSuggestionForTarget("模試結果", aiSuggestMockNextButton.dataset.aiSuggestMockNext, "次にやること提案");
+      return;
+    }
     const aiMockWrongButton = event.target.closest("[data-ai-mock-wrong]");
     if (aiMockWrongButton) {
       openAiForMockResult(aiMockWrongButton.dataset.aiMockWrong);
@@ -8966,6 +9653,11 @@ function attachEvents() {
     if (wrongLessonAiButton) {
       const [lessonId, questionId] = wrongLessonAiButton.dataset.aiWrongQuestion.split(":");
       openAiForWrongLessonQuestion(lessonId, questionId);
+      return;
+    }
+    const wrongLessonSuggestionButton = event.target.closest("[data-ai-suggest-wrong-question]");
+    if (wrongLessonSuggestionButton) {
+      openAiSuggestionForTarget("レッスン確認問題", wrongLessonSuggestionButton.dataset.aiSuggestWrongQuestion, "弱点タグ提案");
       return;
     }
     const similarLessonAiButton = event.target.closest("[data-ai-similar-question]");
@@ -9039,6 +9731,16 @@ function attachEvents() {
     const showTutorButton = event.target.closest("[data-show-ai-tutor]");
     if (showTutorButton) {
       showAiTutorAnalysis(showTutorButton.dataset.showAiTutor);
+      return;
+    }
+    const showSuggestionButton = event.target.closest("[data-show-ai-suggestion]");
+    if (showSuggestionButton) {
+      showAiSuggestionAnalysis(showSuggestionButton.dataset.showAiSuggestion);
+      return;
+    }
+    const applySuggestionHistoryButton = event.target.closest("[data-apply-ai-suggestion-history]");
+    if (applySuggestionHistoryButton) {
+      showAiSuggestionAnalysis(applySuggestionHistoryButton.dataset.applyAiSuggestionHistory);
       return;
     }
     const repeatTutorButton = event.target.closest("[data-repeat-ai-tutor]");

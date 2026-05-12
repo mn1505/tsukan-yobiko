@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="TSUKAN YOBIKO v1.7 - AI講師モード版">
+    <meta name="description" content="TSUKAN YOBIKO v1.8 - AI自動添削・弱点提案版">
     <meta name="theme-color" content="#1f5f5b">
     <title>TSUKAN YOBIKO</title>
     <link rel="stylesheet" href="style.css">
@@ -15,7 +15,7 @@
           <p class="eyebrow">通関士試験 個人予備校</p>
           <h1>TSUKAN YOBIKO</h1>
         </div>
-        <span class="version-pill">v1.7</span>
+        <span class="version-pill">v1.8</span>
       </header>
 
       <main class="app-main">
@@ -282,7 +282,10 @@
                     <p class="eyebrow">AI Prompt</p>
                     <h3>今日のメニューをAIに相談</h3>
                   </div>
-                  <button id="todayAiConsultButton" class="primary-button" type="button">今日のメニューをAIに相談</button>
+                  <div class="card-actions">
+                    <button id="todayAiConsultButton" class="primary-button" type="button">今日のメニューをAIに相談</button>
+                    <button class="ghost-button" type="button" data-ai-suggest-today>AIに今日の学習を最適化してもらう</button>
+                  </div>
                 </div>
               </section>
             </aside>
@@ -646,6 +649,75 @@
               </div>
             </section>
 
+            <section class="panel ai-suggestion-panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">AI Correction</p>
+                  <h3>AI添削・弱点提案</h3>
+                </div>
+              </div>
+              <div class="ai-suggestion-form">
+                <label>
+                  添削対象
+                  <select id="aiSuggestionTargetType"></select>
+                </label>
+                <label>
+                  添削タイプ
+                  <select id="aiSuggestionType"></select>
+                </label>
+                <label id="aiSuggestionTargetSelectLabel">
+                  対象データ
+                  <select id="aiSuggestionTargetSelect"></select>
+                </label>
+                <label class="field-wide">
+                  自由入力・追加メモ
+                  <textarea id="aiSuggestionMemo" placeholder="自由入力の添削対象、またはAIに追加で伝えたい事情を入力"></textarea>
+                </label>
+                <div id="aiSuggestionModeHint" class="ai-tutor-mode-hint field-wide" aria-live="polite"></div>
+                <div class="form-actions field-wide">
+                  <button id="runAiSuggestionButton" class="primary-button" type="button">AI添削を実行</button>
+                  <button id="copyAiSuggestionPromptButton" class="ghost-button" type="button">手動プロンプトをコピー</button>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel ai-suggestion-result-panel">
+              <div class="panel-heading">
+                <h3>AI提案表示</h3>
+              </div>
+              <div class="ai-suggestion-result">
+                <dl id="aiSuggestionResponseMeta" class="info-list compact"></dl>
+                <h4 class="suggestion-subheading">AI総評</h4>
+                <div id="aiSuggestionAnswerText" class="ai-response-text" aria-live="polite"></div>
+                <label class="field-wide">
+                  手動コピー利用時のAI回答貼り付け
+                  <textarea id="aiSuggestionManualResponse" placeholder="AI API連携OFFの場合は、外部AIの回答をここに貼り付けて解析できます。"></textarea>
+                </label>
+                <div class="form-actions">
+                  <button id="parseAiSuggestionManualResponseButton" class="ghost-button" type="button">貼り付けたAI回答を解析</button>
+                </div>
+                <div id="aiSuggestionParsedView" class="ai-suggestion-cards"></div>
+                <details class="details-panel suggestion-raw-details">
+                  <summary>構造化提案の生データ</summary>
+                  <pre id="aiSuggestionRawBlock" class="raw-suggestion-block"></pre>
+                </details>
+                <div class="apply-options">
+                  <label class="check-card"><input id="applySuggestionUnderstanding" type="checkbox">理解度を反映する</label>
+                  <label class="check-card"><input id="applySuggestionReviewNeeded" type="checkbox">復習対象を反映する</label>
+                  <label class="check-card"><input id="applySuggestionWeaknessTags" type="checkbox">弱点タグを追加する</label>
+                  <label class="check-card"><input id="applySuggestionNextReview" type="checkbox">次回復習候補にする</label>
+                  <label class="check-card"><input id="applySuggestionMemo" type="checkbox" checked>AI提案メモとして保存する</label>
+                </div>
+                <p id="aiSuggestionResponseError" class="form-message" role="status" aria-live="polite"></p>
+                <div class="form-actions">
+                  <button id="applyAiSuggestionButton" class="primary-button" type="button">選択した提案を反映</button>
+                </div>
+              </div>
+              <div class="ai-result">
+                <textarea id="aiSuggestionPromptResult" class="ai-prompt-textarea" aria-label="生成されたAI添削プロンプト"></textarea>
+              </div>
+            </section>
+
             <section class="panel ai-form-panel">
               <div class="panel-heading">
                 <h3>用途別AI相談</h3>
@@ -724,6 +796,11 @@
           <details class="panel details-panel ai-history-panel" open>
             <summary>AI講師履歴</summary>
             <div id="aiTutorHistoryList" class="ai-history-list details-body"></div>
+          </details>
+
+          <details class="panel details-panel ai-history-panel" open>
+            <summary>AI提案履歴</summary>
+            <div id="aiSuggestionHistoryList" class="ai-history-list details-body"></div>
           </details>
         </section>
 
@@ -911,8 +988,8 @@
               </div>
               <dl class="info-list">
                 <div><dt>アプリ名</dt><dd>TSUKAN YOBIKO</dd></div>
-                <div><dt>現在のバージョン</dt><dd>v1.7</dd></div>
-                <div><dt>状態</dt><dd>AI講師モード版</dd></div>
+                <div><dt>現在のバージョン</dt><dd>v1.8</dd></div>
+                <div><dt>状態</dt><dd>AI自動添削・弱点提案版</dd></div>
                 <div><dt>公開前提</dt><dd>GitHub Pagesで公開して使う静的アプリです。</dd></div>
                 <div><dt>保存方式</dt><dd id="storageStatus">確認中</dd></div>
               </dl>
@@ -923,11 +1000,11 @@
                 <h3>今後の予定</h3>
               </div>
               <ul class="note-list">
-                <li>v1.8：AI自動添削・弱点提案</li>
                 <li>v1.9：試験直前モード</li>
                 <li>v2.0：本格予備校版</li>
                 <li>v2.1：PWA対応</li>
-                <li>将来：スマホ・PC間同期</li>
+                <li>v2.2：スマホ・PC間同期検討</li>
+                <li>将来：講義データ外部JSON化</li>
               </ul>
             </section>
 
