@@ -1,4 +1,5 @@
-const APP_VERSION = "v1.4";
+const APP_VERSION = "v1.5";
+const AI_API_TIMEOUT_MS = 30000;
 const STORAGE_KEYS = {
   units: "tsukanYobiko.units",
   version: "tsukanYobiko.version",
@@ -6,6 +7,7 @@ const STORAGE_KEYS = {
   pastExamLogs: "tsukanYobiko.pastExamLogs",
   practicalLogs: "tsukanYobiko.practicalLogs",
   aiAnalyses: "tsukanYobiko.aiAnalyses",
+  aiSettings: "tsukanYobiko.aiSettings",
   studyPlans: "tsukanYobiko.studyPlans",
   curriculumProgress: "tsukanYobiko.curriculumProgress",
   mockExamResults: "tsukanYobiko.mockExamResults"
@@ -1130,6 +1132,13 @@ const state = {
   practicalLogs: [],
   mockExamResults: [],
   aiAnalyses: [],
+  aiSettings: {
+    enabled: false,
+    endpointUrl: "",
+    lastTestedAt: "",
+    lastStatus: "",
+    lastError: ""
+  },
   studyPlans: [],
   curriculumProgress: [],
   todayMenu: null,
@@ -1205,7 +1214,14 @@ const state = {
     targetId: "",
     additionalConditions: "",
     promptText: "",
-    currentAnalysisId: ""
+    currentAnalysisId: "",
+    apiStatus: "未送信",
+    apiResponseText: "",
+    apiModel: "",
+    apiUsage: {},
+    apiError: "",
+    sending: false,
+    highlightSend: false
   },
   mockExam: {
     selectedMode: "light15",
@@ -1498,6 +1514,7 @@ function loadState() {
   state.practicalLogs = normalizeArray(readJson(STORAGE_KEYS.practicalLogs)).map(normalizePracticalLog);
   state.mockExamResults = normalizeArray(readJson(STORAGE_KEYS.mockExamResults)).map(normalizeMockExamResult);
   state.aiAnalyses = normalizeArray(readJson(STORAGE_KEYS.aiAnalyses)).map(normalizeAiAnalysis);
+  state.aiSettings = normalizeAiSettings(readJson(STORAGE_KEYS.aiSettings));
   state.studyPlans = normalizeArray(readJson(STORAGE_KEYS.studyPlans)).map(normalizeStudyPlan);
   state.curriculumProgress = normalizeArray(readJson(STORAGE_KEYS.curriculumProgress)).map(normalizeCurriculumProgress);
   localStorage.setItem(STORAGE_KEYS.version, APP_VERSION);
@@ -1642,13 +1659,33 @@ function normalizeAiAnalysis(item) {
     targetId: "",
     targetTitle: "",
     promptText: "",
+    responseText: "",
     resultMemo: "",
+    sentViaApi: false,
+    model: "",
+    usage: {},
+    error: "",
     ...(item || {})
   };
   if (!normalized.id) normalized.id = makeAiAnalysisId();
   if (!normalized.createdAt) normalized.createdAt = new Date().toISOString();
   if (!normalized.resultMemo) normalized.resultMemo = "";
+  normalized.sentViaApi = Boolean(normalized.sentViaApi);
+  normalized.usage = normalized.usage && typeof normalized.usage === "object" ? normalized.usage : {};
+  normalized.error = String(normalized.error || "");
+  normalized.responseText = String(normalized.responseText || "");
+  normalized.model = String(normalized.model || "");
   return normalized;
+}
+
+function normalizeAiSettings(item) {
+  return {
+    enabled: Boolean(item?.enabled),
+    endpointUrl: String(item?.endpointUrl || ""),
+    lastTestedAt: String(item?.lastTestedAt || ""),
+    lastStatus: String(item?.lastStatus || ""),
+    lastError: String(item?.lastError || "")
+  };
 }
 
 function normalizeStudyPlan(item) {
@@ -1782,9 +1819,21 @@ function saveUnits() {
   localStorage.setItem(STORAGE_KEYS.practicalLogs, JSON.stringify(state.practicalLogs));
   localStorage.setItem(STORAGE_KEYS.mockExamResults, JSON.stringify(state.mockExamResults));
   localStorage.setItem(STORAGE_KEYS.aiAnalyses, JSON.stringify(state.aiAnalyses));
+  localStorage.setItem(STORAGE_KEYS.aiSettings, JSON.stringify(sanitizeAiSettings(state.aiSettings)));
   localStorage.setItem(STORAGE_KEYS.studyPlans, JSON.stringify(state.studyPlans));
   localStorage.setItem(STORAGE_KEYS.curriculumProgress, JSON.stringify(state.curriculumProgress));
   localStorage.setItem(STORAGE_KEYS.version, APP_VERSION);
+}
+
+function sanitizeAiSettings(settings) {
+  const normalized = normalizeAiSettings(settings);
+  return {
+    enabled: normalized.enabled,
+    endpointUrl: normalized.endpointUrl,
+    lastTestedAt: normalized.lastTestedAt,
+    lastStatus: normalized.lastStatus,
+    lastError: normalized.lastError
+  };
 }
 
 function todayString() {
@@ -3531,6 +3580,11 @@ function renderLessonQuestion(lesson, question, index) {
           </dl>
           <p><strong>通常解説：</strong>${escapeHtml(question.explanation)}</p>
           <p class="trap-note"><strong>ミス防止解説：</strong>${escapeHtml(question.trapExplanation)}</p>
+          ${!result.correct ? `
+            <div class="card-actions">
+              <button class="ghost-button" type="button" data-ai-wrong-question="${escapeAttribute(lesson.id)}:${escapeAttribute(question.id)}">この誤答をAIに解説してもらう</button>
+            </div>
+          ` : ""}
         </div>
       ` : ""}
     </article>
@@ -5663,7 +5717,7 @@ function renderMockResultArea(resultId = state.mockExam.lastResultId) {
       <p>${escapeHtml(getMockNextAction(result))}</p>
       <div class="card-actions">
         <button class="primary-button" type="button" data-open-cross-review>横断復習を見る</button>
-        <button class="ghost-button" type="button" data-ai-mock-result="${escapeAttribute(result.id)}">AI相談へ送る</button>
+        <button class="ghost-button" type="button" data-ai-mock-result="${escapeAttribute(result.id)}">この模試結果をAIに分析してもらう</button>
       </div>
     </div>
     <div class="mock-explanations">
@@ -5772,6 +5826,8 @@ function renderAiView() {
   renderAiTargetSelect();
   document.querySelector("#aiAdditionalConditions").value = state.aiForm.additionalConditions;
   document.querySelector("#aiPromptResult").value = state.aiForm.promptText;
+  renderAiResponse();
+  renderAiApiLogSummary();
   renderAiHistory();
 }
 
@@ -5854,6 +5910,10 @@ function renderAiHistory() {
         </div>
         <div class="card-meta">
           <span class="badge">${escapeHtml(item.targetTitle || "対象名なし")}</span>
+          <span class="badge">${item.sentViaApi ? "API送信あり" : "手動"}</span>
+          <span class="badge">${escapeHtml(item.model || "モデルなし")}</span>
+          <span class="badge">${item.responseText ? "AI応答あり" : "AI応答なし"}</span>
+          <span class="badge ${item.error ? "priority" : ""}">${item.error ? "エラーあり" : "エラーなし"}</span>
         </div>
         <p class="muted">${escapeHtml(truncateText(item.promptText, 120) || "プロンプト本文なし")}</p>
         <label>
@@ -5861,13 +5921,55 @@ function renderAiHistory() {
           <textarea data-ai-result-memo="${escapeAttribute(item.id)}" placeholder="ChatGPTなどから返ってきた解析結果を必要に応じて保存">${escapeHtml(item.resultMemo || "")}</textarea>
         </label>
         <div class="card-actions">
-          <button class="ghost-button" type="button" data-show-ai-analysis="${escapeAttribute(item.id)}">再表示</button>
+          <button class="ghost-button" type="button" data-show-ai-analysis="${escapeAttribute(item.id)}">プロンプト再表示</button>
+          <button class="ghost-button" type="button" data-show-ai-response="${escapeAttribute(item.id)}">AI応答再表示</button>
           <button class="primary-button" type="button" data-save-ai-result-memo="${escapeAttribute(item.id)}">メモ保存</button>
           <button class="danger-button" type="button" data-delete-ai-analysis="${escapeAttribute(item.id)}">削除</button>
         </div>
       </article>
     `).join("")
     : `<div class="empty-state"><p class="muted">生成履歴はまだありません。</p></div>`;
+}
+
+function renderAiResponse() {
+  const meta = document.querySelector("#aiResponseMeta");
+  const text = document.querySelector("#aiResponseText");
+  const error = document.querySelector("#aiResponseError");
+  if (!meta || !text || !error) return;
+  meta.innerHTML = `
+    <div><dt>送信状態</dt><dd>${escapeHtml(state.aiForm.apiStatus || "未送信")}</dd></div>
+    <div><dt>使用モデル</dt><dd>${escapeHtml(state.aiForm.apiModel || "未取得")}</dd></div>
+    <div><dt>token使用量</dt><dd>${escapeHtml(formatUsage(state.aiForm.apiUsage))}</dd></div>
+  `;
+  text.textContent = state.aiForm.apiResponseText || "AI応答はまだありません。";
+  error.textContent = state.aiForm.apiError || "";
+  document.querySelector("#sendAiPromptButton")?.classList.toggle("attention", Boolean(state.aiForm.highlightSend && state.aiSettings.enabled));
+  document.querySelector("#sendAiPromptButton")?.toggleAttribute("disabled", Boolean(state.aiForm.sending));
+  document.querySelector("#cancelAiSendButton")?.toggleAttribute("disabled", !state.aiForm.sending);
+}
+
+function renderAiApiLogSummary() {
+  const summary = getAiApiLogSummary();
+  const html = `
+    <div><dt>直近のAPI送信日時</dt><dd>${escapeHtml(formatDateTime(summary.lastSentAt))}</dd></div>
+    <div><dt>成功件数</dt><dd>${summary.successCount}件</dd></div>
+    <div><dt>失敗件数</dt><dd>${summary.failureCount}件</dd></div>
+    <div><dt>最後のエラー</dt><dd>${escapeHtml(summary.lastError || "なし")}</dd></div>
+  `;
+  const settingsHost = document.querySelector("#aiApiLogSummary");
+  if (settingsHost) settingsHost.innerHTML = html;
+}
+
+function getAiApiLogSummary() {
+  const apiItems = state.aiAnalyses.filter((item) => item.sentViaApi);
+  const last = [...apiItems].sort(compareAiAnalyses)[0];
+  const failures = apiItems.filter((item) => item.error);
+  return {
+    lastSentAt: last?.createdAt || "",
+    successCount: apiItems.filter((item) => !item.error).length,
+    failureCount: failures.length,
+    lastError: [...failures].sort(compareAiAnalyses)[0]?.error || ""
+  };
 }
 
 function applyAiQuickAction(kind) {
@@ -5878,7 +5980,7 @@ function applyAiQuickAction(kind) {
   if (kind === "mock") {
     const latest = getLatestMockResult();
     if (latest) {
-      openAiForTarget("総合模試結果", latest.id, "総合学習相談");
+      openAiForMockResult(latest.id);
     } else {
       state.aiForm.promptType = "総合学習相談";
       state.aiForm.targetType = "全体サマリー";
@@ -5901,6 +6003,7 @@ function applyAiQuickAction(kind) {
     state.aiForm.targetId = "";
     state.aiForm.additionalConditions = "弱点タグ上位から、今日30分でやる復習計画と今週の復習計画を作ってください。";
     state.aiForm.promptText = "";
+    prepareAiPromptDraft();
     switchView("ai");
     renderAiView();
     return;
@@ -5935,6 +6038,12 @@ function generateAiPrompt() {
   state.aiAnalyses.unshift(analysis);
   state.aiForm.promptText = promptText;
   state.aiForm.currentAnalysisId = analysis.id;
+  state.aiForm.apiStatus = "未送信";
+  state.aiForm.apiResponseText = "";
+  state.aiForm.apiModel = "";
+  state.aiForm.apiUsage = {};
+  state.aiForm.apiError = "";
+  state.aiForm.highlightSend = Boolean(state.aiSettings.enabled);
   saveUnits();
   render();
   showToast("プロンプトを生成しました。");
@@ -6373,6 +6482,7 @@ function buildTodayPromptSummary() {
     ["完了状況", `${completion.completed}/${completion.total} 完了（${completion.rate}%）`],
     ["今日のおすすめ", menu.recommended.map((item) => `${item.type}:${item.title}（${item.priority}/${item.reason}）`).join("\n")],
     ["未完了項目", incomplete.map((item) => `${item.type}:${item.title}`).join("\n") || "なし"],
+    ["弱点タグ上位", getTopWeaknessTags().join(" / ") || "なし"],
     ["今日のメモ", menu.plan.memo || "未入力"]
   ]);
 }
@@ -6414,6 +6524,15 @@ function emptyText(value) {
   return text || "未入力";
 }
 
+function formatUsage(usage) {
+  if (!usage || typeof usage !== "object") return "未取得";
+  const input = usage.input_tokens ?? usage.inputTokens ?? "";
+  const output = usage.output_tokens ?? usage.outputTokens ?? "";
+  const total = usage.total_tokens ?? usage.totalTokens ?? "";
+  if (input === "" && output === "" && total === "") return "未取得";
+  return `input:${input || 0} / output:${output || 0} / total:${total || 0}`;
+}
+
 function showAiAnalysis(analysisId) {
   const item = state.aiAnalyses.find((analysis) => analysis.id === analysisId);
   if (!item) return;
@@ -6422,9 +6541,21 @@ function showAiAnalysis(analysisId) {
   state.aiForm.targetId = item.targetId || "";
   state.aiForm.promptText = item.promptText || "";
   state.aiForm.currentAnalysisId = item.id;
+  state.aiForm.apiResponseText = item.responseText || "";
+  state.aiForm.apiModel = item.model || "";
+  state.aiForm.apiUsage = item.usage || {};
+  state.aiForm.apiError = item.error || "";
+  state.aiForm.apiStatus = item.sentViaApi ? (item.error ? "接続失敗" : "応答取得済み") : "未送信";
   renderAiView();
   switchView("ai");
   document.querySelector("#aiPromptResult").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function showAiResponseAnalysis(analysisId) {
+  const item = state.aiAnalyses.find((analysis) => analysis.id === analysisId);
+  if (!item) return;
+  showAiAnalysis(analysisId);
+  document.querySelector("#aiResponseText")?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function deleteAiAnalysis(analysisId) {
@@ -6475,12 +6606,243 @@ function saveCurrentAiPromptMemo() {
   showToast("AI解析メモ用の履歴として保存しました。");
 }
 
+function buildAiApiPayload(mode, promptText) {
+  const target = buildAiTargetData();
+  return {
+    app: "TSUKAN_YOBIKO",
+    version: APP_VERSION,
+    mode,
+    promptType: mode === "test" ? "接続テスト" : state.aiForm.promptType,
+    targetType: mode === "test" ? "system" : state.aiForm.targetType,
+    targetTitle: mode === "test" ? "接続テスト" : (target?.title || ""),
+    prompt: promptText,
+    metadata: {
+      subject: resolveAiSubject(target),
+      lessonId: state.aiForm.targetType === "レッスン" ? state.aiForm.targetId : "",
+      unitId: state.aiForm.targetType === "単元" ? state.aiForm.targetId : "",
+      createdAt: new Date().toISOString()
+    }
+  };
+}
+
+function resolveAiSubject(target) {
+  if (state.aiForm.targetType === "レッスン") return getLessonById(state.aiForm.targetId)?.subject || "";
+  if (state.aiForm.targetType === "単元") return state.units.find((unit) => unit.id === state.aiForm.targetId)?.subject || "";
+  return target?.subject || "";
+}
+
+async function postAiApiRequest(payload) {
+  const controller = new AbortController();
+  state.aiAbortController = controller;
+  const timer = window.setTimeout(() => controller.abort(), AI_API_TIMEOUT_MS);
+  try {
+    const response = await fetch(state.aiSettings.endpointUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      signal: controller.signal
+    });
+    let data = null;
+    try {
+      data = await response.json();
+    } catch (error) {
+      throw new Error("中継サーバーからJSON形式の応答を受け取れませんでした。");
+    }
+    if (!response.ok) {
+      throw new Error(data?.error || `HTTP ${response.status}で接続に失敗しました。`);
+    }
+    if (data?.ok === false) {
+      throw new Error(data.error || "中継サーバーがエラーを返しました。");
+    }
+    return data || {};
+  } catch (error) {
+    if (error?.name === "AbortError") {
+      throw new Error("AI通信がタイムアウトしました。中継サーバーの状態やネットワークを確認してください。");
+    }
+    if (error instanceof TypeError) {
+      throw new Error("AI通信に失敗しました。中継サーバーURL、CORS設定、ネットワーク状態を確認してください。");
+    }
+    throw error;
+  } finally {
+    window.clearTimeout(timer);
+    if (state.aiAbortController === controller) state.aiAbortController = null;
+  }
+}
+
+async function sendCurrentAiPromptToApi() {
+  const promptText = document.querySelector("#aiPromptResult").value.trim();
+  state.aiForm.promptText = promptText;
+  if (!promptText) {
+    state.aiForm.apiStatus = "未送信";
+    state.aiForm.apiError = "送信するプロンプトを生成してください。";
+    renderAiResponse();
+    return;
+  }
+  if (!state.aiSettings.enabled) {
+    state.aiForm.apiStatus = "未送信";
+    state.aiForm.apiError = "AI API連携がOFFです。設定画面で有効化してください。";
+    renderAiResponse();
+    return;
+  }
+  if (!state.aiSettings.endpointUrl.trim()) {
+    state.aiForm.apiStatus = "未送信";
+    state.aiForm.apiError = "中継サーバーURLを設定してください。";
+    renderAiResponse();
+    return;
+  }
+  state.aiForm.sending = true;
+  state.aiForm.apiStatus = "送信中";
+  state.aiForm.apiError = "";
+  state.aiForm.apiResponseText = "";
+  state.aiForm.apiModel = "";
+  state.aiForm.apiUsage = {};
+  renderAiResponse();
+  try {
+    const data = await postAiApiRequest(buildAiApiPayload("chat", promptText));
+    state.aiForm.apiStatus = "応答取得済み";
+    state.aiForm.apiResponseText = String(data.text || "");
+    state.aiForm.apiModel = String(data.model || "");
+    state.aiForm.apiUsage = data.usage && typeof data.usage === "object" ? data.usage : {};
+    state.aiForm.apiError = "";
+    state.aiForm.highlightSend = false;
+    upsertCurrentAiApiAnalysis("");
+    saveUnits();
+    render();
+    showToast("AI応答を受け取りました。");
+  } catch (error) {
+    const message = error.message || "AI通信に失敗しました。";
+    state.aiForm.apiStatus = "接続失敗";
+    state.aiForm.apiError = message;
+    upsertCurrentAiApiAnalysis(message);
+    saveUnits();
+    render();
+  } finally {
+    state.aiForm.sending = false;
+    renderAiResponse();
+  }
+}
+
+function cancelAiSend() {
+  if (state.aiAbortController) {
+    state.aiAbortController.abort();
+  }
+}
+
+function upsertCurrentAiApiAnalysis(error) {
+  const target = buildAiTargetData();
+  const existing = state.aiAnalyses.find((analysis) => analysis.id === state.aiForm.currentAnalysisId);
+  const values = {
+    promptType: state.aiForm.promptType,
+    targetType: state.aiForm.targetType,
+    targetId: target?.id || state.aiForm.targetId,
+    targetTitle: target?.title || "",
+    promptText: state.aiForm.promptText,
+    responseText: state.aiForm.apiResponseText,
+    resultMemo: existing?.resultMemo || "",
+    sentViaApi: true,
+    model: state.aiForm.apiModel,
+    usage: state.aiForm.apiUsage,
+    error: error || "",
+    createdAt: new Date().toISOString()
+  };
+  if (existing) {
+    Object.assign(existing, values);
+  } else {
+    const analysis = normalizeAiAnalysis({ id: makeAiAnalysisId(), ...values });
+    state.aiAnalyses.unshift(analysis);
+    state.aiForm.currentAnalysisId = analysis.id;
+  }
+}
+
+function saveCurrentAiResponse() {
+  if (state.aiForm.apiStatus === "未送信") {
+    showToast("API送信後の応答またはエラーだけを保存できます。");
+    return;
+  }
+  if (!state.aiForm.apiResponseText && !state.aiForm.apiError) {
+    showToast("保存するAI応答がありません。");
+    return;
+  }
+  upsertCurrentAiApiAnalysis(state.aiForm.apiError);
+  saveUnits();
+  render();
+  showToast("AI応答を履歴に保存しました。");
+}
+
+async function testAiConnection() {
+  saveAiSettingsFromInputs(false);
+  const result = document.querySelector("#aiConnectionTestResult");
+  if (!state.aiSettings.endpointUrl.trim()) {
+    state.aiSettings.lastStatus = "接続失敗";
+    state.aiSettings.lastError = "中継サーバーURLを設定してください。";
+    if (result) result.textContent = state.aiSettings.lastError;
+    saveUnits();
+    renderSettings();
+    return;
+  }
+  if (result) result.textContent = "接続テスト中です。";
+  try {
+    const payload = {
+      app: "TSUKAN_YOBIKO",
+      version: APP_VERSION,
+      mode: "test",
+      promptType: "接続テスト",
+      targetType: "system",
+      targetTitle: "接続テスト",
+      prompt: "TSUKAN YOBIKOからの接続テストです。短く「接続OK」と返してください。",
+      metadata: { createdAt: new Date().toISOString() }
+    };
+    const data = await postAiApiRequest(payload);
+    state.aiSettings.lastTestedAt = new Date().toISOString();
+    state.aiSettings.lastStatus = "接続OK";
+    state.aiSettings.lastError = "";
+    if (result) result.textContent = `接続OK：${data.text || "応答本文なし"}`;
+    saveUnits();
+    renderSettings();
+  } catch (error) {
+    state.aiSettings.lastTestedAt = new Date().toISOString();
+    state.aiSettings.lastStatus = "接続失敗";
+    state.aiSettings.lastError = error.message || "接続テストに失敗しました。";
+    if (result) result.textContent = state.aiSettings.lastError;
+    saveUnits();
+    renderSettings();
+  }
+}
+
+function saveAiSettingsFromInputs(showMessage = true) {
+  const enabled = document.querySelector("#aiApiEnabled");
+  const endpoint = document.querySelector("#aiEndpointUrl");
+  state.aiSettings.enabled = Boolean(enabled?.checked);
+  state.aiSettings.endpointUrl = String(endpoint?.value || "").trim();
+  saveUnits();
+  renderSettings();
+  renderAiResponse();
+  if (showMessage) showToast("AI API設定を保存しました。");
+}
+
+function prepareAiPromptDraft() {
+  const target = buildAiTargetData();
+  if (!target) return false;
+  const promptText = buildAiPromptText(state.aiForm.promptType, target, state.aiForm.additionalConditions);
+  state.aiForm.promptText = promptText;
+  state.aiForm.currentAnalysisId = "";
+  state.aiForm.apiStatus = "未送信";
+  state.aiForm.apiResponseText = "";
+  state.aiForm.apiModel = "";
+  state.aiForm.apiUsage = {};
+  state.aiForm.apiError = "";
+  state.aiForm.highlightSend = Boolean(state.aiSettings.enabled);
+  return true;
+}
+
 function openAiForTarget(targetType, targetId, promptType) {
   state.aiForm.targetType = targetType;
   state.aiForm.targetId = targetId || "";
   state.aiForm.promptType = promptType;
   state.aiForm.promptText = "";
   state.aiForm.currentAnalysisId = "";
+  state.aiForm.additionalConditions = state.aiForm.additionalConditions || "";
+  prepareAiPromptDraft();
   switchView("ai");
   renderAiView();
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -6544,7 +6906,38 @@ function setLessonUnderstanding(lessonId, understanding) {
 }
 
 function openAiForLesson(lessonId) {
+  state.aiForm.additionalConditions = "このレッスンの制度趣旨、重要ポイント、ひっかけ、確認問題の誤答状況をもとに、試験で同じ論点を落とさないための復習順を提案してください。";
   openAiForTarget("レッスン", lessonId, "単元理解チェック");
+}
+
+function openAiForMockResult(resultId) {
+  state.aiForm.additionalConditions = "科目別正答率、間違えた問題、弱点タグをもとに、次回の模試までに優先すべき復習順と30分メニューを提案してください。";
+  openAiForTarget("総合模試結果", resultId, "弱点抽出");
+}
+
+function openAiForWrongLessonQuestion(lessonId, questionId) {
+  const lesson = getLessonById(lessonId);
+  const question = lesson?.questions.find((item) => item.id === questionId);
+  const result = getLessonQuestionResult(lessonId, questionId);
+  if (!lesson || !question || !result) return;
+  state.aiForm.promptType = "誤答分析";
+  state.aiForm.targetType = "レッスン";
+  state.aiForm.targetId = lessonId;
+  state.aiForm.additionalConditions = [
+    "次の誤答について、なぜこの回答が誤りか、どの知識が不足しているか、本試験で同じミスを防ぐには何を覚えるべきかを説明してください。",
+    "最後に、同じ論点の類似問題を1〜3問作ってください。",
+    "",
+    `間違えた問題文: ${question.question}`,
+    `自分の回答: ${result.userAnswer}`,
+    `正答: ${question.answer}`,
+    `通常解説: ${question.explanation}`,
+    `ミス防止解説: ${question.trapExplanation}`,
+    `弱点タグ: ${question.weaknessTag}`
+  ].join("\n");
+  prepareAiPromptDraft();
+  switchView("ai");
+  renderAiView();
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function openAiForAnalysisConsult() {
@@ -6554,6 +6947,7 @@ function openAiForAnalysisConsult() {
   state.aiForm.additionalConditions = "現在の弱点分析ダッシュボードをもとに、合格可能性を上げるために、今週やるべき学習メニューを優先順位付きで提案してください。";
   state.aiForm.promptText = "";
   state.aiForm.currentAnalysisId = "";
+  prepareAiPromptDraft();
   switchView("ai");
   renderAiView();
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -6566,6 +6960,7 @@ function openAiForTodayConsult() {
   state.aiForm.additionalConditions = "今日の学習メニュー、未完了項目、弱点タグ、過去問・実務の失点状況を踏まえて、次にやるべき学習を30分・1時間のメニューに分けて提案してください。";
   state.aiForm.promptText = "";
   state.aiForm.currentAnalysisId = "";
+  prepareAiPromptDraft();
   switchView("ai");
   renderAiView();
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -7377,6 +7772,19 @@ function renderSettings() {
   const backupJson = JSON.stringify(makeBackupPayload());
   const sizeKb = Math.max(1, Math.ceil(backupJson.length / 1024));
   const last = getLastUpdatedUnit();
+  const aiEnabled = document.querySelector("#aiApiEnabled");
+  const aiEndpoint = document.querySelector("#aiEndpointUrl");
+  if (aiEnabled) aiEnabled.checked = Boolean(state.aiSettings.enabled);
+  if (aiEndpoint && document.activeElement !== aiEndpoint) aiEndpoint.value = state.aiSettings.endpointUrl;
+  const aiStatus = document.querySelector("#aiApiStatusDetails");
+  if (aiStatus) {
+    aiStatus.innerHTML = `
+      <div><dt>接続状態</dt><dd>${escapeHtml(state.aiSettings.lastStatus || "未テスト")}</dd></div>
+      <div><dt>最終接続テスト日時</dt><dd>${escapeHtml(formatDateTime(state.aiSettings.lastTestedAt))}</dd></div>
+      <div><dt>最終エラー</dt><dd>${escapeHtml(state.aiSettings.lastError || "なし")}</dd></div>
+    `;
+  }
+  renderAiApiLogSummary();
   document.querySelector("#storageStatus").textContent = `${state.units.length}単元・${CURRICULUM_LESSONS.length}レッスン・模試${state.mockExamResults.length}件 / 約${sizeKb}KBをこのブラウザに保存`;
   document.querySelector("#storageDetails").innerHTML = `
     <div><dt>保存中の単元数</dt><dd>${state.units.length}単元</dd></div>
@@ -7410,6 +7818,7 @@ function makeBackupPayload() {
     practicalLogs: state.practicalLogs,
     mockExamResults: state.mockExamResults,
     aiAnalyses: state.aiAnalyses,
+    aiSettings: sanitizeAiSettings(state.aiSettings),
     studyPlans: state.studyPlans,
     curriculumProgress: state.curriculumProgress
   };
@@ -7459,6 +7868,7 @@ function importBackup(file) {
       state.practicalLogs = normalizeArray(parsed.practicalLogs).map(normalizePracticalLog);
       state.mockExamResults = normalizeArray(parsed.mockExamResults).map(normalizeMockExamResult);
       state.aiAnalyses = normalizeArray(parsed.aiAnalyses).map(normalizeAiAnalysis);
+      state.aiSettings = normalizeAiSettings(parsed.aiSettings);
       state.studyPlans = normalizeArray(parsed.studyPlans).map(normalizeStudyPlan);
       state.curriculumProgress = normalizeArray(parsed.curriculumProgress).map(normalizeCurriculumProgress);
       closeDetail();
@@ -7746,12 +8156,21 @@ function attachEvents() {
   });
   document.querySelector("#generateAiPromptButton").addEventListener("click", generateAiPrompt);
   document.querySelector("#copyAiPromptButton").addEventListener("click", copyAiPrompt);
+  document.querySelector("#sendAiPromptButton").addEventListener("click", sendCurrentAiPromptToApi);
+  document.querySelector("#cancelAiSendButton").addEventListener("click", cancelAiSend);
   document.querySelector("#clearAiPromptButton").addEventListener("click", () => {
     state.aiForm.promptText = "";
     state.aiForm.currentAnalysisId = "";
+    state.aiForm.apiStatus = "未送信";
+    state.aiForm.apiResponseText = "";
+    state.aiForm.apiModel = "";
+    state.aiForm.apiUsage = {};
+    state.aiForm.apiError = "";
     document.querySelector("#aiPromptResult").value = "";
+    renderAiResponse();
   });
   document.querySelector("#saveAiPromptMemoButton").addEventListener("click", saveCurrentAiPromptMemo);
+  document.querySelector("#saveAiResponseButton").addEventListener("click", saveCurrentAiResponse);
   document.querySelector("#aiPromptResult").addEventListener("input", (event) => {
     state.aiForm.promptText = event.target.value;
   });
@@ -7857,7 +8276,7 @@ function attachEvents() {
     }
     const aiMockButton = event.target.closest("[data-ai-mock-result]");
     if (aiMockButton) {
-      openAiForTarget("総合模試結果", aiMockButton.dataset.aiMockResult, "総合学習相談");
+      openAiForMockResult(aiMockButton.dataset.aiMockResult);
       return;
     }
     const gradeButton = event.target.closest("[data-grade-question]");
@@ -7879,6 +8298,12 @@ function attachEvents() {
     const aiLessonButton = event.target.closest("[data-ai-lesson]");
     if (aiLessonButton) {
       openAiForLesson(aiLessonButton.dataset.aiLesson);
+      return;
+    }
+    const wrongLessonAiButton = event.target.closest("[data-ai-wrong-question]");
+    if (wrongLessonAiButton) {
+      const [lessonId, questionId] = wrongLessonAiButton.dataset.aiWrongQuestion.split(":");
+      openAiForWrongLessonQuestion(lessonId, questionId);
       return;
     }
     const todayLogButton = event.target.closest("[data-open-today-log]");
@@ -7925,6 +8350,11 @@ function attachEvents() {
     const showAiButton = event.target.closest("[data-show-ai-analysis]");
     if (showAiButton) {
       showAiAnalysis(showAiButton.dataset.showAiAnalysis);
+      return;
+    }
+    const showAiResponseButton = event.target.closest("[data-show-ai-response]");
+    if (showAiResponseButton) {
+      showAiResponseAnalysis(showAiResponseButton.dataset.showAiResponse);
       return;
     }
     const saveAiMemoButton = event.target.closest("[data-save-ai-result-memo]");
@@ -8012,6 +8442,8 @@ function attachEvents() {
     showToast("保存しました。");
   });
   document.querySelector("#exportButton").addEventListener("click", exportBackup);
+  document.querySelector("#saveAiSettingsButton").addEventListener("click", () => saveAiSettingsFromInputs(true));
+  document.querySelector("#testAiConnectionButton").addEventListener("click", testAiConnection);
   document.querySelector("#importInput").addEventListener("change", (event) => {
     importBackup(event.target.files[0]);
   });
@@ -8024,6 +8456,7 @@ function attachEvents() {
     localStorage.removeItem(STORAGE_KEYS.practicalLogs);
     localStorage.removeItem(STORAGE_KEYS.mockExamResults);
     localStorage.removeItem(STORAGE_KEYS.aiAnalyses);
+    localStorage.removeItem(STORAGE_KEYS.aiSettings);
     localStorage.removeItem(STORAGE_KEYS.studyPlans);
     localStorage.removeItem(STORAGE_KEYS.curriculumProgress);
     state.units = makeInitialUnits();
@@ -8032,6 +8465,7 @@ function attachEvents() {
     state.practicalLogs = [];
     state.mockExamResults = [];
     state.aiAnalyses = [];
+    state.aiSettings = normalizeAiSettings(null);
     state.studyPlans = [];
     state.curriculumProgress = [];
     state.editingPracticeLogId = null;

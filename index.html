@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="TSUKAN YOBIKO v1.4 - カリキュラム総点検・UI整理版">
+    <meta name="description" content="TSUKAN YOBIKO v1.5 - AI API連携準備版">
     <meta name="theme-color" content="#1f5f5b">
     <title>TSUKAN YOBIKO</title>
     <link rel="stylesheet" href="style.css">
@@ -15,7 +15,7 @@
           <p class="eyebrow">通関士試験 個人予備校</p>
           <h1>TSUKAN YOBIKO</h1>
         </div>
-        <span class="version-pill">v1.4</span>
+        <span class="version-pill">v1.5</span>
       </header>
 
       <main class="app-main">
@@ -630,8 +630,24 @@
                 <textarea id="aiPromptResult" class="ai-prompt-textarea" aria-label="生成されたAI解析プロンプト"></textarea>
                 <div class="form-actions">
                   <button id="copyAiPromptButton" class="primary-button" type="button">コピーする</button>
+                  <button id="sendAiPromptButton" class="primary-button" type="button">AIに送信</button>
+                  <button id="cancelAiSendButton" class="ghost-button" type="button">送信をキャンセル</button>
                   <button id="clearAiPromptButton" class="ghost-button" type="button">生成結果をクリア</button>
                   <button id="saveAiPromptMemoButton" class="ghost-button" type="button">AI解析メモ欄に貼り付けるためのメモとして保存</button>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel ai-response-panel">
+              <div class="panel-heading">
+                <h3>AI応答</h3>
+              </div>
+              <div class="ai-response">
+                <dl id="aiResponseMeta" class="info-list compact"></dl>
+                <div id="aiResponseText" class="ai-response-text" aria-live="polite"></div>
+                <p id="aiResponseError" class="form-message" role="status" aria-live="polite"></p>
+                <div class="form-actions">
+                  <button id="saveAiResponseButton" class="primary-button" type="button">AI応答を保存</button>
                 </div>
               </div>
             </section>
@@ -827,8 +843,8 @@
               </div>
               <dl class="info-list">
                 <div><dt>アプリ名</dt><dd>TSUKAN YOBIKO</dd></div>
-                <div><dt>現在のバージョン</dt><dd>v1.4</dd></div>
-                <div><dt>状態</dt><dd>カリキュラム総点検・UI整理版</dd></div>
+                <div><dt>現在のバージョン</dt><dd>v1.5</dd></div>
+                <div><dt>状態</dt><dd>AI API連携準備版</dd></div>
                 <div><dt>公開前提</dt><dd>GitHub Pagesで公開して使う静的アプリです。</dd></div>
                 <div><dt>保存方式</dt><dd id="storageStatus">確認中</dd></div>
               </dl>
@@ -839,13 +855,48 @@
                 <h3>今後の予定</h3>
               </div>
               <ul class="note-list">
-                <li>v1.5：試験直前モード</li>
-                <li>v1.6：学習データ拡充</li>
-                <li>v1.7：弱点別ドリル強化</li>
-                <li>将来：AI API連携</li>
+                <li>v1.6：AI中継サーバー構築手順・Cloudflare Workers対応</li>
+                <li>v1.7：AI講師モード</li>
+                <li>v1.8：AI自動添削・弱点提案</li>
+                <li>v1.9：試験直前モード</li>
+                <li>v2.0：本格予備校版</li>
                 <li>将来：PWA対応</li>
                 <li>将来：スマホ・PC間同期</li>
               </ul>
+            </section>
+
+            <section class="panel">
+              <div class="panel-heading">
+                <h3>AI API連携設定</h3>
+              </div>
+              <div class="settings-actions">
+                <label class="check-card">
+                  <input id="aiApiEnabled" type="checkbox">
+                  AI API連携：ON/OFF
+                </label>
+                <label>
+                  AI中継サーバーURL
+                  <input id="aiEndpointUrl" type="url" placeholder="https://example-worker.example.workers.dev/api/ai">
+                </label>
+                <div class="form-actions">
+                  <button id="saveAiSettingsButton" class="primary-button" type="button">AI API設定を保存</button>
+                  <button id="testAiConnectionButton" class="ghost-button" type="button">AI接続テスト</button>
+                </div>
+                <dl id="aiApiStatusDetails" class="info-list compact"></dl>
+                <p id="aiConnectionTestResult" class="form-message" role="status" aria-live="polite"></p>
+                <ul class="note-list compact">
+                  <li>OpenAI APIキーはこのアプリには入力・保存しません。</li>
+                  <li>通信先はユーザーが設定したAI中継サーバーURLのみです。</li>
+                  <li>CORS設定やサーバー停止時は接続失敗として表示されます。</li>
+                </ul>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-heading">
+                <h3>API通信履歴</h3>
+              </div>
+              <dl id="aiApiLogSummary" class="info-list"></dl>
             </section>
 
             <section class="panel">
