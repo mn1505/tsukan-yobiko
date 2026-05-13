@@ -1,4 +1,4 @@
-const APP_VERSION = "v1.8";
+const APP_VERSION = "v2.0";
 const AI_API_TIMEOUT_MS = 30000;
 const AI_HEALTH_TIMEOUT_MS = 10000;
 const STORAGE_KEYS = {
@@ -9,6 +9,7 @@ const STORAGE_KEYS = {
   practicalLogs: "tsukanYobiko.practicalLogs",
   aiAnalyses: "tsukanYobiko.aiAnalyses",
   aiSettings: "tsukanYobiko.aiSettings",
+  lessonOverrides: "tsukanYobiko.lessonOverrides",
   studyPlans: "tsukanYobiko.studyPlans",
   curriculumProgress: "tsukanYobiko.curriculumProgress",
   mockExamResults: "tsukanYobiko.mockExamResults"
@@ -1118,6 +1119,10 @@ function makeMockQuestion(id, subject, topic, type, question, choices, answer, e
   return { id, subject, topic, type, question, choices, answer, explanation, trapExplanation, weaknessTag, relatedLessonId };
 }
 
+function makeBankQuestion(id, subject, topic, lessonId, difficulty, questionType, question, choices, answer, explanation, trapExplanation, weaknessTag, sourceType = "original") {
+  return { id, subject, topic, lessonId, difficulty, questionType, question, choices, answer, explanation, trapExplanation, weaknessTag, sourceType };
+}
+
 const MOCK_EXAM_QUESTIONS = [
   makeMockQuestion("mock-q-001", "通関業法", "目的", "single", "通関業法の目的として最も適切なものはどれか。", ["通関手続の適正・迅速な実施を確保し、通関業の健全な発達を図ること", "関税の税率を毎年改定すること", "輸入貨物の国内販売価格を統制すること", "すべての輸出入貨物を国が直接検査すること"], "通関手続の適正・迅速な実施を確保し、通関業の健全な発達を図ること", "通関業法は通関業者を通じて通関手続の適正・迅速な実施を確保する制度です。", "関税率や販売価格の統制を目的とする法律ではありません。", "制度趣旨", "lesson-tsukangyoho-purpose"),
   makeMockQuestion("mock-q-002", "通関業法", "通関業務と関連業務", "single", "通関業務と関連業務の区別として正しいものはどれか。", ["輸出入申告の代理は通関業務に当たる", "貨物保管の手配は常に通関業務に当たる", "関税額の相談は通関業務に一切含まれない", "通関業務と関連業務は法律上まったく区別されない"], "輸出入申告の代理は通関業務に当たる", "申告等の代理・代行は通関業務の中核です。周辺事務は関連業務として整理します。", "貨物手配や一般相談まで全部を通関業務とすると範囲を広げすぎます。", "用語混同", "lesson-tsukangyoho-business-related"),
@@ -1161,6 +1166,24 @@ const MOCK_EXAM_QUESTIONS = [
   makeMockQuestion("mock-q-040", "通関実務", "時間配分", "single", "通関実務の時間配分として最も適切なものはどれか。", ["資料読取、分類、計算、見直しに時間枠を作る", "最初の分類問題に全時間を使う", "計算問題は見直し不要と決める", "迷った問題を無制限に考え続ける"], "資料読取、分類、計算、見直しに時間枠を作る", "実務は満点狙いより、処理順と見直し時間の確保が重要です。", "一問に固執する選択肢読解の癖は横断的な弱点になります。", "時間不足", "lesson-practical-time-management")
 ];
 
+const QUESTION_BANK = [
+  makeBankQuestion("qb-tsukangyoho-001", "通関業法", "信用失墜行為", "lesson-tsukangyoho-credit-penalty-trap", "標準", "trueFalse", "信用失墜行為に当たる場合でも、義務違反と罰則の有無は別に確認する必要がある。", ["正しい", "誤り"], "正しい", "信用失墜行為の対象になることと、直ちに刑罰が科されることは別です。", "対象者に含まれる事実から罰金刑へ飛ばす選択肢に注意します。", "義務規定と罰則の混同"),
+  makeBankQuestion("qb-tsukangyoho-002", "通関業法", "許可と届出", "lesson-tsukangyoho-permission", "基礎", "single", "通関業を始める手続として正しいものはどれか。", ["許可を受ける", "事後届出だけで足りる", "通関士試験合格だけで足りる", "依頼者の承認だけで足りる"], "許可を受ける", "通関業は許可制です。届出や試験合格だけでは開始できません。", "許可・届出・確認を置き換える表現が狙われます。", "許可・承認・届出の混同"),
+  makeBankQuestion("qb-tsukangyoho-003", "通関業法", "通関士の確認", "lesson-tsukangyoho-customs-broker-confirmation", "標準", "trueFalse", "通関士試験に合格していれば、確認を受けなくても当然に通関士として扱われる。", ["正しい", "誤り"], "誤り", "試験合格と通関士としての確認は別です。", "合格という正しい事実から確認不要へ飛ばすのがひっかけです。", "手続要件"),
+  makeBankQuestion("qb-tsukangyoho-004", "通関業法", "名義貸し", "lesson-tsukangyoho-name-lending", "基礎", "trueFalse", "通関業者は、自己の名義を他人に通関業のため使用させてはならない。", ["正しい", "誤り"], "正しい", "名義貸しは許可制を空洞化させるため禁止されます。", "実作業を監督していればよい、という逃げ方に注意します。", "義務規定"),
+  makeBankQuestion("qb-tsukangyoho-005", "通関業法", "監督処分", "lesson-tsukangyoho-supervision", "標準", "single", "監督処分と懲戒処分の区別で最初に見るべきものはどれか。", ["処分の対象者", "貨物価格", "輸入者の住所", "申告書の枚数"], "処分の対象者", "通関業者への監督処分と通関士への懲戒処分は対象を分けます。", "処分という語だけで同じ制度として読むと失点します。", "主体の混同"),
+  makeBankQuestion("qb-kanzeihou-001", "関税法等", "保税地域", "lesson-kanzeihou-bonded-area-types", "基礎", "single", "保税地域の整理として適切なものはどれか。", ["機能に応じて複数の種類がある", "保税蔵置場だけである", "税関の監督と無関係である", "輸入許可後の貨物だけを置く"], "機能に応じて複数の種類がある", "保税地域は蔵置、加工、展示など機能別に整理します。", "一種類だけに単純化する選択肢に注意します。", "保税地域"),
+  makeBankQuestion("qb-kanzeihou-002", "関税法等", "輸入許可", "lesson-kanzeihou-import-permission", "基礎", "trueFalse", "輸入申告をすれば、審査や納税に関係なく直ちに輸入許可があったものと扱われる。", ["正しい", "誤り"], "誤り", "申告と許可は別段階です。必要な手続を経て許可されます。", "申告イコール許可という短絡が狙われます。", "申告と許可の混同"),
+  makeBankQuestion("qb-kanzeihou-003", "関税法等", "修正申告", "lesson-kanzeihou-tax-declaration-correction", "標準", "single", "修正申告の方向性として正しいものはどれか。", ["過少申告を増額方向に正す", "過大申告を減額方向に請求する", "保税運送の到着を確認する", "輸出許可を取り消す"], "過少申告を増額方向に正す", "修正申告は主に税額不足を自ら正す手続です。", "更正の請求との増減方向の逆転に注意します。", "修正申告"),
+  makeBankQuestion("qb-kanzeihou-004", "関税法等", "課税価格", "lesson-kanzeihou-customs-value-principle", "標準", "single", "課税価格の原則として適切な考え方はどれか。", ["現実支払価格を基礎に法定要素を調整する", "国内販売価格だけで決める", "輸入者の希望価格で決める", "税率が低くなる価格を選ぶ"], "現実支払価格を基礎に法定要素を調整する", "課税価格は取引価格方式を中心に、加算・不算入を確認します。", "有利な価格や国内販売価格へ飛ぶ選択肢に注意します。", "課税価格"),
+  makeBankQuestion("qb-kanzeihou-005", "関税法等", "加算税", "lesson-kanzeihou-additional-tax", "標準", "trueFalse", "延滞税と加算税は、名称が違うだけで発生原因も性質も同じである。", ["正しい", "誤り"], "誤り", "延滞税は納付遅れ、加算税は申告誤り等と分けます。", "税の名前が似ていても発生原因を確認します。", "期間・期限"),
+  makeBankQuestion("qb-practical-001", "通関実務", "インボイス読取", "lesson-practical-invoice-reading", "基礎", "single", "インボイス読取で最初に確認すべきものはどれか。", ["取引条件、品名、数量、価格、通貨", "税率だけ", "国内販売価格だけ", "通関業者の許可番号だけ"], "取引条件、品名、数量、価格、通貨", "資料の基本情報を先に整理すると、分類・価格・税額計算が安定します。", "一項目だけを見て処理すると連鎖ミスになります。", "インボイス読取"),
+  makeBankQuestion("qb-practical-002", "通関実務", "品目分類", "lesson-practical-classification", "標準", "single", "品目分類で避けるべき判断はどれか。", ["商品名の印象だけで決める", "材質を確認する", "用途を確認する", "注や通則を確認する"], "商品名の印象だけで決める", "分類は客観的な性状、用途、注、通則を使います。", "販売名や見た目だけで選ばせる問題に注意します。", "品目分類"),
+  makeBankQuestion("qb-practical-003", "通関実務", "課税価格計算", "lesson-practical-customs-value", "標準", "trueFalse", "インボイス価格は、加算要素や不算入要素を確認せず常にそのまま課税価格になる。", ["正しい", "誤り"], "誤り", "現実支払価格を基礎にしつつ、法定の加算・不算入を確認します。", "インボイス価格を無条件に使う処理がひっかけです。", "課税価格計算"),
+  makeBankQuestion("qb-practical-004", "通関実務", "為替換算", "lesson-practical-exchange", "基礎", "trueFalse", "外貨建て価格は、問題文の指定レートや適用時点を確認して円換算する。", ["正しい", "誤り"], "正しい", "試験では指定条件に従って換算します。", "現在の市場レートや感覚で処理しないようにします。", "為替換算"),
+  makeBankQuestion("qb-practical-005", "通関実務", "時間配分", "lesson-practical-time-management", "基礎", "single", "通関実務の時間配分として適切なものはどれか。", ["資料読取、分類、計算、見直しに時間枠を作る", "最初の問題に全時間を使う", "計算問題は見直さない", "迷った問題を無制限に考える"], "資料読取、分類、計算、見直しに時間枠を作る", "実務は処理順と見直し時間の確保が得点に直結します。", "一問に固執する癖が横断的な失点になります。", "時間不足")
+];
+
 const state = {
   units: [],
   practiceLogs: [],
@@ -1168,6 +1191,7 @@ const state = {
   practicalLogs: [],
   mockExamResults: [],
   aiAnalyses: [],
+  lessonOverrides: [],
   aiSettings: {
     enabled: false,
     endpointUrl: "",
@@ -1177,6 +1201,12 @@ const state = {
   },
   studyPlans: [],
   curriculumProgress: [],
+  drill: {
+    mode: "通関業法ドリル",
+    currentQuestionId: "",
+    selectedAnswer: "",
+    graded: false
+  },
   todayMenu: null,
   activeView: "home",
   activeUnitId: null,
@@ -1585,6 +1615,7 @@ function loadState() {
   state.practicalLogs = normalizeArray(readJson(STORAGE_KEYS.practicalLogs)).map(normalizePracticalLog);
   state.mockExamResults = normalizeArray(readJson(STORAGE_KEYS.mockExamResults)).map(normalizeMockExamResult);
   state.aiAnalyses = normalizeArray(readJson(STORAGE_KEYS.aiAnalyses)).map(normalizeAiAnalysis);
+  state.lessonOverrides = normalizeArray(readJson(STORAGE_KEYS.lessonOverrides)).map(normalizeLessonOverride);
   state.aiSettings = normalizeAiSettings(readJson(STORAGE_KEYS.aiSettings));
   state.studyPlans = normalizeArray(readJson(STORAGE_KEYS.studyPlans)).map(normalizeStudyPlan);
   state.curriculumProgress = normalizeArray(readJson(STORAGE_KEYS.curriculumProgress)).map(normalizeCurriculumProgress);
@@ -1773,13 +1804,23 @@ function normalizeAiAnalysis(item) {
   return normalized;
 }
 
+function normalizeLessonOverride(item) {
+  return {
+    id: String(item?.id || `lesson-override-${Date.now()}-${Math.random().toString(16).slice(2)}`),
+    lessonId: String(item?.lessonId || item?.targetLessonId || ""),
+    title: String(item?.title || item?.heading || "追加教材"),
+    body: String(item?.body || item?.content || item?.text || ""),
+    createdAt: String(item?.createdAt || "")
+  };
+}
+
 function normalizeAiSettings(item) {
   return {
-    enabled: Boolean(item?.enabled),
-    endpointUrl: String(item?.endpointUrl || ""),
+    enabled: false,
+    endpointUrl: "",
     lastTestedAt: String(item?.lastTestedAt || ""),
-    lastStatus: String(item?.lastStatus || ""),
-    lastError: String(item?.lastError || "")
+    lastStatus: "v2.0で廃止",
+    lastError: ""
   };
 }
 
@@ -1914,6 +1955,7 @@ function saveUnits() {
   localStorage.setItem(STORAGE_KEYS.practicalLogs, JSON.stringify(state.practicalLogs));
   localStorage.setItem(STORAGE_KEYS.mockExamResults, JSON.stringify(state.mockExamResults));
   localStorage.setItem(STORAGE_KEYS.aiAnalyses, JSON.stringify(state.aiAnalyses));
+  localStorage.setItem(STORAGE_KEYS.lessonOverrides, JSON.stringify(state.lessonOverrides));
   localStorage.setItem(STORAGE_KEYS.aiSettings, JSON.stringify(sanitizeAiSettings(state.aiSettings)));
   localStorage.setItem(STORAGE_KEYS.studyPlans, JSON.stringify(state.studyPlans));
   localStorage.setItem(STORAGE_KEYS.curriculumProgress, JSON.stringify(state.curriculumProgress));
@@ -1921,13 +1963,12 @@ function saveUnits() {
 }
 
 function sanitizeAiSettings(settings) {
-  const normalized = normalizeAiSettings(settings);
   return {
-    enabled: normalized.enabled,
-    endpointUrl: normalized.endpointUrl,
-    lastTestedAt: normalized.lastTestedAt,
-    lastStatus: normalized.lastStatus,
-    lastError: normalized.lastError
+    enabled: false,
+    endpointUrl: "",
+    lastTestedAt: "",
+    lastStatus: "v2.0で廃止",
+    lastError: ""
   };
 }
 
@@ -3100,21 +3141,15 @@ function renderDashboard() {
     .join(" / ");
   document.querySelector("#homePastExamSummary").innerHTML = `
     <dl class="summary-list">
-      <div><dt>総過去問ログ数</dt><dd>${pastStats.total}</dd></div>
-      <div><dt>過去問正答率</dt><dd>${pastStats.accuracy}</dd></div>
-      <div><dt>再演習対象数</dt><dd>${pastStats.retry}</dd></div>
-      <div><dt>最近の過去問学習日</dt><dd>${escapeHtml(recentPastDate || "未記録")}</dd></div>
+      <div><dt>レッスン進捗</dt><dd>${curriculumStats.rate}%</dd></div>
+      <div><dt>完了レッスン</dt><dd>${curriculumStats.completed}/${curriculumStats.total}</dd></div>
+      <div><dt>復習対象</dt><dd>${curriculumStats.reviewCount}件</dd></div>
+      <div><dt>模試回数</dt><dd>${state.mockExamResults.length}回</dd></div>
     </dl>
-    <p class="muted mini-list-title">科目別正答率</p>
+    <p class="muted mini-list-title">科目別ログ正答率</p>
     <p>${escapeHtml(subjectAccuracy || "未記録")}</p>
-    <div class="mini-list">
-      <p class="muted mini-list-title">直近の×過去問ログ</p>
-      ${recentWrongPastLogs.length ? recentWrongPastLogs.map((log) => `
-        <div class="mini-item">
-          <span>${escapeHtml(log.studiedAt || "日付なし")} / ${escapeHtml(log.examRound || "試験回なし")} / ${escapeHtml(log.subject || "未設定")} / ${escapeHtml(log.questionNo || "問題番号なし")}</span>
-          <small>${escapeHtml([log.relatedUnitTitle, log.topic].filter(Boolean).join(" / ") || "論点未設定")}</small>
-        </div>
-      `).join("") : `<p class="muted">×の過去問ログはありません。</p>`}
+    <div class="form-actions">
+      <button class="primary-button" type="button" data-open-analysis>分析を見る</button>
     </div>
   `;
 
@@ -3136,15 +3171,15 @@ function renderDashboard() {
   if (practicalHost) {
     practicalHost.innerHTML = `
       <dl class="summary-list">
-        <div><dt>演習ログ</dt><dd>${practiceStats.total}件</dd></div>
-        <div><dt>過去問ログ</dt><dd>${pastStats.total}件</dd></div>
-        <div><dt>実務ログ</dt><dd>${practicalStats.total}件</dd></div>
-        <div><dt>再演習対象</dt><dd>${practiceStats.retry + pastStats.retry + practicalStats.retry}件</dd></div>
+        <div><dt>問題バンク</dt><dd>${QUESTION_BANK.length}問</dd></div>
+        <div><dt>通関業法</dt><dd>${QUESTION_BANK.filter((question) => question.subject === "通関業法").length}問</dd></div>
+        <div><dt>関税法等</dt><dd>${QUESTION_BANK.filter((question) => question.subject === "関税法等").length}問</dd></div>
+        <div><dt>通関実務</dt><dd>${QUESTION_BANK.filter((question) => question.subject === "通関実務").length}問</dd></div>
       </dl>
       <div class="action-card-list">
-        <button class="record-link" type="button" data-view-shortcut="records"><strong>記録管理</strong><span>単元・演習・過去問・実務ログ</span></button>
-        <button class="record-link" type="button" data-view-shortcut="practice"><strong>演習ログ</strong><span>最近 ${escapeHtml(recentDate || "未記録")}</span></button>
-        <button class="record-link" type="button" data-view-shortcut="practical"><strong>実務ログ</strong><span>最近 ${escapeHtml(recentPracticalDate || "未記録")}</span></button>
+        <button class="record-link" type="button" data-view-shortcut="learning" data-drill-home="通関業法ドリル"><strong>通関業法ドリル</strong><span>義務・許可・罰則</span></button>
+        <button class="record-link" type="button" data-view-shortcut="learning" data-drill-home="関税法等ドリル"><strong>関税法等ドリル</strong><span>保税・納税・課税価格</span></button>
+        <button class="record-link" type="button" data-view-shortcut="learning" data-drill-home="通関実務ドリル"><strong>通関実務ドリル</strong><span>分類・価格・計算</span></button>
       </div>
     `;
   }
@@ -3160,16 +3195,16 @@ function renderDashboard() {
     .slice(0, 3);
   document.querySelector("#homeAiHistory").innerHTML = `
     <dl class="summary-list">
-      <div><dt>直近のAI講師質問</dt><dd>${escapeHtml(recentTutor ? truncateText(recentTutor.userQuestion || recentTutor.targetTitle, 42) : "なし")}</dd></div>
-      <div><dt>AI講師利用回数</dt><dd>${aiTutorItems.length}回</dd></div>
-      <div><dt>未反映のAI提案</dt><dd>${pendingSuggestions}件</dd></div>
-      <div><dt>利用状態</dt><dd>${state.aiSettings.enabled && state.aiSettings.endpointUrl.trim() ? "API送信可能" : "手動コピー"}</dd></div>
-      <div><dt>最新のAI提案</dt><dd>${escapeHtml(latestSuggestion ? truncateText(latestSuggestion.targetTitle || latestSuggestion.correctionType, 42) : "なし")}</dd></div>
+      <div><dt>作成方式</dt><dd>コピー専用</dd></div>
+      <div><dt>外部相談履歴</dt><dd>${state.aiAnalyses.length}件</dd></div>
+      <div><dt>過去のAIメモ</dt><dd>${aiTutorItems.length + aiSuggestions.length}件</dd></div>
+      <div><dt>通信</dt><dd>アプリ内では行いません</dd></div>
+      <div><dt>最新メモ</dt><dd>${escapeHtml(latestSuggestion ? truncateText(latestSuggestion.targetTitle || latestSuggestion.correctionType, 42) : "なし")}</dd></div>
     </dl>
     <div class="action-card-list">
-      <button class="record-link" type="button" data-ai-today-consult><strong>AI講師へ相談する</strong><span>レッスン・確認問題・今日のメニューを質問</span></button>
-      <button class="record-link" type="button" data-open-ai-suggestions><strong>AI提案を確認する</strong><span>未反映 ${pendingSuggestions}件 / AI添削・弱点提案</span></button>
-      <button class="record-link" type="button" data-ai-quick="mock"><strong>最新模試をAI講師に分析</strong><span>${latestMock ? `${latestMock.scoreRate}% ${latestMock.resultLevel}` : "模試未実施"}</span></button>
+      <button class="record-link" type="button" data-ai-today-consult><strong>今日の相談文</strong><span>外部ChatGPTへ貼り付け</span></button>
+      <button class="record-link" type="button" data-ai-quick="lesson"><strong>レッスン質問文</strong><span>講義・確認問題から作成</span></button>
+      <button class="record-link" type="button" data-ai-quick="mock"><strong>模試相談文</strong><span>${latestMock ? `${latestMock.scoreRate}% ${latestMock.resultLevel}` : "模試未実施"}</span></button>
     </div>
     <div class="mini-list">
       ${recentAi.length ? recentAi.slice(0, 2).map((item) => `
@@ -3177,7 +3212,7 @@ function renderDashboard() {
           <span>${escapeHtml(formatDateTime(item.createdAt))} / ${escapeHtml(item.promptType || "種別なし")}</span>
           <small>${escapeHtml(item.targetTitle || "対象なし")}</small>
         </div>
-      `).join("") : `<p class="muted">AIプロンプト生成履歴はまだありません。</p>`}
+      `).join("") : `<p class="muted">相談文の生成履歴はまだありません。</p>`}
     </div>
   `;
 
@@ -3312,9 +3347,9 @@ function renderTodayView() {
     </div>
     <p class="muted">チェックした項目は今日のstudyPlanに保存されます。</p>
     <div class="form-actions">
-      <button class="primary-button" type="button" data-ai-today-consult>今日の勉強をAI講師に相談</button>
-      <button class="ghost-button" type="button" data-ai-today-review>30分メニューを作り直す</button>
-      <button class="ghost-button" type="button" data-ai-today-priority>未完了項目の優先順位を聞く</button>
+      <button class="primary-button" type="button" data-ai-today-consult>今日の相談文を作る</button>
+      <button class="ghost-button" type="button" data-ai-today-review>30分メニュー相談文</button>
+      <button class="ghost-button" type="button" data-ai-today-priority>優先順位相談文</button>
     </div>
   `;
   document.querySelector("#todayMemo").value = plan.memo || "";
@@ -3344,7 +3379,7 @@ function todayMenuCard(item, compact = false) {
         ${item.relatedLogId ? `<button class="ghost-button" type="button" data-open-today-log="${escapeAttribute(item.type)}:${escapeAttribute(item.relatedLogId)}">ログを開く</button>` : ""}
         ${item.mockMode ? `<button class="primary-button" type="button" data-start-mock="${escapeAttribute(item.mockMode)}">開始</button>` : ""}
         ${item.relatedMockResultId ? `<button class="ghost-button" type="button" data-show-mock-result="${escapeAttribute(item.relatedMockResultId)}">模試詳細</button>` : ""}
-        <button class="ghost-button" type="button" data-ai-today-consult>AI講師に相談</button>
+        <button class="ghost-button" type="button" data-ai-today-consult>相談文を作る</button>
       </div>
     </article>
   `;
@@ -3428,6 +3463,114 @@ function renderLearningView() {
       </button>
     `).join("")
     : `<p class="muted">復習対象レッスンはありません。</p>`;
+  renderDrillView();
+}
+
+function renderDrillView() {
+  const host = document.querySelector("#drillArea");
+  if (!host) return;
+  const modes = ["通関業法ドリル", "関税法等ドリル", "通関実務ドリル", "弱点タグ別ドリル", "ひっかけ問題ドリル"];
+  const questions = getDrillQuestions(state.drill.mode);
+  const current = questions.find((question) => question.id === state.drill.currentQuestionId) || questions[0];
+  if (current && state.drill.currentQuestionId !== current.id) {
+    state.drill.currentQuestionId = current.id;
+    state.drill.selectedAnswer = "";
+    state.drill.graded = false;
+  }
+  host.innerHTML = `
+    <div class="drill-controls">
+      ${modes.map((mode) => `<button class="duration-button ${state.drill.mode === mode ? "is-active" : ""}" type="button" data-drill-mode="${escapeAttribute(mode)}">${escapeHtml(mode)}</button>`).join("")}
+    </div>
+    ${current ? renderDrillQuestion(current, questions) : `<div class="empty-state"><p class="muted">この条件のドリル問題はまだありません。</p></div>`}
+  `;
+}
+
+function getDrillQuestions(mode) {
+  if (mode === "通関業法ドリル") return QUESTION_BANK.filter((question) => question.subject === "通関業法");
+  if (mode === "関税法等ドリル") return QUESTION_BANK.filter((question) => question.subject === "関税法等");
+  if (mode === "通関実務ドリル") return QUESTION_BANK.filter((question) => question.subject === "通関実務");
+  if (mode === "弱点タグ別ドリル") {
+    const tags = getTopWeaknessTags();
+    const matched = tags.length ? QUESTION_BANK.filter((question) => tags.some((tag) => question.weaknessTag.includes(tag) || tag.includes(question.weaknessTag))) : [];
+    return matched.length ? matched : QUESTION_BANK;
+  }
+  if (mode === "ひっかけ問題ドリル") return QUESTION_BANK.filter((question) => question.trapExplanation);
+  return QUESTION_BANK;
+}
+
+function renderDrillQuestion(question, questions) {
+  const index = questions.findIndex((item) => item.id === question.id);
+  const selected = state.drill.selectedAnswer;
+  const isCorrect = selected && selected === question.answer;
+  return `
+    <article class="drill-card">
+      <div class="card-meta">
+        <span class="badge">${escapeHtml(question.subject)}</span>
+        <span class="badge">${escapeHtml(question.topic)}</span>
+        <span class="badge">${escapeHtml(question.difficulty)}</span>
+        <span class="badge">${escapeHtml(question.weaknessTag)}</span>
+      </div>
+      <h4>問${index + 1} / ${questions.length}</h4>
+      <p class="drill-question">${escapeHtml(question.question)}</p>
+      <div class="drill-choices">
+        ${question.choices.map((choice) => `
+          <label class="check-card">
+            <input type="radio" name="drill-answer" value="${escapeAttribute(choice)}" ${selected === choice ? "checked" : ""}>
+            ${escapeHtml(choice)}
+          </label>
+        `).join("")}
+      </div>
+      <div class="form-actions">
+        <button class="primary-button" type="button" data-grade-drill>採点</button>
+        <button class="ghost-button" type="button" data-next-drill>次の問題</button>
+        <button class="ghost-button" type="button" data-open-lesson="${escapeAttribute(question.lessonId)}">関連レッスン</button>
+      </div>
+      ${state.drill.graded ? `
+        <div class="drill-result ${isCorrect ? "is-correct" : "is-wrong"}">
+          <strong>${isCorrect ? "正解" : "不正解"}</strong>
+          <dl class="review-facts compact">
+            <div><dt>あなたの回答</dt><dd>${escapeHtml(selected || "未回答")}</dd></div>
+            <div><dt>正答</dt><dd>${escapeHtml(question.answer)}</dd></div>
+            <div><dt>弱点タグ</dt><dd>${escapeHtml(question.weaknessTag)}</dd></div>
+          </dl>
+          <h4>解説</h4>
+          <p>${escapeHtml(question.explanation)}</p>
+          <h4>ひっかけ解説</h4>
+          <p>${escapeHtml(question.trapExplanation)}</p>
+        </div>
+      ` : ""}
+    </article>
+  `;
+}
+
+function setDrillMode(mode) {
+  state.drill.mode = mode;
+  state.drill.currentQuestionId = "";
+  state.drill.selectedAnswer = "";
+  state.drill.graded = false;
+  renderDrillView();
+}
+
+function gradeCurrentDrill() {
+  const selected = document.querySelector('input[name="drill-answer"]:checked')?.value || "";
+  if (!selected) {
+    showToast("回答を選択してください。");
+    return;
+  }
+  state.drill.selectedAnswer = selected;
+  state.drill.graded = true;
+  renderDrillView();
+}
+
+function moveNextDrill() {
+  const questions = getDrillQuestions(state.drill.mode);
+  if (!questions.length) return;
+  const index = questions.findIndex((question) => question.id === state.drill.currentQuestionId);
+  const next = questions[(index + 1 + questions.length) % questions.length];
+  state.drill.currentQuestionId = next.id;
+  state.drill.selectedAnswer = "";
+  state.drill.graded = false;
+  renderDrillView();
 }
 
 function renderLessonFilters() {
@@ -3568,7 +3711,7 @@ function renderLessonDetail() {
             <div class="form-actions">
               <button class="primary-button" type="button" data-complete-lesson="${escapeAttribute(lesson.id)}">レッスン完了</button>
               <button class="ghost-button" type="button" data-review-lesson="${escapeAttribute(lesson.id)}">復習に回す</button>
-              <button class="ghost-button" type="button" data-ai-lesson="${escapeAttribute(lesson.id)}">このレッスンをAI講師に質問</button>
+              <button class="ghost-button" type="button" data-ai-lesson="${escapeAttribute(lesson.id)}">このレッスンの相談文を作る</button>
               ${nextLesson ? `<button class="ghost-button" type="button" data-open-lesson="${escapeAttribute(nextLesson.id)}">次のレッスンへ進む</button>` : ""}
             </div>
           </div>
@@ -3584,9 +3727,10 @@ function renderLessonDetail() {
           <p>${escapeHtml(lesson.goal)}</p>
           <h4>講義</h4>
           ${lesson.lecture.split("\n").filter(Boolean).map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join("")}
+          ${renderLessonOverrides(lesson.id)}
           <div class="ai-tutor-inline-actions">
-            <button class="primary-button" type="button" data-ai-lesson="${escapeAttribute(lesson.id)}">このレッスンをAI講師に質問</button>
-            <button class="ghost-button" type="button" data-ai-lesson-trap="${escapeAttribute(lesson.id)}">このひっかけをAIに説明してもらう</button>
+            <button class="primary-button" type="button" data-ai-lesson="${escapeAttribute(lesson.id)}">このレッスンの相談文を作る</button>
+            <button class="ghost-button" type="button" data-ai-lesson-trap="${escapeAttribute(lesson.id)}">ひっかけ相談文を作る</button>
           </div>
         </section>
         ${renderLessonListSection("重要ポイント", lesson.keyPoints, "key-point-list")}
@@ -3620,11 +3764,28 @@ function renderLessonDetail() {
           <div class="form-actions">
             <button class="primary-button" type="button" data-complete-lesson="${escapeAttribute(lesson.id)}">レッスン完了</button>
             <button class="ghost-button" type="button" data-review-lesson="${escapeAttribute(lesson.id)}">復習に回す</button>
-            <button class="ghost-button" type="button" data-ai-lesson="${escapeAttribute(lesson.id)}">レッスン完了前にAI講師へ質問</button>
+            <button class="ghost-button" type="button" data-ai-lesson="${escapeAttribute(lesson.id)}">レッスン完了前の相談文を作る</button>
             ${nextLesson ? `<button class="primary-button" type="button" data-open-lesson="${escapeAttribute(nextLesson.id)}">次のレッスンへ進む</button>` : ""}
           </div>
         </section>
       </div>
+    </div>
+  `;
+}
+
+function renderLessonOverrides(lessonId) {
+  const items = state.lessonOverrides.filter((item) => item.lessonId === lessonId && item.body.trim());
+  if (!items.length) return "";
+  return `
+    <div class="lesson-extra-material">
+      <h4>追加教材</h4>
+      ${items.map((item) => `
+        <article class="mini-item">
+          <span>${escapeHtml(item.title || "追加教材")}</span>
+          <small>${escapeHtml(item.createdAt ? formatDateTime(item.createdAt) : "保存済み")}</small>
+          <p>${escapeHtml(item.body)}</p>
+        </article>
+      `).join("")}
     </div>
   `;
 }
@@ -3702,7 +3863,7 @@ function renderLessonQuestion(lesson, question, index) {
           <p class="trap-note"><strong>ミス防止解説：</strong>${escapeHtml(question.trapExplanation)}</p>
           ${!result.correct ? `
             <div class="card-actions ai-tutor-inline-actions">
-              <button class="ghost-button" type="button" data-ai-wrong-question="${escapeAttribute(lesson.id)}:${escapeAttribute(question.id)}">なぜ間違えたかAI講師に聞く</button>
+              <button class="ghost-button" type="button" data-ai-wrong-question="${escapeAttribute(lesson.id)}:${escapeAttribute(question.id)}">誤答相談文を作る</button>
               <button class="primary-button" type="button" data-ai-suggest-wrong-question="${escapeAttribute(lesson.id)}:${escapeAttribute(question.id)}">AIに弱点を判定してもらう</button>
               <button class="ghost-button" type="button" data-ai-similar-question="${escapeAttribute(lesson.id)}:${escapeAttribute(question.id)}">同じ論点の類似問題を作る</button>
               <button class="ghost-button" type="button" data-ai-trap-question="${escapeAttribute(lesson.id)}:${escapeAttribute(question.id)}">本試験でのひっかけを確認する</button>
@@ -3749,6 +3910,7 @@ function renderFilters() {
 
 function fillSelect(selector, options, selected) {
   const element = document.querySelector(selector);
+  if (!element) return;
   element.innerHTML = options.map((option) => `<option value="${escapeHtml(option)}">${escapeHtml(option)}</option>`).join("");
   element.value = selected;
 }
@@ -4994,7 +5156,7 @@ function renderAnalysisOverall(analysis) {
     ["最新模試正答率", summary.latestMockRate === null ? "未実施" : `${summary.latestMockRate}%`],
     ["再演習対象数", summary.retryCount],
     ["弱点タグ総数", summary.weaknessTotal],
-    ["AI解析履歴数", summary.aiCount],
+    ["過去AIメモ・相談文数", summary.aiCount],
     ["今日メニュー反映危険単元数", todayUnitIds.size],
     ["今日メニュー内の過去問・実務ログ数", todayLogCount]
   ];
@@ -5005,7 +5167,7 @@ function renderAnalysisOverall(analysis) {
         <strong>${escapeHtml(summary.risk.label)}</strong>
         ${summary.risk.dataShortage ? `<span class="data-note">データ不足</span>` : ""}
       </div>
-      <button class="ghost-button" type="button" data-analysis-ai-consult>AIに相談</button>
+      <button class="ghost-button" type="button" data-analysis-ai-consult>相談文を作る</button>
     </div>
     <div class="analysis-stat-grid">
       ${rows.map(([label, value]) => `
@@ -5099,7 +5261,7 @@ function renderWeaknessRanking(items) {
               <div><dt>関連実務ログ数</dt><dd>${item.practicalLogCount}</dd></div>
             </dl>
             <div class="card-actions">
-              <button class="ghost-button" type="button" data-ai-weakness-tag="${escapeAttribute(item.tag)}">この弱点をAI講師に相談</button>
+              <button class="ghost-button" type="button" data-ai-weakness-tag="${escapeAttribute(item.tag)}">この弱点の相談文を作る</button>
             </div>
           </div>
         </article>
@@ -5251,28 +5413,28 @@ function renderAiUsage(usage) {
   return `
     <div class="analysis-card-grid two-col">
       <article class="analysis-card">
-        <h4>AI活用集計</h4>
+        <h4>過去AIメモ・相談文集計</h4>
         <dl class="analysis-facts">
-          <div><dt>AIプロンプト生成数</dt><dd>${usage.total}</dd></div>
-          <div><dt>プロンプト種別別件数</dt><dd>${escapeHtml(formatGroupCounts(usage.promptTypes))}</dd></div>
+          <div><dt>相談文・メモ数</dt><dd>${usage.total}</dd></div>
+          <div><dt>種別別件数</dt><dd>${escapeHtml(formatGroupCounts(usage.promptTypes))}</dd></div>
           <div><dt>対象種別別件数</dt><dd>${escapeHtml(formatGroupCounts(usage.targetTypes))}</dd></div>
-          <div><dt>AI返答メモあり件数</dt><dd>${usage.resultMemoCount}</dd></div>
-          <div><dt>直近のAI利用日</dt><dd>${escapeHtml(formatDateTime(usage.recentDate))}</dd></div>
-          <div><dt>AI提案件数</dt><dd>${usage.suggestionTotal}</dd></div>
+          <div><dt>外部回答メモあり件数</dt><dd>${usage.resultMemoCount}</dd></div>
+          <div><dt>直近の保存日</dt><dd>${escapeHtml(formatDateTime(usage.recentDate))}</dd></div>
+          <div><dt>過去提案件数</dt><dd>${usage.suggestionTotal}</dd></div>
           <div><dt>未反映提案件数</dt><dd>${usage.suggestionPending}</dd></div>
           <div><dt>反映済み提案件数</dt><dd>${usage.suggestionApplied}</dd></div>
           <div><dt>よく提案される弱点タグ</dt><dd>${escapeHtml(usage.suggestionWeaknessTags.map((item) => `${item.label}(${item.count})`).join(" / ") || "なし")}</dd></div>
-          <div><dt>AIがよく提案する次レッスン</dt><dd>${escapeHtml(usage.suggestionNextLessons.map((item) => `${item.label}(${item.count})`).join(" / ") || "なし")}</dd></div>
+          <div><dt>よく提案された次レッスン</dt><dd>${escapeHtml(usage.suggestionNextLessons.map((item) => `${item.label}(${item.count})`).join(" / ") || "なし")}</dd></div>
         </dl>
       </article>
       <article class="analysis-card">
-        <h4>直近のAI履歴3件</h4>
+        <h4>直近の履歴3件</h4>
         ${usage.recentItems.length ? usage.recentItems.map((item) => `
           <div class="mini-item">
             <span>${escapeHtml(formatDateTime(item.createdAt))} / ${escapeHtml(item.promptType || "種別なし")}</span>
             <small>${escapeHtml(item.targetTitle || "対象なし")}</small>
           </div>
-        `).join("") : `<p class="muted">AI履歴はまだありません。</p>`}
+        `).join("") : `<p class="muted">履歴はまだありません。</p>`}
       </article>
     </div>
   `;
@@ -5853,7 +6015,7 @@ function renderMockResultArea(resultId = state.mockExam.lastResultId) {
       <p>${escapeHtml(getMockNextAction(result))}</p>
       <div class="card-actions">
         <button class="primary-button" type="button" data-open-cross-review>横断復習を見る</button>
-        <button class="ghost-button" type="button" data-ai-mock-result="${escapeAttribute(result.id)}">この模試結果をAI講師に分析してもらう</button>
+        <button class="ghost-button" type="button" data-ai-mock-result="${escapeAttribute(result.id)}">この模試結果の相談文を作る</button>
         <button class="primary-button" type="button" data-ai-suggest-mock-tags="${escapeAttribute(result.id)}">AIに弱点タグを提案してもらう</button>
         <button class="ghost-button" type="button" data-ai-suggest-mock-next="${escapeAttribute(result.id)}">AIに次の復習順を作ってもらう</button>
         <button class="ghost-button" type="button" data-ai-mock-wrong="${escapeAttribute(result.id)}">間違えた問題だけAI解説</button>
@@ -5919,7 +6081,7 @@ function renderMockHistory() {
       </dl>
       <div class="card-actions">
         <button class="ghost-button" type="button" data-show-mock-result="${escapeAttribute(result.id)}">詳細</button>
-        <button class="ghost-button" type="button" data-ai-mock-result="${escapeAttribute(result.id)}">AI講師に相談</button>
+        <button class="ghost-button" type="button" data-ai-mock-result="${escapeAttribute(result.id)}">相談文を作る</button>
         <button class="danger-button" type="button" data-delete-mock-result="${escapeAttribute(result.id)}">削除</button>
       </div>
     </article>
@@ -6284,25 +6446,25 @@ function renderAiHistory() {
         </div>
         <div class="card-meta">
           <span class="badge">${escapeHtml(item.targetTitle || "対象名なし")}</span>
-          <span class="badge">${item.sentViaApi ? "API送信あり" : "手動"}</span>
-          <span class="badge">${escapeHtml(item.model || "モデルなし")}</span>
-          <span class="badge">${item.responseText ? "AI応答あり" : "AI応答なし"}</span>
+          <span class="badge">${item.sentViaApi ? "旧版送信履歴" : "コピー用"}</span>
+          <span class="badge">${escapeHtml(item.model || "ローカル保存")}</span>
+          <span class="badge">${item.responseText ? "外部回答メモあり" : "外部回答メモなし"}</span>
           <span class="badge ${item.error ? "priority" : ""}">${item.error ? "エラーあり" : "エラーなし"}</span>
         </div>
         <p class="muted">${escapeHtml(truncateText(item.promptText, 120) || "プロンプト本文なし")}</p>
         <label>
-          AI返答メモ
+          外部回答メモ
           <textarea data-ai-result-memo="${escapeAttribute(item.id)}" placeholder="ChatGPTなどから返ってきた解析結果を必要に応じて保存">${escapeHtml(item.resultMemo || "")}</textarea>
         </label>
         <div class="card-actions">
           <button class="ghost-button" type="button" data-show-ai-analysis="${escapeAttribute(item.id)}">プロンプト再表示</button>
-          <button class="ghost-button" type="button" data-show-ai-response="${escapeAttribute(item.id)}">AI応答再表示</button>
+          <button class="ghost-button" type="button" data-show-ai-response="${escapeAttribute(item.id)}">外部回答メモ再表示</button>
           <button class="primary-button" type="button" data-save-ai-result-memo="${escapeAttribute(item.id)}">メモ保存</button>
           <button class="danger-button" type="button" data-delete-ai-analysis="${escapeAttribute(item.id)}">削除</button>
         </div>
       </article>
     `).join("")
-    : `<div class="empty-state"><p class="muted">生成履歴はまだありません。</p></div>`;
+    : `<div class="empty-state"><p class="muted">相談文履歴はまだありません。</p></div>`;
 }
 
 function renderAiTutorHistory() {
@@ -7385,41 +7547,7 @@ function resolveAiSubject(target) {
 }
 
 async function postAiApiRequest(payload) {
-  const controller = new AbortController();
-  state.aiAbortController = controller;
-  const timer = window.setTimeout(() => controller.abort(), AI_API_TIMEOUT_MS);
-  try {
-    const response = await fetch(state.aiSettings.endpointUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-      signal: controller.signal
-    });
-    let data = null;
-    try {
-      data = await response.json();
-    } catch (error) {
-      throw new Error("中継サーバーからJSON形式の応答を受け取れませんでした。");
-    }
-    if (!response.ok) {
-      throw new Error(data?.error || `HTTP ${response.status}で接続に失敗しました。`);
-    }
-    if (data?.ok === false) {
-      throw new Error(data.error || "中継サーバーがエラーを返しました。");
-    }
-    return data || {};
-  } catch (error) {
-    if (error?.name === "AbortError") {
-      throw new Error("AI通信がタイムアウトしました。中継サーバーの状態やネットワークを確認してください。");
-    }
-    if (error instanceof TypeError) {
-      throw new Error(buildAiConnectionHint("AI通信に失敗しました。"));
-    }
-    throw error;
-  } finally {
-    window.clearTimeout(timer);
-    if (state.aiAbortController === controller) state.aiAbortController = null;
-  }
+  throw new Error("v2.0ではアプリ内通信を行いません。相談文をコピーして外部ChatGPTに貼り付けてください。");
 }
 
 function buildAiConnectionHint(prefix) {
@@ -7446,52 +7574,12 @@ function inferAiHealthUrl(endpointUrl) {
 }
 
 async function checkAiWorkerHealth() {
-  saveAiSettingsFromInputs(false);
   const result = document.querySelector("#aiConnectionTestResult");
-  if (!state.aiSettings.endpointUrl.trim()) {
-    state.aiSettings.lastStatus = "接続失敗";
-    state.aiSettings.lastError = "中継サーバーURLを設定してください。";
-    if (result) result.textContent = state.aiSettings.lastError;
-    saveUnits();
-    renderSettings();
-    return;
-  }
-  const healthUrl = inferAiHealthUrl(state.aiSettings.endpointUrl);
-  if (!healthUrl) {
-    state.aiSettings.lastStatus = "接続失敗";
-    state.aiSettings.lastError = "Worker URLを読み取れませんでした。/api/ai まで含むURLを入力してください。";
-    if (result) result.textContent = state.aiSettings.lastError;
-    saveUnits();
-    renderSettings();
-    return;
-  }
-  if (result) result.textContent = "/health を確認中です。";
-  const controller = new AbortController();
-  const timer = window.setTimeout(() => controller.abort(), AI_HEALTH_TIMEOUT_MS);
-  try {
-    const response = await fetch(healthUrl, { method: "GET", signal: controller.signal });
-    const data = await response.json();
-    if (!response.ok || data?.ok === false) {
-      throw new Error(data?.error || `HTTP ${response.status}でhealth checkに失敗しました。`);
-    }
-    state.aiSettings.lastTestedAt = new Date().toISOString();
-    state.aiSettings.lastStatus = "Health OK";
-    state.aiSettings.lastError = "";
-    if (result) result.textContent = `Health OK：${data.status || "healthy"}`;
-    saveUnits();
-    renderSettings();
-  } catch (error) {
-    state.aiSettings.lastTestedAt = new Date().toISOString();
-    state.aiSettings.lastStatus = "接続失敗";
-    state.aiSettings.lastError = error?.name === "AbortError"
-      ? "health checkがタイムアウトしました。Worker URLを確認してください。"
-      : buildAiConnectionHint(error.message || "health checkに失敗しました。");
-    if (result) result.textContent = state.aiSettings.lastError;
-    saveUnits();
-    renderSettings();
-  } finally {
-    window.clearTimeout(timer);
-  }
+  state.aiSettings.lastStatus = "v2.0で廃止";
+  state.aiSettings.lastError = "";
+  if (result) result.textContent = "v2.0ではアプリ内通信を行いません。";
+  saveUnits();
+  renderSettings();
 }
 
 async function sendCurrentAiPromptToApi() {
@@ -7499,95 +7587,25 @@ async function sendCurrentAiPromptToApi() {
   state.aiForm.promptText = promptText;
   if (!promptText) {
     state.aiForm.apiStatus = "未送信";
-    state.aiForm.apiError = "送信するプロンプトを生成してください。";
+    state.aiForm.apiError = "コピーする相談文を生成してください。";
     renderAiResponse();
     return;
   }
-  if (!state.aiSettings.enabled) {
-    state.aiForm.apiStatus = "未送信";
-    state.aiForm.apiError = "AI API連携がOFFです。設定画面で有効化してください。";
-    renderAiResponse();
-    return;
-  }
-  if (!state.aiSettings.endpointUrl.trim()) {
-    state.aiForm.apiStatus = "未送信";
-    state.aiForm.apiError = "中継サーバーURLを設定してください。";
-    renderAiResponse();
-    return;
-  }
-  state.aiForm.sending = true;
-  state.aiForm.apiStatus = "送信中";
-  state.aiForm.apiError = "";
-  state.aiForm.apiResponseText = "";
-  state.aiForm.apiModel = "";
-  state.aiForm.apiUsage = {};
+  state.aiForm.apiStatus = "コピー用";
+  state.aiForm.apiError = "v2.0ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
   renderAiResponse();
-  try {
-    const data = await postAiApiRequest(buildAiApiPayload("chat", promptText));
-    state.aiForm.apiStatus = "応答取得済み";
-    state.aiForm.apiResponseText = String(data.text || "");
-    state.aiForm.apiModel = String(data.model || "");
-    state.aiForm.apiUsage = data.usage && typeof data.usage === "object" ? data.usage : {};
-    state.aiForm.apiError = "";
-    state.aiForm.highlightSend = false;
-    upsertCurrentAiApiAnalysis("");
-    saveUnits();
-    render();
-    showToast("AI応答を受け取りました。");
-  } catch (error) {
-    const message = error.message || "AI通信に失敗しました。";
-    state.aiForm.apiStatus = "接続失敗";
-    state.aiForm.apiError = message;
-    upsertCurrentAiApiAnalysis(message);
-    saveUnits();
-    render();
-  } finally {
-    state.aiForm.sending = false;
-    renderAiResponse();
-  }
+  await copyAiPrompt();
 }
 
 async function askAiTutor() {
   state.aiTutorForm.userQuestion = document.querySelector("#aiTutorQuestionInput")?.value.trim() || "";
   const { target, promptText } = generateAiTutorPrompt();
   if (!promptText) return;
-  if (!state.aiSettings.enabled || !state.aiSettings.endpointUrl.trim()) {
-    state.aiTutorForm.apiStatus = "手動コピー待ち";
-    state.aiTutorForm.apiError = "AI API連携を使うには設定画面で中継サーバーURLを設定してください。";
-    saveAiTutorAnalysis({ target, sentViaApi: false });
-    renderAiTutorView();
-    showToast("手動コピー用プロンプトを生成しました。");
-    return;
-  }
-  state.aiTutorForm.sending = true;
-  state.aiTutorForm.apiStatus = "送信中";
-  state.aiTutorForm.apiResponseText = "";
-  state.aiTutorForm.apiModel = "";
-  state.aiTutorForm.apiUsage = {};
-  state.aiTutorForm.apiError = "";
-  renderAiTutorResponse();
-  try {
-    const data = await postAiApiRequest(buildAiTutorApiPayload("chat", promptText, target));
-    state.aiTutorForm.apiStatus = "応答取得済み";
-    state.aiTutorForm.apiResponseText = String(data.text || "");
-    state.aiTutorForm.apiModel = String(data.model || "");
-    state.aiTutorForm.apiUsage = data.usage && typeof data.usage === "object" ? data.usage : {};
-    state.aiTutorForm.apiError = "";
-    state.aiTutorForm.sentViaApi = true;
-    saveAiTutorAnalysis({ target, sentViaApi: true });
-    saveUnits();
-    render();
-    showToast("AI講師の回答を受け取りました。");
-  } catch (error) {
-    state.aiTutorForm.apiStatus = "接続失敗";
-    state.aiTutorForm.apiError = error.message || "AI通信に失敗しました。";
-    saveAiTutorAnalysis({ target, sentViaApi: true, error: state.aiTutorForm.apiError });
-    saveUnits();
-    render();
-  } finally {
-    state.aiTutorForm.sending = false;
-    renderAiTutorResponse();
-  }
+  state.aiTutorForm.apiStatus = "コピー用";
+  state.aiTutorForm.apiError = "v2.0ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
+  saveAiTutorAnalysis({ target, sentViaApi: false });
+  renderAiTutorView();
+  showToast("相談文を生成しました。");
 }
 
 function generateAiSuggestionPrompt() {
@@ -7614,47 +7632,11 @@ async function runAiSuggestion() {
   state.aiSuggestionForm.memo = document.querySelector("#aiSuggestionMemo")?.value.trim() || "";
   const { target, promptText } = generateAiSuggestionPrompt();
   if (!promptText) return;
-  if (!state.aiSettings.enabled || !state.aiSettings.endpointUrl.trim()) {
-    state.aiSuggestionForm.apiStatus = "手動コピー待ち";
-    state.aiSuggestionForm.apiError = "AI API連携を使うには設定画面で中継サーバーURLを設定してください。";
-    saveAiSuggestionAnalysis({ target, sentViaApi: false });
-    renderAiSuggestionView();
-    showToast("手動コピー用プロンプトを生成しました。");
-    return;
-  }
-  state.aiSuggestionForm.sending = true;
-  state.aiSuggestionForm.apiStatus = "送信中";
-  state.aiSuggestionForm.apiResponseText = "";
-  state.aiSuggestionForm.apiModel = "";
-  state.aiSuggestionForm.apiUsage = {};
-  state.aiSuggestionForm.apiError = "";
-  renderAiSuggestionResponse();
-  try {
-    const data = await postAiApiRequest(buildAiSuggestionApiPayload("chat", promptText, target));
-    state.aiSuggestionForm.apiStatus = "応答取得済み";
-    state.aiSuggestionForm.apiResponseText = String(data.text || "");
-    state.aiSuggestionForm.apiModel = String(data.model || "");
-    state.aiSuggestionForm.apiUsage = data.usage && typeof data.usage === "object" ? data.usage : {};
-    state.aiSuggestionForm.apiError = "";
-    state.aiSuggestionForm.sentViaApi = true;
-    const extracted = extractAiSuggestion(state.aiSuggestionForm.apiResponseText);
-    state.aiSuggestionForm.suggestionParsed = extracted.parsed;
-    state.aiSuggestionForm.suggestionObject = extracted.suggestionObject;
-    state.aiSuggestionForm.rawSuggestionText = extracted.rawSuggestionText;
-    saveAiSuggestionAnalysis({ target, sentViaApi: true });
-    saveUnits();
-    render();
-    showToast("AI提案を受け取りました。");
-  } catch (error) {
-    state.aiSuggestionForm.apiStatus = "接続失敗";
-    state.aiSuggestionForm.apiError = error.message || "AI通信に失敗しました。";
-    saveAiSuggestionAnalysis({ target, sentViaApi: true, error: state.aiSuggestionForm.apiError });
-    saveUnits();
-    render();
-  } finally {
-    state.aiSuggestionForm.sending = false;
-    renderAiSuggestionResponse();
-  }
+  state.aiSuggestionForm.apiStatus = "コピー用";
+  state.aiSuggestionForm.apiError = "v2.0ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
+  saveAiSuggestionAnalysis({ target, sentViaApi: false });
+  renderAiSuggestionView();
+  showToast("相談文を生成しました。");
 }
 
 function buildAiSuggestionApiPayload(mode, promptText, target) {
@@ -7943,43 +7925,13 @@ function saveCurrentAiResponse() {
 }
 
 async function testAiConnection() {
-  saveAiSettingsFromInputs(false);
   const result = document.querySelector("#aiConnectionTestResult");
-  if (!state.aiSettings.endpointUrl.trim()) {
-    state.aiSettings.lastStatus = "接続失敗";
-    state.aiSettings.lastError = "中継サーバーURLを設定してください。";
-    if (result) result.textContent = state.aiSettings.lastError;
-    saveUnits();
-    renderSettings();
-    return;
-  }
-  if (result) result.textContent = "接続テスト中です。";
-  try {
-    const payload = {
-      app: "TSUKAN_YOBIKO",
-      version: APP_VERSION,
-      mode: "test",
-      promptType: "接続テスト",
-      targetType: "system",
-      targetTitle: "接続テスト",
-      prompt: "TSUKAN YOBIKOからの接続テストです。短く「接続OK」と返してください。",
-      metadata: { createdAt: new Date().toISOString() }
-    };
-    const data = await postAiApiRequest(payload);
-    state.aiSettings.lastTestedAt = new Date().toISOString();
-    state.aiSettings.lastStatus = "接続OK";
-    state.aiSettings.lastError = "";
-    if (result) result.textContent = `接続OK：${data.text || "応答本文なし"}`;
-    saveUnits();
-    renderSettings();
-  } catch (error) {
-    state.aiSettings.lastTestedAt = new Date().toISOString();
-    state.aiSettings.lastStatus = "接続失敗";
-    state.aiSettings.lastError = buildAiConnectionHint(error.message || "接続テストに失敗しました。");
-    if (result) result.textContent = state.aiSettings.lastError;
-    saveUnits();
-    renderSettings();
-  }
+  state.aiSettings.lastTestedAt = new Date().toISOString();
+  state.aiSettings.lastStatus = "v2.0で廃止";
+  state.aiSettings.lastError = "";
+  if (result) result.textContent = "v2.0ではアプリ内通信を行いません。";
+  saveUnits();
+  renderSettings();
 }
 
 function saveAiSettingsFromInputs(showMessage = true) {
@@ -8034,10 +7986,17 @@ function openAiTutorForTarget(targetType, targetId, questionType, explanationLev
   state.aiTutorForm.apiModel = "";
   state.aiTutorForm.apiUsage = {};
   state.aiTutorForm.apiError = "";
-  generateAiTutorPrompt();
+  const { target, promptText } = generateAiTutorPrompt();
+  state.aiForm.promptType = questionType || "総合学習相談";
+  state.aiForm.targetType = targetType === "現在のレッスン" ? "レッスン" : targetType === "模試問題" ? "最新模試結果" : targetType;
+  state.aiForm.targetId = target?.id || targetId || "";
+  state.aiForm.promptText = promptText;
+  state.aiForm.currentAnalysisId = "";
+  state.aiForm.apiStatus = "コピー用";
+  state.aiForm.apiError = "";
   switchView("ai");
   renderAiView();
-  document.querySelector("#aiTutorTargetType")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  document.querySelector("#aiPromptResult")?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function gradeLessonQuestion(lessonId, questionId) {
@@ -8139,10 +8098,17 @@ function openAiSuggestionForTarget(targetType, targetId = "", suggestionType = "
   state.aiSuggestionForm.suggestionParsed = false;
   state.aiSuggestionForm.suggestionObject = null;
   state.aiSuggestionForm.rawSuggestionText = "";
-  generateAiSuggestionPrompt();
+  const { target, promptText } = generateAiSuggestionPrompt();
+  state.aiForm.promptType = suggestionType || "総合学習相談";
+  state.aiForm.targetType = targetType;
+  state.aiForm.targetId = target?.id || targetId || "";
+  state.aiForm.promptText = promptText;
+  state.aiForm.currentAnalysisId = "";
+  state.aiForm.apiStatus = "コピー用";
+  state.aiForm.apiError = "";
   switchView("ai");
   renderAiView();
-  document.querySelector("#aiSuggestionTargetType")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  document.querySelector("#aiPromptResult")?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function toggleTodayCompleted(itemId, checked) {
@@ -8995,30 +8961,6 @@ function renderSettings() {
   const backupJson = JSON.stringify(makeBackupPayload());
   const sizeKb = Math.max(1, Math.ceil(backupJson.length / 1024));
   const last = getLastUpdatedUnit();
-  const aiEnabled = document.querySelector("#aiApiEnabled");
-  const aiEndpoint = document.querySelector("#aiEndpointUrl");
-  if (aiEnabled) aiEnabled.checked = Boolean(state.aiSettings.enabled);
-  if (aiEndpoint && document.activeElement !== aiEndpoint) aiEndpoint.value = state.aiSettings.endpointUrl;
-  const aiStatus = document.querySelector("#aiApiStatusDetails");
-  if (aiStatus) {
-    const endpointSet = Boolean(state.aiSettings.endpointUrl.trim());
-    const tutorMode = state.aiSettings.enabled && endpointSet ? "利用可能" : "手動コピーのみ";
-    aiStatus.innerHTML = `
-      <div><dt>AI API連携</dt><dd>${state.aiSettings.enabled ? "ON" : "OFF"}</dd></div>
-      <div><dt>中継サーバーURL</dt><dd>${endpointSet ? "設定済み" : "未設定"}</dd></div>
-      <div><dt>最終接続テスト日時</dt><dd>${escapeHtml(formatDateTime(state.aiSettings.lastTestedAt))}</dd></div>
-      <div><dt>最終エラー</dt><dd>${escapeHtml(state.aiSettings.lastError || "なし")}</dd></div>
-    `;
-    const tutorStatus = document.querySelector("#aiTutorStatusDetails");
-    if (tutorStatus) {
-      tutorStatus.innerHTML = `
-        <div><dt>AI講師モード</dt><dd>${escapeHtml(tutorMode)}</dd></div>
-        <div><dt>直近のAI接続状態</dt><dd>${escapeHtml(state.aiSettings.lastStatus || "未テスト")}</dd></div>
-        <div><dt>AI講師履歴数</dt><dd>${state.aiAnalyses.filter((item) => item.promptType === "AI講師").length}件</dd></div>
-      `;
-    }
-  }
-  renderAiApiLogSummary();
   document.querySelector("#storageStatus").textContent = `${state.units.length}単元・${CURRICULUM_LESSONS.length}レッスン・模試${state.mockExamResults.length}件 / 約${sizeKb}KBをこのブラウザに保存`;
   document.querySelector("#storageDetails").innerHTML = `
     <div><dt>保存中の単元数</dt><dd>${state.units.length}単元</dd></div>
@@ -9026,7 +8968,8 @@ function renderSettings() {
     <div><dt>保存中の過去問ログ数</dt><dd>${state.pastExamLogs.length}件</dd></div>
     <div><dt>保存中の実務ログ数</dt><dd>${state.practicalLogs.length}件</dd></div>
     <div><dt>保存中の模試結果数</dt><dd>${state.mockExamResults.length}件</dd></div>
-    <div><dt>保存中のAI履歴数</dt><dd>${state.aiAnalyses.length}件</dd></div>
+    <div><dt>保存中の過去AIメモ・相談文数</dt><dd>${state.aiAnalyses.length}件</dd></div>
+    <div><dt>保存中の追加教材数</dt><dd>${state.lessonOverrides.length}件</dd></div>
     <div><dt>保存中の学習メニュー数</dt><dd>${state.studyPlans.length}件</dd></div>
     <div><dt>保存中のレッスン進捗数</dt><dd>${state.curriculumProgress.length}件</dd></div>
     <div><dt>最終更新単元</dt><dd>${escapeHtml(last?.title || "未保存")}</dd></div>
@@ -9052,7 +8995,7 @@ function makeBackupPayload() {
     practicalLogs: state.practicalLogs,
     mockExamResults: state.mockExamResults,
     aiAnalyses: state.aiAnalyses,
-    aiSettings: sanitizeAiSettings(state.aiSettings),
+    lessonOverrides: state.lessonOverrides,
     studyPlans: state.studyPlans,
     curriculumProgress: state.curriculumProgress
   };
@@ -9102,7 +9045,8 @@ function importBackup(file) {
       state.practicalLogs = normalizeArray(parsed.practicalLogs).map(normalizePracticalLog);
       state.mockExamResults = normalizeArray(parsed.mockExamResults).map(normalizeMockExamResult);
       state.aiAnalyses = normalizeArray(parsed.aiAnalyses).map(normalizeAiAnalysis);
-      state.aiSettings = normalizeAiSettings(parsed.aiSettings);
+      state.lessonOverrides = normalizeArray(parsed.lessonOverrides).map(normalizeLessonOverride);
+      state.aiSettings = normalizeAiSettings(null);
       state.studyPlans = normalizeArray(parsed.studyPlans).map(normalizeStudyPlan);
       state.curriculumProgress = normalizeArray(parsed.curriculumProgress).map(normalizeCurriculumProgress);
       closeDetail();
@@ -9160,239 +9104,239 @@ function attachEvents() {
   document.querySelectorAll(".nav-button").forEach((button) => {
     button.addEventListener("click", () => switchView(button.dataset.view));
   });
-  document.querySelector("#backToUnitsButton").addEventListener("click", closeDetail);
-  document.querySelector("#backToLearningButton").addEventListener("click", closeLessonDetail);
-  document.querySelector("#searchInput").addEventListener("input", (event) => {
+  document.querySelector("#backToUnitsButton")?.addEventListener("click", closeDetail);
+  document.querySelector("#backToLearningButton")?.addEventListener("click", closeLessonDetail);
+  document.querySelector("#searchInput")?.addEventListener("input", (event) => {
     state.filters.search = event.target.value;
     renderUnitList();
   });
-  document.querySelector("#subjectFilter").addEventListener("change", (event) => {
+  document.querySelector("#subjectFilter")?.addEventListener("change", (event) => {
     state.filters.subject = event.target.value;
     renderUnitList();
   });
-  document.querySelector("#importanceFilter").addEventListener("change", (event) => {
+  document.querySelector("#importanceFilter")?.addEventListener("change", (event) => {
     state.filters.importance = event.target.value;
     renderUnitList();
   });
-  document.querySelector("#levelFilter").addEventListener("change", (event) => {
+  document.querySelector("#levelFilter")?.addEventListener("change", (event) => {
     state.filters.level = event.target.value;
     renderUnitList();
   });
-  document.querySelector("#reviewFilter").addEventListener("change", (event) => {
+  document.querySelector("#reviewFilter")?.addEventListener("change", (event) => {
     state.filters.review = event.target.value;
     renderUnitList();
   });
-  document.querySelector("#weaknessFilter").addEventListener("change", (event) => {
+  document.querySelector("#weaknessFilter")?.addEventListener("change", (event) => {
     state.filters.weakness = event.target.value;
     renderUnitList();
   });
-  document.querySelector("#redoOnlyFilter").addEventListener("change", (event) => {
+  document.querySelector("#redoOnlyFilter")?.addEventListener("change", (event) => {
     state.filters.redoOnly = event.target.checked;
     renderUnitList();
   });
-  document.querySelector("#reviewSubjectFilter").addEventListener("change", (event) => {
+  document.querySelector("#reviewSubjectFilter")?.addEventListener("change", (event) => {
     state.reviewFilters.subject = event.target.value;
     renderReviewList();
   });
-  document.querySelector("#reviewStatusFilter").addEventListener("change", (event) => {
+  document.querySelector("#reviewStatusFilter")?.addEventListener("change", (event) => {
     state.reviewFilters.review = event.target.value;
     renderReviewList();
   });
-  document.querySelector("#reviewImportanceFilter").addEventListener("change", (event) => {
+  document.querySelector("#reviewImportanceFilter")?.addEventListener("change", (event) => {
     state.reviewFilters.importance = event.target.value;
     renderReviewList();
   });
-  document.querySelector("#reviewWeaknessFilter").addEventListener("change", (event) => {
+  document.querySelector("#reviewWeaknessFilter")?.addEventListener("change", (event) => {
     state.reviewFilters.weakness = event.target.value;
     renderReviewList();
   });
-  document.querySelector("#reviewRedoOnlyFilter").addEventListener("change", (event) => {
+  document.querySelector("#reviewRedoOnlyFilter")?.addEventListener("change", (event) => {
     state.reviewFilters.redoOnly = event.target.checked;
     renderReviewList();
   });
-  document.querySelector("#lessonSubjectFilter").addEventListener("change", (event) => {
+  document.querySelector("#lessonSubjectFilter")?.addEventListener("change", (event) => {
     state.lessonFilters.subject = event.target.value;
     renderLearningView();
   });
-  document.querySelector("#lessonCourseFilter").addEventListener("change", (event) => {
+  document.querySelector("#lessonCourseFilter")?.addEventListener("change", (event) => {
     state.lessonFilters.courseId = event.target.value;
     renderLearningView();
   });
-  document.querySelector("#lessonStatusFilter").addEventListener("change", (event) => {
+  document.querySelector("#lessonStatusFilter")?.addEventListener("change", (event) => {
     state.lessonFilters.status = event.target.value;
     renderLearningView();
   });
-  document.querySelector("#lessonUnderstandingFilter").addEventListener("change", (event) => {
+  document.querySelector("#lessonUnderstandingFilter")?.addEventListener("change", (event) => {
     state.lessonFilters.understanding = event.target.value;
     renderLearningView();
   });
-  document.querySelector("#lessonReviewOnlyFilter").addEventListener("change", (event) => {
+  document.querySelector("#lessonReviewOnlyFilter")?.addEventListener("change", (event) => {
     state.lessonFilters.reviewOnly = event.target.checked;
     renderLearningView();
   });
-  document.querySelector("#practiceLogForm").addEventListener("submit", (event) => {
+  document.querySelector("#practiceLogForm")?.addEventListener("submit", (event) => {
     event.preventDefault();
     savePracticeLogFromForm();
   });
-  document.querySelector("#practiceSearchInput").addEventListener("input", (event) => {
+  document.querySelector("#practiceSearchInput")?.addEventListener("input", (event) => {
     state.practiceFilters.search = event.target.value;
     renderPracticeLogList();
   });
-  document.querySelector("#practiceSubjectFilter").addEventListener("change", (event) => {
+  document.querySelector("#practiceSubjectFilter")?.addEventListener("change", (event) => {
     state.practiceFilters.subject = event.target.value;
     renderPracticeLogList();
   });
-  document.querySelector("#practiceSourceTypeFilter").addEventListener("change", (event) => {
+  document.querySelector("#practiceSourceTypeFilter")?.addEventListener("change", (event) => {
     state.practiceFilters.sourceType = event.target.value;
     renderPracticeLogList();
   });
-  document.querySelector("#practiceQuestionTypeFilter").addEventListener("change", (event) => {
+  document.querySelector("#practiceQuestionTypeFilter")?.addEventListener("change", (event) => {
     state.practiceFilters.questionType = event.target.value;
     renderPracticeLogList();
   });
-  document.querySelector("#practiceResultFilter").addEventListener("change", (event) => {
+  document.querySelector("#practiceResultFilter")?.addEventListener("change", (event) => {
     state.practiceFilters.result = event.target.value;
     renderPracticeLogList();
   });
-  document.querySelector("#practiceConfidenceFilter").addEventListener("change", (event) => {
+  document.querySelector("#practiceConfidenceFilter")?.addEventListener("change", (event) => {
     state.practiceFilters.confidence = event.target.value;
     renderPracticeLogList();
   });
-  document.querySelector("#practiceUnitFilter").addEventListener("change", (event) => {
+  document.querySelector("#practiceUnitFilter")?.addEventListener("change", (event) => {
     state.practiceFilters.unitId = event.target.value;
     renderPracticeLogList();
   });
-  document.querySelector("#practiceWeaknessFilter").addEventListener("change", (event) => {
+  document.querySelector("#practiceWeaknessFilter")?.addEventListener("change", (event) => {
     state.practiceFilters.weakness = event.target.value;
     renderPracticeLogList();
   });
-  document.querySelector("#practiceRetryOnlyFilter").addEventListener("change", (event) => {
+  document.querySelector("#practiceRetryOnlyFilter")?.addEventListener("change", (event) => {
     state.practiceFilters.retryOnly = event.target.checked;
     renderPracticeLogList();
   });
-  document.querySelector("#pastExamLogForm").addEventListener("submit", (event) => {
+  document.querySelector("#pastExamLogForm")?.addEventListener("submit", (event) => {
     event.preventDefault();
     savePastExamLogFromForm();
   });
-  document.querySelector("#pastExamSearchInput").addEventListener("input", (event) => {
+  document.querySelector("#pastExamSearchInput")?.addEventListener("input", (event) => {
     state.pastExamFilters.search = event.target.value;
     renderPastExamLogList();
   });
-  document.querySelector("#pastExamRoundFilter").addEventListener("change", (event) => {
+  document.querySelector("#pastExamRoundFilter")?.addEventListener("change", (event) => {
     state.pastExamFilters.examRound = event.target.value;
     renderPastExamLogList();
   });
-  document.querySelector("#pastExamSubjectFilter").addEventListener("change", (event) => {
+  document.querySelector("#pastExamSubjectFilter")?.addEventListener("change", (event) => {
     state.pastExamFilters.subject = event.target.value;
     renderPastExamLogList();
   });
-  document.querySelector("#pastExamQuestionTypeFilter").addEventListener("change", (event) => {
+  document.querySelector("#pastExamQuestionTypeFilter")?.addEventListener("change", (event) => {
     state.pastExamFilters.questionType = event.target.value;
     renderPastExamLogList();
   });
-  document.querySelector("#pastExamResultFilter").addEventListener("change", (event) => {
+  document.querySelector("#pastExamResultFilter")?.addEventListener("change", (event) => {
     state.pastExamFilters.result = event.target.value;
     renderPastExamLogList();
   });
-  document.querySelector("#pastExamConfidenceFilter").addEventListener("change", (event) => {
+  document.querySelector("#pastExamConfidenceFilter")?.addEventListener("change", (event) => {
     state.pastExamFilters.confidence = event.target.value;
     renderPastExamLogList();
   });
-  document.querySelector("#pastExamUnitFilter").addEventListener("change", (event) => {
+  document.querySelector("#pastExamUnitFilter")?.addEventListener("change", (event) => {
     state.pastExamFilters.unitId = event.target.value;
     renderPastExamLogList();
   });
-  document.querySelector("#pastExamWeaknessFilter").addEventListener("change", (event) => {
+  document.querySelector("#pastExamWeaknessFilter")?.addEventListener("change", (event) => {
     state.pastExamFilters.weakness = event.target.value;
     renderPastExamLogList();
   });
-  document.querySelector("#pastExamPriorityFilter").addEventListener("change", (event) => {
+  document.querySelector("#pastExamPriorityFilter")?.addEventListener("change", (event) => {
     state.pastExamFilters.priority = event.target.value;
     renderPastExamLogList();
   });
-  document.querySelector("#pastExamRetryOnlyFilter").addEventListener("change", (event) => {
+  document.querySelector("#pastExamRetryOnlyFilter")?.addEventListener("change", (event) => {
     state.pastExamFilters.retryOnly = event.target.checked;
     renderPastExamLogList();
   });
-  document.querySelector("#pastExamAllCorrectOnlyFilter").addEventListener("change", (event) => {
+  document.querySelector("#pastExamAllCorrectOnlyFilter")?.addEventListener("change", (event) => {
     state.pastExamFilters.allCorrectOnly = event.target.checked;
     renderPastExamLogList();
   });
-  document.querySelector("#pastExamPracticalOnlyFilter").addEventListener("change", (event) => {
+  document.querySelector("#pastExamPracticalOnlyFilter")?.addEventListener("change", (event) => {
     state.pastExamFilters.practicalOnly = event.target.checked;
     renderPastExamLogList();
   });
-  document.querySelector("#practicalLogForm").addEventListener("submit", (event) => {
+  document.querySelector("#practicalLogForm")?.addEventListener("submit", (event) => {
     event.preventDefault();
     savePracticalLogFromForm();
   });
-  document.querySelector("#practicalSearchInput").addEventListener("input", (event) => {
+  document.querySelector("#practicalSearchInput")?.addEventListener("input", (event) => {
     state.practicalFilters.search = event.target.value;
     renderPracticalLogList();
   });
-  document.querySelector("#practicalTypeFilter").addEventListener("change", (event) => {
+  document.querySelector("#practicalTypeFilter")?.addEventListener("change", (event) => {
     state.practicalFilters.practicalType = event.target.value;
     renderPracticalLogList();
   });
-  document.querySelector("#practicalSourceTypeFilter").addEventListener("change", (event) => {
+  document.querySelector("#practicalSourceTypeFilter")?.addEventListener("change", (event) => {
     state.practicalFilters.sourceType = event.target.value;
     renderPracticalLogList();
   });
-  document.querySelector("#practicalResultFilter").addEventListener("change", (event) => {
+  document.querySelector("#practicalResultFilter")?.addEventListener("change", (event) => {
     state.practicalFilters.result = event.target.value;
     renderPracticalLogList();
   });
-  document.querySelector("#practicalConfidenceFilter").addEventListener("change", (event) => {
+  document.querySelector("#practicalConfidenceFilter")?.addEventListener("change", (event) => {
     state.practicalFilters.confidence = event.target.value;
     renderPracticalLogList();
   });
-  document.querySelector("#practicalUnitFilter").addEventListener("change", (event) => {
+  document.querySelector("#practicalUnitFilter")?.addEventListener("change", (event) => {
     state.practicalFilters.unitId = event.target.value;
     renderPracticalLogList();
   });
-  document.querySelector("#practicalCalculationTypeFilter").addEventListener("change", (event) => {
+  document.querySelector("#practicalCalculationTypeFilter")?.addEventListener("change", (event) => {
     state.practicalFilters.calculationType = event.target.value;
     renderPracticalLogList();
   });
-  document.querySelector("#practicalWeaknessFilter").addEventListener("change", (event) => {
+  document.querySelector("#practicalWeaknessFilter")?.addEventListener("change", (event) => {
     state.practicalFilters.weakness = event.target.value;
     renderPracticalLogList();
   });
-  document.querySelector("#practicalPriorityFilter").addEventListener("change", (event) => {
+  document.querySelector("#practicalPriorityFilter")?.addEventListener("change", (event) => {
     state.practicalFilters.priority = event.target.value;
     renderPracticalLogList();
   });
-  document.querySelector("#practicalRetryOnlyFilter").addEventListener("change", (event) => {
+  document.querySelector("#practicalRetryOnlyFilter")?.addEventListener("change", (event) => {
     state.practicalFilters.retryOnly = event.target.checked;
     renderPracticalLogList();
   });
-  document.querySelector("#practicalDeclarationOnlyFilter").addEventListener("change", (event) => {
+  document.querySelector("#practicalDeclarationOnlyFilter")?.addEventListener("change", (event) => {
     state.practicalFilters.declarationOnly = event.target.checked;
     renderPracticalLogList();
   });
-  document.querySelector("#practicalCalculationOnlyFilter").addEventListener("change", (event) => {
+  document.querySelector("#practicalCalculationOnlyFilter")?.addEventListener("change", (event) => {
     state.practicalFilters.calculationOnly = event.target.checked;
     renderPracticalLogList();
   });
-  document.querySelector("#aiPromptTypeSelect").addEventListener("change", (event) => {
+  document.querySelector("#aiPromptTypeSelect")?.addEventListener("change", (event) => {
     state.aiForm.promptType = event.target.value;
   });
-  document.querySelector("#aiTargetTypeSelect").addEventListener("change", (event) => {
+  document.querySelector("#aiTargetTypeSelect")?.addEventListener("change", (event) => {
     state.aiForm.targetType = event.target.value;
     state.aiForm.targetId = "";
     renderAiTargetSelect();
   });
-  document.querySelector("#aiTargetSelect").addEventListener("change", (event) => {
+  document.querySelector("#aiTargetSelect")?.addEventListener("change", (event) => {
     state.aiForm.targetId = event.target.value;
   });
-  document.querySelector("#aiAdditionalConditions").addEventListener("input", (event) => {
+  document.querySelector("#aiAdditionalConditions")?.addEventListener("input", (event) => {
     state.aiForm.additionalConditions = event.target.value;
   });
-  document.querySelector("#generateAiPromptButton").addEventListener("click", generateAiPrompt);
-  document.querySelector("#copyAiPromptButton").addEventListener("click", copyAiPrompt);
-  document.querySelector("#sendAiPromptButton").addEventListener("click", sendCurrentAiPromptToApi);
-  document.querySelector("#cancelAiSendButton").addEventListener("click", cancelAiSend);
-  document.querySelector("#clearAiPromptButton").addEventListener("click", () => {
+  document.querySelector("#generateAiPromptButton")?.addEventListener("click", generateAiPrompt);
+  document.querySelector("#copyAiPromptButton")?.addEventListener("click", copyAiPrompt);
+  document.querySelector("#sendAiPromptButton")?.addEventListener("click", sendCurrentAiPromptToApi);
+  document.querySelector("#cancelAiSendButton")?.addEventListener("click", cancelAiSend);
+  document.querySelector("#clearAiPromptButton")?.addEventListener("click", () => {
     state.aiForm.promptText = "";
     state.aiForm.currentAnalysisId = "";
     state.aiForm.apiStatus = "未送信";
@@ -9403,82 +9347,82 @@ function attachEvents() {
     document.querySelector("#aiPromptResult").value = "";
     renderAiResponse();
   });
-  document.querySelector("#saveAiPromptMemoButton").addEventListener("click", saveCurrentAiPromptMemo);
-  document.querySelector("#saveAiResponseButton").addEventListener("click", saveCurrentAiResponse);
-  document.querySelector("#aiPromptResult").addEventListener("input", (event) => {
+  document.querySelector("#saveAiPromptMemoButton")?.addEventListener("click", saveCurrentAiPromptMemo);
+  document.querySelector("#saveAiResponseButton")?.addEventListener("click", saveCurrentAiResponse);
+  document.querySelector("#aiPromptResult")?.addEventListener("input", (event) => {
     state.aiForm.promptText = event.target.value;
   });
-  document.querySelector("#aiTutorTargetType").addEventListener("change", (event) => {
+  document.querySelector("#aiTutorTargetType")?.addEventListener("change", (event) => {
     state.aiTutorForm.targetType = event.target.value;
     state.aiTutorForm.targetId = "";
     generateAiTutorPrompt();
     renderAiTutorView();
   });
-  document.querySelector("#aiTutorTargetSelect").addEventListener("change", (event) => {
+  document.querySelector("#aiTutorTargetSelect")?.addEventListener("change", (event) => {
     state.aiTutorForm.targetId = event.target.value;
     generateAiTutorPrompt();
     renderAiTutorView();
   });
-  document.querySelector("#aiTutorQuestionType").addEventListener("change", (event) => {
+  document.querySelector("#aiTutorQuestionType")?.addEventListener("change", (event) => {
     state.aiTutorForm.questionType = event.target.value;
     generateAiTutorPrompt();
     renderAiTutorView();
   });
-  document.querySelector("#aiTutorExplanationLevel").addEventListener("change", (event) => {
+  document.querySelector("#aiTutorExplanationLevel")?.addEventListener("change", (event) => {
     state.aiTutorForm.explanationLevel = event.target.value;
     generateAiTutorPrompt();
     renderAiTutorView();
   });
-  document.querySelector("#aiTutorQuestionInput").addEventListener("input", (event) => {
+  document.querySelector("#aiTutorQuestionInput")?.addEventListener("input", (event) => {
     state.aiTutorForm.userQuestion = event.target.value;
     generateAiTutorPrompt();
   });
-  document.querySelector("#aiTutorPromptResult").addEventListener("input", (event) => {
+  document.querySelector("#aiTutorPromptResult")?.addEventListener("input", (event) => {
     state.aiTutorForm.promptText = event.target.value;
   });
-  document.querySelector("#askAiTutorButton").addEventListener("click", askAiTutor);
-  document.querySelector("#copyAiTutorPromptButton").addEventListener("click", copyAiTutorPrompt);
-  document.querySelector("#saveAiTutorResponseButton").addEventListener("click", saveCurrentAiTutorResponse);
-  document.querySelector("#makeAiTutorSimilarButton").addEventListener("click", () => {
+  document.querySelector("#askAiTutorButton")?.addEventListener("click", askAiTutor);
+  document.querySelector("#copyAiTutorPromptButton")?.addEventListener("click", copyAiTutorPrompt);
+  document.querySelector("#saveAiTutorResponseButton")?.addEventListener("click", saveCurrentAiTutorResponse);
+  document.querySelector("#makeAiTutorSimilarButton")?.addEventListener("click", () => {
     state.aiTutorForm.questionType = "類似問題を出す";
     state.aiTutorForm.explanationLevel = "本試験直前";
     generateAiTutorPrompt();
     renderAiTutorView();
     showToast("類似問題作成用に切り替えました。");
   });
-  document.querySelector("#saveAiTutorReviewMemoButton").addEventListener("click", () => setAiTutorFlag("savedAsReviewMemo"));
-  document.querySelector("#holdAiTutorWeaknessButton").addEventListener("click", () => setAiTutorFlag("markedAsWeaknessSuggestion"));
-  document.querySelector("#markAiTutorNextReviewButton").addEventListener("click", () => setAiTutorFlag("markedForNextReview"));
-  document.querySelector("#aiSuggestionTargetType").addEventListener("change", (event) => {
+  document.querySelector("#saveAiTutorReviewMemoButton")?.addEventListener("click", () => setAiTutorFlag("savedAsReviewMemo"));
+  document.querySelector("#holdAiTutorWeaknessButton")?.addEventListener("click", () => setAiTutorFlag("markedAsWeaknessSuggestion"));
+  document.querySelector("#markAiTutorNextReviewButton")?.addEventListener("click", () => setAiTutorFlag("markedForNextReview"));
+  document.querySelector("#aiSuggestionTargetType")?.addEventListener("change", (event) => {
     state.aiSuggestionForm.targetType = event.target.value;
     state.aiSuggestionForm.targetId = "";
     generateAiSuggestionPrompt();
     renderAiSuggestionView();
   });
-  document.querySelector("#aiSuggestionType").addEventListener("change", (event) => {
+  document.querySelector("#aiSuggestionType")?.addEventListener("change", (event) => {
     state.aiSuggestionForm.suggestionType = event.target.value;
     generateAiSuggestionPrompt();
     renderAiSuggestionView();
   });
-  document.querySelector("#aiSuggestionTargetSelect").addEventListener("change", (event) => {
+  document.querySelector("#aiSuggestionTargetSelect")?.addEventListener("change", (event) => {
     state.aiSuggestionForm.targetId = event.target.value;
     generateAiSuggestionPrompt();
     renderAiSuggestionView();
   });
-  document.querySelector("#aiSuggestionMemo").addEventListener("input", (event) => {
+  document.querySelector("#aiSuggestionMemo")?.addEventListener("input", (event) => {
     state.aiSuggestionForm.memo = event.target.value;
   });
-  document.querySelector("#aiSuggestionPromptResult").addEventListener("input", (event) => {
+  document.querySelector("#aiSuggestionPromptResult")?.addEventListener("input", (event) => {
     state.aiSuggestionForm.promptText = event.target.value;
   });
-  document.querySelector("#runAiSuggestionButton").addEventListener("click", runAiSuggestion);
-  document.querySelector("#copyAiSuggestionPromptButton").addEventListener("click", copyAiSuggestionPrompt);
-  document.querySelector("#parseAiSuggestionManualResponseButton").addEventListener("click", parseManualAiSuggestionResponse);
-  document.querySelector("#applyAiSuggestionButton").addEventListener("click", applyCurrentAiSuggestion);
-  document.querySelector("#analysisAiConsultButton").addEventListener("click", openAiForAnalysisConsult);
-  document.querySelector("#todayAiConsultButton").addEventListener("click", openAiForTodayConsult);
-  document.querySelector("#saveTodayMemoButton").addEventListener("click", saveTodayMemo);
-  document.querySelector("#durationButtons").addEventListener("click", (event) => {
+  document.querySelector("#runAiSuggestionButton")?.addEventListener("click", runAiSuggestion);
+  document.querySelector("#copyAiSuggestionPromptButton")?.addEventListener("click", copyAiSuggestionPrompt);
+  document.querySelector("#parseAiSuggestionManualResponseButton")?.addEventListener("click", parseManualAiSuggestionResponse);
+  document.querySelector("#applyAiSuggestionButton")?.addEventListener("click", applyCurrentAiSuggestion);
+  document.querySelector("#analysisAiConsultButton")?.addEventListener("click", openAiForAnalysisConsult);
+  document.querySelector("#todayAiConsultButton")?.addEventListener("click", openAiForTodayConsult);
+  document.querySelector("#saveTodayMemoButton")?.addEventListener("click", saveTodayMemo);
+  document.querySelector("#durationButtons")?.addEventListener("click", (event) => {
     const button = event.target.closest("[data-duration]");
     if (!button) return;
     updateTodayPlan((plan) => {
@@ -9493,6 +9437,19 @@ function attachEvents() {
     if (event.target.closest("[data-open-today]")) {
       switchView("today");
       window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    const drillModeButton = event.target.closest("[data-drill-mode]");
+    if (drillModeButton) {
+      setDrillMode(drillModeButton.dataset.drillMode);
+      return;
+    }
+    if (event.target.closest("[data-grade-drill]")) {
+      gradeCurrentDrill();
+      return;
+    }
+    if (event.target.closest("[data-next-drill]")) {
+      moveNextDrill();
       return;
     }
     if (event.target.closest("[data-open-ai-suggestions]")) {
@@ -9538,6 +9495,7 @@ function attachEvents() {
     }
     const shortcut = event.target.closest("[data-view-shortcut]");
     if (shortcut) {
+      if (shortcut.dataset.drillHome) setDrillMode(shortcut.dataset.drillHome);
       switchView(shortcut.dataset.viewShortcut);
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
@@ -9820,10 +9778,16 @@ function attachEvents() {
       return;
     }
     const complete = event.target.closest("[data-today-complete]");
-    if (!complete) return;
-    toggleTodayCompleted(complete.dataset.todayComplete, complete.checked);
+    if (complete) {
+      toggleTodayCompleted(complete.dataset.todayComplete, complete.checked);
+      return;
+    }
+    if (event.target.name === "drill-answer") {
+      state.drill.selectedAnswer = event.target.value;
+      state.drill.graded = false;
+    }
   });
-  document.querySelector("#saveUnitButton").addEventListener("click", () => {
+  document.querySelector("#saveUnitButton")?.addEventListener("click", () => {
     const unit = getActiveUnit();
     if (!unit) return;
     collectFormIntoUnit(unit);
@@ -9832,14 +9796,14 @@ function attachEvents() {
     render();
     showToast("保存しました。");
   });
-  document.querySelector("#exportButton").addEventListener("click", exportBackup);
-  document.querySelector("#saveAiSettingsButton").addEventListener("click", () => saveAiSettingsFromInputs(true));
-  document.querySelector("#checkAiHealthButton").addEventListener("click", checkAiWorkerHealth);
-  document.querySelector("#testAiConnectionButton").addEventListener("click", testAiConnection);
-  document.querySelector("#importInput").addEventListener("change", (event) => {
+  document.querySelector("#exportButton")?.addEventListener("click", exportBackup);
+  document.querySelector("#saveAiSettingsButton")?.addEventListener("click", () => saveAiSettingsFromInputs(true));
+  document.querySelector("#checkAiHealthButton")?.addEventListener("click", checkAiWorkerHealth);
+  document.querySelector("#testAiConnectionButton")?.addEventListener("click", testAiConnection);
+  document.querySelector("#importInput")?.addEventListener("change", (event) => {
     importBackup(event.target.files[0]);
   });
-  document.querySelector("#resetButton").addEventListener("click", () => {
+  document.querySelector("#resetButton")?.addEventListener("click", () => {
     const confirmed = window.confirm("保存済みの学習記録を削除し、初期データに戻します。よろしいですか？");
     if (!confirmed) return;
     localStorage.removeItem(STORAGE_KEYS.units);
@@ -9848,6 +9812,7 @@ function attachEvents() {
     localStorage.removeItem(STORAGE_KEYS.practicalLogs);
     localStorage.removeItem(STORAGE_KEYS.mockExamResults);
     localStorage.removeItem(STORAGE_KEYS.aiAnalyses);
+    localStorage.removeItem(STORAGE_KEYS.lessonOverrides);
     localStorage.removeItem(STORAGE_KEYS.aiSettings);
     localStorage.removeItem(STORAGE_KEYS.studyPlans);
     localStorage.removeItem(STORAGE_KEYS.curriculumProgress);
@@ -9857,6 +9822,7 @@ function attachEvents() {
     state.practicalLogs = [];
     state.mockExamResults = [];
     state.aiAnalyses = [];
+    state.lessonOverrides = [];
     state.aiSettings = normalizeAiSettings(null);
     state.studyPlans = [];
     state.curriculumProgress = [];

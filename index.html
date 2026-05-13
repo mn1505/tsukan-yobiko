@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="TSUKAN YOBIKO v1.8 - AI自動添削・弱点提案版">
+    <meta name="description" content="TSUKAN YOBIKO v2.0 - ローカル教材アプリ版">
     <meta name="theme-color" content="#1f5f5b">
     <title>TSUKAN YOBIKO</title>
     <link rel="stylesheet" href="style.css">
@@ -15,7 +15,7 @@
           <p class="eyebrow">通関士試験 個人予備校</p>
           <h1>TSUKAN YOBIKO</h1>
         </div>
-        <span class="version-pill">v1.8</span>
+        <span class="version-pill">v2.0</span>
       </header>
 
       <main class="app-main">
@@ -65,19 +65,19 @@
           </section>
           <section class="panel">
             <div class="panel-heading">
-              <h3>過去問ログサマリー</h3>
+              <h3>進捗</h3>
             </div>
             <div id="homePastExamSummary" class="compact-list"></div>
           </section>
           <section class="panel">
             <div class="panel-heading">
-              <h3>記録管理へ進む</h3>
+              <h3>弱点別ドリル</h3>
             </div>
             <div id="homePracticalSummary" class="compact-list"></div>
           </section>
           <section class="panel">
             <div class="panel-heading">
-              <h3>AI相談へ進む</h3>
+              <h3>外部ChatGPT相談文作成</h3>
             </div>
             <div id="homeAiHistory" class="compact-list"></div>
           </section>
@@ -111,16 +111,34 @@
                 <div class="analysis-cta">
                   <div>
                     <p class="eyebrow">Learning Hub</p>
-                    <h3>模試・横断復習・AI相談</h3>
-                    <p class="muted">レッスンの続き、総合模試、弱点集中、AI相談へすぐ進めます。</p>
+                    <h3>模試・横断復習・相談文作成</h3>
+                    <p class="muted">レッスンの続き、総合模試、弱点集中、外部ChatGPT用の相談文作成へ進めます。</p>
                   </div>
                   <div class="card-actions">
                     <button class="primary-button" type="button" data-open-mock>模試</button>
                     <button class="ghost-button" type="button" data-view-shortcut="review">横断復習</button>
                     <button class="ghost-button" type="button" data-start-mock="weakness">弱点集中模試</button>
-                    <button class="ghost-button" type="button" data-view-shortcut="ai">AIに学習相談</button>
+                    <button class="ghost-button" type="button" data-view-shortcut="ai">相談文を作る</button>
                   </div>
                 </div>
+              </section>
+
+              <section class="panel learning-roadmap-panel">
+                <div class="panel-heading">
+                  <h3>教材拡充方針</h3>
+                </div>
+                <ul class="note-list compact">
+                  <li>通関業法：講義・確認問題を拡充予定</li>
+                  <li>関税法等：保税・納税・課税価格を重点拡充予定</li>
+                  <li>通関実務：品目分類・申告書・計算演習を重点拡充予定</li>
+                </ul>
+              </section>
+
+              <section class="panel drill-panel">
+                <div class="panel-heading">
+                  <h3>ドリル</h3>
+                </div>
+                <div id="drillArea"></div>
               </section>
 
               <section class="panel">
@@ -270,7 +288,7 @@
               <details class="panel details-panel">
                 <summary>今日のメモ</summary>
                 <div class="today-memo details-body">
-                  <textarea id="todayMemo" placeholder="今日やったこと、気づいた弱点、明日やること、AIに相談したいこと"></textarea>
+                  <textarea id="todayMemo" placeholder="今日やったこと、気づいた弱点、明日やること、外部ChatGPTに聞きたいこと"></textarea>
                   <button id="saveTodayMemoButton" class="primary-button" type="button">メモを保存</button>
                   <p id="todayMemoMessage" class="form-message" role="status" aria-live="polite"></p>
                 </div>
@@ -279,12 +297,12 @@
               <section class="panel">
                 <div class="analysis-cta">
                   <div>
-                    <p class="eyebrow">AI Prompt</p>
-                    <h3>今日のメニューをAIに相談</h3>
+                    <p class="eyebrow">ChatGPT Prompt</p>
+                    <h3>今日のメニュー相談文</h3>
                   </div>
                   <div class="card-actions">
-                    <button id="todayAiConsultButton" class="primary-button" type="button">今日のメニューをAIに相談</button>
-                    <button class="ghost-button" type="button" data-ai-suggest-today>AIに今日の学習を最適化してもらう</button>
+                    <button id="todayAiConsultButton" class="primary-button" type="button">相談文を作る</button>
+                    <button class="ghost-button" type="button" data-ai-suggest-today>今日の学習相談文を作る</button>
                   </div>
                 </div>
               </section>
@@ -580,147 +598,15 @@
         <section id="view-ai" class="view" aria-labelledby="ai-title">
           <div class="section-heading">
             <div>
-              <p class="eyebrow">AI Prompt</p>
-              <h2 id="ai-title">AI</h2>
+              <p class="eyebrow">ChatGPT Prompt</p>
+              <h2 id="ai-title">外部ChatGPT相談</h2>
             </div>
           </div>
 
           <div class="ai-layout">
-            <section class="panel ai-tutor-panel">
-              <div class="panel-heading">
-                <div>
-                  <p class="eyebrow">AI Tutor</p>
-                  <h3>AI講師モード</h3>
-                </div>
-              </div>
-              <div class="ai-tutor-form">
-                <label>
-                  質問対象
-                  <select id="aiTutorTargetType"></select>
-                </label>
-                <label>
-                  対象データ
-                  <select id="aiTutorTargetSelect"></select>
-                </label>
-                <label>
-                  質問タイプ
-                  <select id="aiTutorQuestionType"></select>
-                </label>
-                <label>
-                  説明レベル
-                  <select id="aiTutorExplanationLevel"></select>
-                </label>
-                <label class="field-wide">
-                  質問入力
-                  <textarea id="aiTutorQuestionInput" class="ai-tutor-question" placeholder="例：この論点を本試験で落とさないために、どこを覚えるべきですか。"></textarea>
-                </label>
-                <div id="aiTutorModeHint" class="ai-tutor-mode-hint field-wide" aria-live="polite"></div>
-                <div class="form-actions field-wide">
-                  <button id="askAiTutorButton" class="primary-button ai-tutor-submit" type="button">AI講師に質問</button>
-                  <button id="copyAiTutorPromptButton" class="ghost-button" type="button">手動プロンプトをコピー</button>
-                </div>
-              </div>
-            </section>
-
-            <section class="panel ai-tutor-response-panel">
-              <div class="panel-heading">
-                <h3>AI講師の回答</h3>
-              </div>
-              <div class="ai-tutor-response">
-                <dl id="aiTutorResponseMeta" class="info-list compact"></dl>
-                <div id="aiTutorResponseText" class="ai-response-text" aria-live="polite"></div>
-                <p id="aiTutorResponseError" class="form-message" role="status" aria-live="polite"></p>
-                <div class="form-actions">
-                  <button id="saveAiTutorResponseButton" class="primary-button" type="button">回答を保存</button>
-                  <button id="makeAiTutorSimilarButton" class="ghost-button" type="button">類似問題を作る</button>
-                  <button id="saveAiTutorReviewMemoButton" class="ghost-button" type="button">復習メモとして保存</button>
-                  <button id="holdAiTutorWeaknessButton" class="ghost-button" type="button">弱点提案として保留</button>
-                  <button id="markAiTutorNextReviewButton" class="ghost-button" type="button">次回復習候補にする</button>
-                </div>
-              </div>
-            </section>
-
-            <section class="panel ai-tutor-prompt-panel">
-              <div class="panel-heading">
-                <h3>手動コピー用プロンプト</h3>
-              </div>
-              <div class="ai-result">
-                <textarea id="aiTutorPromptResult" class="ai-prompt-textarea" aria-label="生成されたAI講師プロンプト"></textarea>
-              </div>
-            </section>
-
-            <section class="panel ai-suggestion-panel">
-              <div class="panel-heading">
-                <div>
-                  <p class="eyebrow">AI Correction</p>
-                  <h3>AI添削・弱点提案</h3>
-                </div>
-              </div>
-              <div class="ai-suggestion-form">
-                <label>
-                  添削対象
-                  <select id="aiSuggestionTargetType"></select>
-                </label>
-                <label>
-                  添削タイプ
-                  <select id="aiSuggestionType"></select>
-                </label>
-                <label id="aiSuggestionTargetSelectLabel">
-                  対象データ
-                  <select id="aiSuggestionTargetSelect"></select>
-                </label>
-                <label class="field-wide">
-                  自由入力・追加メモ
-                  <textarea id="aiSuggestionMemo" placeholder="自由入力の添削対象、またはAIに追加で伝えたい事情を入力"></textarea>
-                </label>
-                <div id="aiSuggestionModeHint" class="ai-tutor-mode-hint field-wide" aria-live="polite"></div>
-                <div class="form-actions field-wide">
-                  <button id="runAiSuggestionButton" class="primary-button" type="button">AI添削を実行</button>
-                  <button id="copyAiSuggestionPromptButton" class="ghost-button" type="button">手動プロンプトをコピー</button>
-                </div>
-              </div>
-            </section>
-
-            <section class="panel ai-suggestion-result-panel">
-              <div class="panel-heading">
-                <h3>AI提案表示</h3>
-              </div>
-              <div class="ai-suggestion-result">
-                <dl id="aiSuggestionResponseMeta" class="info-list compact"></dl>
-                <h4 class="suggestion-subheading">AI総評</h4>
-                <div id="aiSuggestionAnswerText" class="ai-response-text" aria-live="polite"></div>
-                <label class="field-wide">
-                  手動コピー利用時のAI回答貼り付け
-                  <textarea id="aiSuggestionManualResponse" placeholder="AI API連携OFFの場合は、外部AIの回答をここに貼り付けて解析できます。"></textarea>
-                </label>
-                <div class="form-actions">
-                  <button id="parseAiSuggestionManualResponseButton" class="ghost-button" type="button">貼り付けたAI回答を解析</button>
-                </div>
-                <div id="aiSuggestionParsedView" class="ai-suggestion-cards"></div>
-                <details class="details-panel suggestion-raw-details">
-                  <summary>構造化提案の生データ</summary>
-                  <pre id="aiSuggestionRawBlock" class="raw-suggestion-block"></pre>
-                </details>
-                <div class="apply-options">
-                  <label class="check-card"><input id="applySuggestionUnderstanding" type="checkbox">理解度を反映する</label>
-                  <label class="check-card"><input id="applySuggestionReviewNeeded" type="checkbox">復習対象を反映する</label>
-                  <label class="check-card"><input id="applySuggestionWeaknessTags" type="checkbox">弱点タグを追加する</label>
-                  <label class="check-card"><input id="applySuggestionNextReview" type="checkbox">次回復習候補にする</label>
-                  <label class="check-card"><input id="applySuggestionMemo" type="checkbox" checked>AI提案メモとして保存する</label>
-                </div>
-                <p id="aiSuggestionResponseError" class="form-message" role="status" aria-live="polite"></p>
-                <div class="form-actions">
-                  <button id="applyAiSuggestionButton" class="primary-button" type="button">選択した提案を反映</button>
-                </div>
-              </div>
-              <div class="ai-result">
-                <textarea id="aiSuggestionPromptResult" class="ai-prompt-textarea" aria-label="生成されたAI添削プロンプト"></textarea>
-              </div>
-            </section>
-
             <section class="panel ai-form-panel">
               <div class="panel-heading">
-                <h3>用途別AI相談</h3>
+                <h3>相談文の作成</h3>
               </div>
               <div class="quick-actions">
                 <button class="ghost-button" type="button" data-ai-quick="today">今日の学習相談</button>
@@ -744,7 +630,7 @@
                 </label>
                 <p id="aiTargetHint" class="muted field-wide"></p>
                 <label class="field-wide">
-                  AIに追加で伝えたい条件
+                  追加で伝えたい条件
                   <textarea id="aiAdditionalConditions" placeholder="例：
 ・初心者にも分かるように説明してほしい
 ・通関士試験の本試験レベルで判断してほしい
@@ -752,55 +638,29 @@
 ・次にやるべき復習を3つに絞ってほしい"></textarea>
                 </label>
                 <div class="form-actions field-wide">
-                  <button id="generateAiPromptButton" class="primary-button" type="button">プロンプトを生成</button>
+                  <button id="generateAiPromptButton" class="primary-button" type="button">相談文を生成</button>
                 </div>
               </div>
             </section>
 
             <section class="panel ai-result-panel">
               <div class="panel-heading">
-                <h3>生成結果</h3>
+                <h3>コピー用テキスト</h3>
               </div>
               <div class="ai-result">
                 <textarea id="aiPromptResult" class="ai-prompt-textarea" aria-label="生成されたAI解析プロンプト"></textarea>
                 <div class="form-actions">
                   <button id="copyAiPromptButton" class="primary-button" type="button">コピーする</button>
-                  <button id="sendAiPromptButton" class="primary-button" type="button">AIに送信</button>
-                  <button id="cancelAiSendButton" class="ghost-button" type="button">送信をキャンセル</button>
                   <button id="clearAiPromptButton" class="ghost-button" type="button">生成結果をクリア</button>
-                  <button id="saveAiPromptMemoButton" class="ghost-button" type="button">AI解析メモ欄に貼り付けるためのメモとして保存</button>
-                </div>
-              </div>
-            </section>
-
-            <section class="panel ai-response-panel">
-              <div class="panel-heading">
-                <h3>AI応答</h3>
-              </div>
-              <div class="ai-response">
-                <dl id="aiResponseMeta" class="info-list compact"></dl>
-                <div id="aiResponseText" class="ai-response-text" aria-live="polite"></div>
-                <p id="aiResponseError" class="form-message" role="status" aria-live="polite"></p>
-                <div class="form-actions">
-                  <button id="saveAiResponseButton" class="primary-button" type="button">AI応答を保存</button>
+                  <button id="saveAiPromptMemoButton" class="ghost-button" type="button">相談文履歴として保存</button>
                 </div>
               </div>
             </section>
           </div>
 
           <details class="panel details-panel ai-history-panel">
-            <summary>生成履歴</summary>
+            <summary>過去のAIメモ・相談文履歴</summary>
             <div id="aiHistoryList" class="ai-history-list details-body"></div>
-          </details>
-
-          <details class="panel details-panel ai-history-panel" open>
-            <summary>AI講師履歴</summary>
-            <div id="aiTutorHistoryList" class="ai-history-list details-body"></div>
-          </details>
-
-          <details class="panel details-panel ai-history-panel" open>
-            <summary>AI提案履歴</summary>
-            <div id="aiSuggestionHistoryList" class="ai-history-list details-body"></div>
           </details>
         </section>
 
@@ -908,17 +768,17 @@
           </details>
 
           <details class="panel details-panel">
-            <summary>AI活用状況</summary>
+            <summary>過去のAIメモ</summary>
             <div id="analysisAiUsage" class="analysis-section-body"></div>
           </details>
 
           <section class="panel">
             <div class="analysis-cta">
               <div>
-                <p class="eyebrow">AI Prompt</p>
-                <h3>分析結果から学習メニューを相談</h3>
+                <p class="eyebrow">ChatGPT Prompt</p>
+                <h3>分析結果から相談文を作る</h3>
               </div>
-              <button id="analysisAiConsultButton" class="primary-button" type="button">この分析結果をAIに相談</button>
+              <button id="analysisAiConsultButton" class="primary-button" type="button">相談文を作る</button>
             </div>
           </section>
         </section>
@@ -988,8 +848,8 @@
               </div>
               <dl class="info-list">
                 <div><dt>アプリ名</dt><dd>TSUKAN YOBIKO</dd></div>
-                <div><dt>現在のバージョン</dt><dd>v1.8</dd></div>
-                <div><dt>状態</dt><dd>AI自動添削・弱点提案版</dd></div>
+                <div><dt>現在のバージョン</dt><dd>v2.0</dd></div>
+                <div><dt>状態</dt><dd>ローカル教材アプリ版</dd></div>
                 <div><dt>公開前提</dt><dd>GitHub Pagesで公開して使う静的アプリです。</dd></div>
                 <div><dt>保存方式</dt><dd id="storageStatus">確認中</dd></div>
               </dl>
@@ -997,52 +857,15 @@
 
             <section class="panel">
               <div class="panel-heading">
-                <h3>今後の予定</h3>
+                <h3>教材拡充目標</h3>
               </div>
               <ul class="note-list">
-                <li>v1.9：試験直前モード</li>
-                <li>v2.0：本格予備校版</li>
-                <li>v2.1：PWA対応</li>
-                <li>v2.2：スマホ・PC間同期検討</li>
-                <li>将来：講義データ外部JSON化</li>
+                <li>講義レッスン：100本以上</li>
+                <li>確認問題：600問以上</li>
+                <li>ひっかけ問題：200問以上</li>
+                <li>通関実務ミニ演習：100問以上</li>
+                <li>総合模試：5セット以上</li>
               </ul>
-            </section>
-
-            <section class="panel">
-              <div class="panel-heading">
-                <h3>AI API連携設定</h3>
-              </div>
-              <div class="settings-actions">
-                <label class="check-card">
-                  <input id="aiApiEnabled" type="checkbox">
-                  AI API連携：ON/OFF
-                </label>
-                <label>
-                  AI中継サーバーURL
-                  <input id="aiEndpointUrl" type="url" placeholder="https://example-worker.example.workers.dev/api/ai">
-                </label>
-                <div class="form-actions">
-                  <button id="saveAiSettingsButton" class="primary-button" type="button">AI API設定を保存</button>
-                  <button id="checkAiHealthButton" class="ghost-button" type="button">Worker health確認</button>
-                  <button id="testAiConnectionButton" class="ghost-button" type="button">AI接続テスト</button>
-                </div>
-                <dl id="aiApiStatusDetails" class="info-list compact"></dl>
-                <dl id="aiTutorStatusDetails" class="info-list compact"></dl>
-                <p id="aiConnectionTestResult" class="form-message" role="status" aria-live="polite"></p>
-                <ul class="note-list compact">
-                  <li>Cloudflare Workerの /api/ai URLを入力してください。</li>
-                  <li>OpenAI APIキーはここには入力しません。GitHub Pages、script.js、localStorageにも保存しません。</li>
-                  <li>APIキーはCloudflare Worker側のSecretに OPENAI_API_KEY として設定します。</li>
-                  <li>CORS設定、Worker URL、OPENAI_API_KEY Secretに問題がある場合は接続失敗として表示されます。</li>
-                </ul>
-              </div>
-            </section>
-
-            <section class="panel">
-              <div class="panel-heading">
-                <h3>API通信履歴</h3>
-              </div>
-              <dl id="aiApiLogSummary" class="info-list"></dl>
             </section>
 
             <section class="panel">
@@ -1079,11 +902,11 @@
                 <h3>注意事項</h3>
               </div>
               <ul class="note-list">
-                <li>学習記録はこのブラウザのlocalStorageに保存されます。</li>
-                <li>スマホとPCは自動同期されません。</li>
+                <li>TSUKAN YOBIKOはローカル教材中心の学習アプリです。</li>
+                <li>アプリ上でAI API通信は行いません。</li>
+                <li>不明点は外部のChatGPTに質問してください。</li>
+                <li>学習データはこのブラウザのlocalStorageに保存されます。</li>
                 <li>定期的にJSONバックアップを取ってください。</li>
-                <li>Publicリポジトリには個人の学習データは保存されません。</li>
-                <li>バックアップファイルには演習ログ・過去問ログ・実務ログ・AIプロンプト履歴・今日のメニュー・AI返答メモを含む学習記録が含まれるため、取り扱いに注意してください。</li>
               </ul>
             </section>
           </div>

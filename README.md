@@ -1,134 +1,95 @@
 # TSUKAN YOBIKO
 
-TSUKAN YOBIKOは、通関士試験をアプリ内で体系的に学ぶスマホファースト個人予備校アプリです。現在のバージョンはv1.8です。
+通関士試験向けのスマホファースト個人予備校アプリです。GitHub Pagesで動く静的アプリとして、HTML / CSS / JavaScriptのみで構成しています。
 
-v1.8は「AI自動添削・弱点提案版」です。AI講師の回答を読むだけで終わらせず、AIが提案した弱点タグ、A/B/C理解度、復習対象、次にやるべきレッスンを、ユーザー確認後に学習データへ反映できるようにしました。
+## 現在のバージョン
 
-## このアプリの位置づけ
+v2.0
 
-- 通関士試験学習の中心に置くスマホファースト個人予備校アプリ
-- 記録管理だけでなく、講義・確認問題・解説・復習・模試をアプリ内で進める予備校アプリ
-- 市販教材や過去問本文の大量複製ではなく、オリジナル要約講義と自作確認問題で論点を整理
-- GitHub Pagesで公開できるHTML/CSS/JavaScriptのみの静的アプリ
+v2.0は「AI API廃止・ローカル教材アプリ版」です。アプリ本体は、ローカル教材・問題・解説・復習・模試に集中します。
 
-## v1.8で追加した内容
+## v2.0の大方針変更
 
-- AI添削・弱点提案モード
-- 添削対象選択
-- 添削タイプ選択
-- AI構造化提案
-- AI提案パーサー
-- 弱点タグ提案
-- A/B/C判定提案
-- 復習対象提案
-- 次にやること提案
-- ユーザー確認後の反映
-- AI提案履歴
-- ホーム・分析画面へのAI提案サマリー
+- アプリ上でAI APIは使いません
+- OpenAI API連携は廃止しました
+- Cloudflare Workers連携は廃止しました
+- 不明点や深掘りは外部ChatGPTで行います
+- アプリ本体はローカル教材・問題・解説・復習・模試に集中します
+- 既存の過去AIメモや `lessonOverrides` 相当の追加教材は、学習データとして読める形を維持します
 
-AI提案は自動反映ではありません。AI分析、提案表示、ユーザー確認、反映項目選択、反映ボタン、保存という流れで扱います。
+## v2.0で行ったこと
 
-## 既存機能
+- AI API設定の削除
+- AI送信機能の削除
+- 外部ChatGPT相談文作成機能への整理
+- 問題バンク基盤追加
+- ドリル基盤追加
+- ローカル教材拡充方針の明記
+- 設定画面をローカル教材アプリ向けに再整理
+- JSONバックアップ/復元の互換性維持
 
-- AI API連携設定、AI中継サーバーURL設定、AI接続テスト
-- AIプロンプト生成、AI講師モード、AI講師履歴、AI応答履歴保存
-- レッスン中のAI質問、確認問題誤答からAI解説、模試結果からAI分析
-- 通関業法、関税法等、通関実務のカリキュラム
-- 今日の学習メニュー、分析画面、復習画面、設定画面
-- 総合模試、横断復習、弱点タグ分析
-- JSONバックアップ/復元、localStorage保存
+## 中心機能
 
-## GitHub Pagesでの利用前提
+- 学ぶ：講義、重要ポイント、混同ポイント、ひっかけ注意、ミニまとめ
+- 解く：確認問題、弱点別ドリル、科目別ミニ模試、総合模試
+- 直す：解説、ひっかけ解説、ミス防止ポイント、復習対象化
+- 繰り返す：C判定復習、誤答復習、弱点タグ別復習、今日のメニュー
+- 見る：進捗、弱点、模試結果、科目別状態
 
-このリポジトリはPublicで公開される前提です。コードと初期カリキュラム、オリジナル模試問題は公開されますが、学習記録、模試結果、回答、メモ、弱点タグ、到達判定、今日のメニュー履歴、レッスン進捗、AI履歴、AI API設定は各ブラウザのlocalStorageに保存され、GitHubには自動保存されません。
+## 今後の教材目標
 
-ローカルで使う場合は、リポジトリ直下の`index.html`をブラウザで開きます。GitHub Pagesで公開する場合は、GitHubのリポジトリ設定からPagesを有効にし、公開元をリポジトリのルートに設定します。React、Vue、外部ライブラリは使っていません。
+- 講義レッスン：100本以上
+- 確認問題：600問以上
+- ひっかけ問題：200問以上
+- 通関実務ミニ演習：100問以上
+- 総合模試：5セット以上
 
-## 保存方式
+この目標は、ヒュー赤のボリューム感を意識したローカル教材拡充方針です。市販教材や過去問本文を大量複製せず、オリジナル要約・自作問題・自作解説として拡充します。
 
-保存先はブラウザのlocalStorageです。
+## データ保存
 
-- 単元データ: `tsukanYobiko.units`
-- バージョン: `tsukanYobiko.version`
-- 演習ログ用: `tsukanYobiko.practiceLogs`
-- 過去問ログ用: `tsukanYobiko.pastExamLogs`
-- 実務ログ用: `tsukanYobiko.practicalLogs`
-- AI解析ログ用: `tsukanYobiko.aiAnalyses`
-- AI API設定用: `tsukanYobiko.aiSettings`
-- 今日の学習メニュー用: `tsukanYobiko.studyPlans`
-- レッスン進捗用: `tsukanYobiko.curriculumProgress`
-- 総合模試結果用: `tsukanYobiko.mockExamResults`
+学習データはこのブラウザの `localStorage` に保存されます。スマホとPCは自動同期されません。定期的にJSONバックアップを取ってください。
 
-エクスポートJSONには、`units`、`practiceLogs`、`pastExamLogs`、`practicalLogs`、`aiAnalyses`、`studyPlans`、`curriculumProgress`、`mockExamResults`、`aiSettings`を含めます。古いバックアップにAI提案関連フィールドがなくても復元できます。
+主な保存対象:
 
-## AI機能について
+- `units`
+- `practiceLogs`
+- `pastExamLogs`
+- `practicalLogs`
+- `aiAnalyses`
+- `studyPlans`
+- `curriculumProgress`
+- `mockExamResults`
+- `lessonOverrides`
 
-AI添削・弱点提案モードでは、AI回答末尾の `TSUKAN_YOBIKO_SUGGESTION:` ブロックからJSON風の構造化提案を抽出します。JSON.parseに成功した場合は、提案理解度、復習対象提案、弱点タグ候補、次にやるべきレッスン、具体的アクション、AIの自信度として表示します。解析に失敗してもAI回答本文は表示され、手動確認できます。
+古いバックアップに `aiSettings` が含まれていても、復元時にエラーにならないようにしています。v2.0のエクスポートJSONには `aiSettings` を含めません。
 
-AI API連携ONかつ中継サーバーURL設定済みの場合はCloudflare Worker経由で送信します。AI API連携OFFまたは未設定の場合は、手動コピー用プロンプトを表示し、ChatGPTなどへ貼り付けて使えます。
+## 外部ChatGPT相談
 
-AI提案は学習補助です。法令、通達、試験公告、公式解答などの最終確認は、必ず公式情報や信頼できる最新資料で行ってください。
+v2.0ではアプリ内通信を行いません。必要な場合は、アプリで相談文を作成し、外部ChatGPTに貼り付けて使います。
 
-## セキュリティ方針
+作成できる相談文:
 
-- OpenAI APIキーをフロントエンドに置かない
-- APIキー入力欄を作らない
-- OpenAI APIキーを`script.js`に書かない
-- OpenAI APIキーをlocalStorageに保存しない
-- WorkerコードにAPIキーを直書きしない
-- Publicリポジトリに`.env`や`.dev.vars`をコミットしない
-- ブラウザからOpenAI APIへ直接Bearer token付きで通信しない
-- `OPENAI_API_KEY`はCloudflare WorkerのSecretとして設定する
+- レッスンについての質問文
+- 誤答についての質問文
+- 模試結果についての質問文
+- 弱点タグについての質問文
+- 今日のメニューについての質問文
 
-## Cloudflare Workers
+## 不要になったファイル
 
-このリポジトリにはCloudflare Workers用のAI中継サーバーコードを同梱しています。
+v2.0以降、Cloudflare Workers用のAI中継サーバー関連ファイルは不要です。
 
-```text
-TSUKAN YOBIKO on GitHub Pages
-↓
-Cloudflare Worker /api/ai
-↓
-OpenAI Responses API
-```
-
-TSUKAN YOBIKOの設定画面には、Cloudflare Workerの `/api/ai` URLを入力します。例: `https://your-worker-name.your-subdomain.workers.dev/api/ai`
-
-### POST /api/ai
-
-TSUKAN YOBIKO本体から送信するJSONの `version` は `v1.8` です。
-
-```json
-{
-  "app": "TSUKAN_YOBIKO",
-  "version": "v1.8",
-  "mode": "chat",
-  "promptType": "AI添削・弱点提案",
-  "targetType": "模試結果",
-  "targetTitle": "15問ライト模試",
-  "prompt": "生成済みプロンプト本文",
-  "metadata": {
-    "correctionType": "弱点タグ提案",
-    "targetId": "",
-    "createdAt": ""
-  }
-}
-```
-
-## Publicリポジトリ運用時の注意
-
-- コードと初期カリキュラム、オリジナル模試問題は公開されます
-- 個人の学習記録と模試結果はlocalStorageに保存され、GitHubには自動保存されません
-- スマホとPCは自動同期されません
-- 定期的にJSONバックアップを取ってください
-- 個人情報、秘密情報、非公開情報を初期データとしてコードに書き込まないでください
-- 市販教材や過去問本文をそのまま大量に初期データへ入れないでください
-- AI提案だけで法令・公式情報を判断しないでください
+- `worker.js`
+- `wrangler.toml.example`
+- `workers/` 配下のAI中継サーバー関連ファイル
 
 ## 今後の拡張予定
 
-- v1.9：試験直前モード
-- v2.0：本格予備校版
-- v2.1：PWA対応
-- v2.2：スマホ・PC間同期検討
-- 将来：講義データ外部JSON化
+- v2.1：通関業法 問題バンク100問追加
+- v2.2：関税法等 問題バンク200問追加
+- v2.3：通関実務 手順問題・計算問題追加
+- v2.4：弱点別ドリル強化
+- v2.5：総合模試セット追加
+- v2.6：教材データ外部JSON化
+- v3.0：ローカル予備校版完成
