@@ -1,4 +1,4 @@
-const APP_VERSION = "v2.0";
+const APP_VERSION = "v2.1";
 const AI_API_TIMEOUT_MS = 30000;
 const AI_HEALTH_TIMEOUT_MS = 10000;
 const STORAGE_KEYS = {
@@ -12,7 +12,8 @@ const STORAGE_KEYS = {
   lessonOverrides: "tsukanYobiko.lessonOverrides",
   studyPlans: "tsukanYobiko.studyPlans",
   curriculumProgress: "tsukanYobiko.curriculumProgress",
-  mockExamResults: "tsukanYobiko.mockExamResults"
+  mockExamResults: "tsukanYobiko.mockExamResults",
+  drillResults: "tsukanYobiko.drillResults"
 };
 
 const LEVELS = ["未判定", "A", "B", "C"];
@@ -53,6 +54,16 @@ const WEAKNESS_TAGS = [
   "期間・期限",
   "例外規定",
   "罰則",
+  "義務規定と罰則の混同",
+  "監督処分と懲戒処分の混同",
+  "権限者の混同",
+  "欠格事由",
+  "通関士",
+  "名義貸し",
+  "秘密保持義務",
+  "信用失墜行為",
+  "記帳・届出・報告",
+  "料金掲示",
   "課税価格",
   "税額計算",
   "申告書",
@@ -90,7 +101,7 @@ const AI_PROMPT_TYPES = [
   "過去問分析",
   "総合学習相談"
 ];
-const AI_TARGET_TYPES = ["単元", "レッスン", "通関業法カリキュラム", "関税法等カリキュラム", "通関実務カリキュラム", "演習ログ", "過去問ログ", "実務ログ", "復習対象", "総合模試結果", "最新模試結果", "横断弱点", "全体サマリー"];
+const AI_TARGET_TYPES = ["単元", "レッスン", "通関業法カリキュラム", "通関業法ドリル結果", "関税法等カリキュラム", "通関実務カリキュラム", "演習ログ", "過去問ログ", "実務ログ", "復習対象", "総合模試結果", "最新模試結果", "横断弱点", "全体サマリー"];
 const STUDY_DURATIONS = ["15分", "30分", "1時間", "2時間", "じっくり"];
 const MOCK_EXAM_MODES = {
   light15: {
@@ -153,7 +164,7 @@ const AI_TUTOR_QUESTION_INSTRUCTIONS = {
   "質問に直接回答": "ユーザーの自由質問へ、通関士試験対策として簡潔に回答してください。"
 };
 
-const AI_SUGGESTION_TARGET_TYPES = ["レッスン確認問題", "レッスン理解度", "模試結果", "今日のメニュー", "弱点タグ", "通関業法カリキュラム", "関税法等カリキュラム", "通関実務カリキュラム", "自由入力"];
+const AI_SUGGESTION_TARGET_TYPES = ["レッスン確認問題", "レッスン理解度", "模試結果", "今日のメニュー", "弱点タグ", "通関業法カリキュラム", "通関業法ドリル結果", "関税法等カリキュラム", "通関実務カリキュラム", "自由入力"];
 const AI_SUGGESTION_TYPES = ["回答添削", "誤答原因分析", "弱点タグ提案", "A/B/C判定提案", "復習対象提案", "次にやること提案", "総合診断", "類似問題提案"];
 const AI_SUGGESTION_MARKER = "TSUKAN_YOBIKO_SUGGESTION:";
 const AI_SUGGESTION_TYPE_INSTRUCTIONS = {
@@ -1184,12 +1195,147 @@ const QUESTION_BANK = [
   makeBankQuestion("qb-practical-005", "通関実務", "時間配分", "lesson-practical-time-management", "基礎", "single", "通関実務の時間配分として適切なものはどれか。", ["資料読取、分類、計算、見直しに時間枠を作る", "最初の問題に全時間を使う", "計算問題は見直さない", "迷った問題を無制限に考える"], "資料読取、分類、計算、見直しに時間枠を作る", "実務は処理順と見直し時間の確保が得点に直結します。", "一問に固執する癖が横断的な失点になります。", "時間不足")
 ];
 
+QUESTION_BANK.push(...buildTsukangyohoQuestionBankV21());
+
+function buildTsukangyohoQuestionBankV21() {
+  const tf = ["正しい", "誤り"];
+  const trapChoices = ["問題なし", "主体が誤り", "権限者が誤り", "罰則との混同", "手続区分が誤り"];
+  const rows = [
+    ["目的・定義", "lesson-tsukangyoho-purpose", "通関業法の目的は、通関手続の適正かつ迅速な実施を確保し、通関業の健全な発達を図る点にある。", tf, "正しい", "目的規定は、適正・迅速な通関手続と通関業の健全な発達を結びつけて読む。", "通関業者の利益保護だけ、関税率決定だけ、と狭く読む表現に注意する。", "制度趣旨", "基礎", "trueFalse"],
+    ["目的・定義", "lesson-tsukangyoho-purpose", "通関業法の中心目的は、個々の通関業者の営業利益を国が保証することである。", tf, "誤り", "健全な発達は目的に含まれるが、営業利益の保証が中心目的ではない。", "利益保護という語に引っ張られず、適正・迅速な通関手続を軸にする。", "制度趣旨", "基礎", "trueFalse"],
+    ["目的・定義", "lesson-tsukangyoho-business-related", "通関業務に当たるためには、他人の依頼を受けて業として行うことが前提になる。", tf, "正しい", "通関業法上の通関業は、他人の依頼を受け、業として通関業務を行う構造で整理する。", "自社貨物の事務処理や一回限りの手伝いまで同じにしない。", "用語混同", "標準", "trueFalse"],
+    ["目的・定義", "lesson-tsukangyoho-business-related", "通関手続に関する一般的な相談は、常に通関業務そのものに当たり、許可がなければ一切できない。", tf, "誤り", "相談や周辺事務は関連業務として整理される場面があり、通関業務そのものと常に同一ではない。", "相談、書類作成、申告代理を全部同じ箱に入れるのがひっかけ。", "用語混同", "標準", "trueFalse"],
+    ["目的・定義", "lesson-tsukangyoho-business-related", "通関業務と関連業務の区別で最も適切なものはどれか。", ["申告等の代理・書類作成は通関業務の中核になり得る", "貨物の国内販売は常に通関業務である", "関連業務は法律上存在しない", "相談業務は常に罰則対象の無許可営業である"], "申告等の代理・書類作成は通関業務の中核になり得る", "申告・申請・請求等の代理や通関書類作成が中心論点になる。", "周辺サービスを何でも通関業務にする選択肢に注意する。", "用語混同", "基礎", "singleChoice"],
+    ["目的・定義", "lesson-tsukangyoho-purpose", "通関業法は、税関手続に関係しない国内販売契約の内容を直接規制することを主目的とする。", tf, "誤り", "通関業法は通関業と通関手続の適正な実施を中心に置く。国内販売契約一般の規制法ではない。", "輸入後の取引全体を通関業法に広げすぎない。", "制度趣旨", "基礎", "trueFalse"],
+    ["目的・定義", "lesson-tsukangyoho-business-related", "「他人の依頼を受けて」の要件は、通関業者と依頼者の関係を判断するうえで重要である。", tf, "正しい", "自己の手続か、他人の依頼に基づく業務かは通関業の入口で問われる。", "通関書類に触れたら直ちに通関業、という短絡に注意する。", "用語混同", "標準", "trueFalse"],
+    ["目的・定義", "lesson-tsukangyoho-business-related", "記述「輸入者が自社の輸入申告資料を社内で整理しただけで、通関業の許可が必要になる。」の問題点はどれか。", trapChoices, "手続区分が誤り", "自社の内部整理だけでは、他人の依頼を受けて業として通関業務を行う場面とはいえない。", "通関に関係する資料作成ならすべて許可制、と広げる表現がひっかけ。", "許可・届出・確認の混同", "ひっかけ", "trapCheck"],
+    ["通関業務と関連業務", "lesson-tsukangyoho-business-related", "輸出入申告に必要な通関書類を作成する業務は、通関業務に含まれ得る。", tf, "正しい", "通関書類の作成は通関業務の重要な範囲として押さえる。", "単なる事務作業だから通関業務ではない、という切り捨てに注意する。", "用語混同", "基礎", "trueFalse"],
+    ["通関業務と関連業務", "lesson-tsukangyoho-business-related", "不服申立てに関する代理も、通関業務の範囲として問われることがある。", tf, "正しい", "申告だけでなく、通関手続に係る不服申立て等の代理も範囲論点になる。", "輸出入申告だけに限定しすぎる選択肢に注意する。", "用語混同", "標準", "trueFalse"],
+    ["通関業務と関連業務", "lesson-tsukangyoho-business-related", "通関業務の範囲として最も適切なものはどれか。", ["輸入申告の代理", "輸入貨物の広告制作", "輸入者の社内人事評価", "商品の小売価格決定"], "輸入申告の代理", "申告・申請・請求など税関手続に向かう代理が通関業務の中心。", "輸入に関係する商流上の仕事を全部通関業務にしない。", "選択肢読解", "基礎", "singleChoice"],
+    ["通関業務と関連業務", "lesson-tsukangyoho-business-related", "貨物の運送、保管、保険の手配などは、通関業務に付随する関連業務として扱われる場面がある。", tf, "正しい", "通関業者が行う周辺事務は関連業務として整理されることがある。", "関連業務があるから通関業務の許可が不要、という逆方向の飛躍にも注意する。", "用語混同", "標準", "trueFalse"],
+    ["通関業務と関連業務", "lesson-tsukangyoho-business-related", "他法令の許可・承認の取得支援は、通関手続と関係しても常に通関業務そのものに限られる。", tf, "誤り", "他法令手続との関係は出るが、通関業務そのものか関連業務かを分ける必要がある。", "他法令、税関手続、関連業務を一体化する表現に注意。", "用語混同", "応用", "trueFalse"],
+    ["通関業務と関連業務", "lesson-tsukangyoho-business-related", "記述「輸入後の倉庫保管だけを請け負う業者は、必ず通関業者である。」の問題点はどれか。", trapChoices, "手続区分が誤り", "保管だけでは申告代理や通関書類作成とはいえず、必ず通関業者とは限らない。", "輸入貨物に関わる仕事を全部通関業にする表現がひっかけ。", "用語混同", "ひっかけ", "trapCheck"],
+    ["通関業務と関連業務", "lesson-tsukangyoho-business-related", "通関業務に含まれる申請・請求の代理は、税関手続に向けたものとして理解する。", tf, "正しい", "申告だけでなく申請・請求も、通関手続との関係で整理する。", "代理という語だけで民事代理一般に広げない。", "理解不足", "標準", "trueFalse"],
+    ["通関業務と関連業務", "lesson-tsukangyoho-business-related", "通関業者が関連業務を行う場合でも、通関業務との区別を意識して義務や責任を判断する必要がある。", tf, "正しい", "関連業務と通関業務は近いが、試験では範囲と効果の違いが狙われる。", "関連という言葉を見て全部同じ制度として処理しない。", "理解不足", "標準", "trueFalse"],
+    ["通関業の許可", "lesson-tsukangyoho-permission", "通関業を営むには、原則として財務大臣の許可を受ける必要がある。", tf, "正しい", "通関業は許可制であり、許可権者は財務大臣として整理する。", "税関長への届出だけ、通関士の確認だけ、という置換に注意。", "権限者の混同", "基礎", "trueFalse"],
+    ["通関業の許可", "lesson-tsukangyoho-permission", "通関業の許可は、営業開始後に税関長へ届け出れば足りる。", tf, "誤り", "通関業は事後届出制ではなく許可制。営業開始前の許可が基本になる。", "許可と届出の語を入れ替える典型問題。", "許可・届出・確認の混同", "基礎", "trueFalse"],
+    ["通関業の許可", "lesson-tsukangyoho-permission", "通関業の許可権者として正しいものはどれか。", ["財務大臣", "依頼者", "都道府県知事", "通関士会"], "財務大臣", "通関業の許可は財務大臣の権限として押さえる。", "税関長、依頼者、民間団体への置換に注意する。", "権限者の混同", "基礎", "singleChoice"],
+    ["通関業の許可", "lesson-tsukangyoho-permission", "営業所の新設や重要事項の変更では、許可・届出・承認など手続区分を問題文ごとに確認する必要がある。", tf, "正しい", "通関業では許可後も営業所や申請事項の変更が問われる。手続名を丁寧に読む。", "変更なら全部自由、全部新規許可という両極端に注意する。", "許可・届出・確認の混同", "標準", "trueFalse"],
+    ["通関業の許可", "lesson-tsukangyoho-permission", "通関業の許可には、必要に応じて条件が付されることがある。", tf, "正しい", "許可条件は業務の適正確保のために問われる論点。", "許可は一度出れば無条件で永続、という読み方に注意。", "理解不足", "標準", "trueFalse"],
+    ["通関業の許可", "lesson-tsukangyoho-permission", "許可基準では、人的・物的・経理的な体制など、適正に通関業を営めるかが問題になる。", tf, "正しい", "許可制は適正な通関業務を担保するため、体制面の確認が重要。", "申請書を出せば必ず許可、という表現に注意。", "制度趣旨", "標準", "trueFalse"],
+    ["通関業の許可", "lesson-tsukangyoho-permission", "記述「通関士試験に合格した者が1人いれば、その者個人は当然に通関業を開業できる。」の問題点はどれか。", trapChoices, "手続区分が誤り", "通関士資格と通関業の許可は別制度。個人開業には通関業の許可が必要になる。", "試験合格、確認、許可を連鎖させて同一視する表現がひっかけ。", "許可・届出・確認の混同", "ひっかけ", "trapCheck"],
+    ["通関業の許可", "lesson-tsukangyoho-permission", "通関業の許可申請では、申請者や営業所に関する事項が審査対象になる。", tf, "正しい", "誰がどこでどのように営むかは許可審査の基本。", "申請者だけ、営業所だけ、と一方に限定しすぎない。", "暗記不足", "標準", "trueFalse"],
+    ["通関業の許可", "lesson-tsukangyoho-permission", "許可を受けた通関業者であっても、許可内容と異なる営業所展開では手続確認が必要になる。", tf, "正しい", "許可後の変更も管理対象。営業所に関する手続を軽視しない。", "一度許可を受ければ全国どこでも無条件という表現に注意。", "許可・届出・確認の混同", "応用", "trueFalse"],
+    ["通関業の許可", "lesson-tsukangyoho-permission", "通関業の開始について最も危険な覚え方はどれか。", ["通関業は許可制である", "許可権者を確認する", "届出だけで自由に始められると覚える", "営業所の扱いを確認する"], "届出だけで自由に始められると覚える", "通関業の入口は許可制。届出だけで足りるという覚え方は誤り。", "届出という軽い手続語に置き換える選択肢が頻出。", "許可・届出・確認の混同", "基礎", "singleChoice"],
+    ["欠格事由", "lesson-tsukangyoho-disqualification", "欠格事由は、申請者本人だけでなく法人の役員などにも関係する。", tf, "正しい", "法人申請では役員等の属性も欠格事由の判断対象になる。", "法人なら自然人の事情を見ない、という表現に注意。", "主体の混同", "標準", "trueFalse"],
+    ["欠格事由", "lesson-tsukangyoho-disqualification", "法人である申請者については、役員の事情は欠格事由の判断に一切影響しない。", tf, "誤り", "法人役員の事情が問題になる場面がある。", "法人と個人を完全に切り離す選択肢は危険。", "欠格事由", "基礎", "trueFalse"],
+    ["欠格事由", "lesson-tsukangyoho-disqualification", "欠格事由の学習で最も重要な組合せはどれか。", ["対象者と期間", "貨物価格と運賃", "品名と統計番号だけ", "依頼者の住所と販売価格"], "対象者と期間", "誰が、どの違反・処分から、どの期間問題になるかをセットで見る。", "欠格事由は一律永久と覚えると期間問題で崩れる。", "期間・期限", "基礎", "singleChoice"],
+    ["欠格事由", "lesson-tsukangyoho-disqualification", "一定の刑罰を受けたことは、通関業の許可における欠格事由として問題になり得る。", tf, "正しい", "刑罰歴は欠格事由の典型論点。対象犯罪や期間を確認する。", "刑罰ならすべて永久、軽微なら一切無関係、という極端な表現に注意。", "欠格事由", "標準", "trueFalse"],
+    ["欠格事由", "lesson-tsukangyoho-disqualification", "通関業法違反や関税法違反に関する一定の処分・刑罰は、欠格事由の判断で重要である。", tf, "正しい", "通関業法・関税法等との関係は欠格事由で狙われやすい。", "法律名を入れ替えたり、期間を落としたりする問題に注意。", "欠格事由", "標準", "trueFalse"],
+    ["欠格事由", "lesson-tsukangyoho-disqualification", "通関業の許可を取り消された者について、一定期間の制限が問題になることがある。", tf, "正しい", "許可取消し後の一定期間は欠格事由として整理する。", "取消しと消滅、取消し後の期間を混同しない。", "期間・期限", "標準", "trueFalse"],
+    ["欠格事由", "lesson-tsukangyoho-disqualification", "暴力団員等やその支配関係は、通関業の許可判断で問題になり得る。", tf, "正しい", "反社会的勢力との関係は欠格事由・適格性で重要。", "本人だけを見て支配関係を見落とす表現に注意。", "欠格事由", "標準", "trueFalse"],
+    ["欠格事由", "lesson-tsukangyoho-disqualification", "法定代理人がいる場合でも、本人以外の事情は欠格事由で一切考慮されない。", tf, "誤り", "法定代理人等の事情が問題になる場面がある。", "本人限定という狭すぎる読みがひっかけ。", "主体の混同", "応用", "trueFalse"],
+    ["欠格事由", "lesson-tsukangyoho-disqualification", "記述「欠格事由は通関士個人の確認だけに関係し、通関業の許可には関係しない。」の問題点はどれか。", trapChoices, "手続区分が誤り", "欠格事由は通関業許可でも重要。通関士確認だけの制度ではない。", "許可と確認を一方に寄せる表現がひっかけ。", "許可・届出・確認の混同", "ひっかけ", "trapCheck"],
+    ["欠格事由", "lesson-tsukangyoho-disqualification", "欠格事由は、違反・処分・刑罰の内容と経過期間を組み合わせて判断する。", tf, "正しい", "欠格事由は項目暗記だけでなく、期間との組合せで問われる。", "永久不可、即時復活などの断定表現に注意。", "期間・期限", "標準", "trueFalse"],
+    ["許可の消滅・取消し", "lesson-tsukangyoho-permission", "通関業者が死亡した場合など、許可が消滅する事由と、行政庁が取り消す事由は区別する。", tf, "正しい", "消滅は一定事実の発生、取消しは処分として整理する。", "死亡、解散、取消しを全部同じ手続名で読むと失点する。", "許可・届出・確認の混同", "標準", "trueFalse"],
+    ["許可の消滅・取消し", "lesson-tsukangyoho-permission", "法人である通関業者が解散した場合、許可の消滅事由として問題になる。", tf, "正しい", "法人の解散は許可の存続に関わる典型事由。", "解散しても許可が当然に営業所へ残る、という表現に注意。", "主体の混同", "基礎", "trueFalse"],
+    ["許可の消滅・取消し", "lesson-tsukangyoho-permission", "通関業者の破産は、許可の存続に関係しない単なる民事上の事情である。", tf, "誤り", "破産は許可の消滅等で問われる重要事由。", "民事手続だから通関業法と無関係、という切り離しに注意。", "暗記不足", "標準", "trueFalse"],
+    ["許可の消滅・取消し", "lesson-tsukangyoho-supervision", "許可の取消しは、監督処分として行われる場合がある。", tf, "正しい", "通関業者に対する監督処分には許可取消しが含まれる。", "消滅事由と取消処分を分けて理解する。", "監督処分と懲戒処分の混同", "標準", "trueFalse"],
+    ["許可の消滅・取消し", "lesson-tsukangyoho-permission", "廃業・解散・死亡などの事実による許可の扱いを、すべて懲戒処分と呼ぶ。", tf, "誤り", "懲戒処分は通関士への処分。許可の消滅事由とは別。", "処分・消滅・懲戒の語を混ぜる表現に注意。", "監督処分と懲戒処分の混同", "ひっかけ", "trueFalse"],
+    ["許可の消滅・取消し", "lesson-tsukangyoho-permission", "記述「通関業者が廃業した場合は、通関士に対する確認取消し処分だけで許可が消滅する。」の問題点はどれか。", trapChoices, "手続区分が誤り", "通関業者の許可の消滅と、通関士個人の確認取消しは別制度。", "事業者の許可と通関士の確認を混同する問題。", "監督処分と懲戒処分の混同", "ひっかけ", "trapCheck"],
+    ["通関士の設置・確認", "lesson-tsukangyoho-customs-broker-confirmation", "通関士として通関業務に従事するには、試験合格だけでなく税関長の確認を受ける必要がある。", tf, "正しい", "通関士試験合格と税関長の確認を分けて押さえる。", "合格した瞬間に当然通関士、という表現が頻出。", "通関士", "基礎", "trueFalse"],
+    ["通関士の設置・確認", "lesson-tsukangyoho-customs-broker-confirmation", "通関士の確認を行う権限者は、依頼者である輸入者である。", tf, "誤り", "確認は税関長の権限として整理する。", "依頼者や通関業者が確認権者になる表現に注意。", "権限者の混同", "基礎", "trueFalse"],
+    ["通関士の設置・確認", "lesson-tsukangyoho-customs-broker-confirmation", "通関士の確認に関する正しい説明はどれか。", ["税関長の確認を受けなければ通関士として扱われない", "試験合格だけで当然に確認済みとなる", "通関業者が自由に確認を代行できる", "確認は依頼者の承認で足りる"], "税関長の確認を受けなければ通関士として扱われない", "試験合格、雇用、確認は段階を分ける。", "資格・雇用・確認を一つにする選択肢に注意。", "許可・届出・確認の混同", "基礎", "singleChoice"],
+    ["通関士の設置・確認", "lesson-tsukangyoho-customs-broker-confirmation", "通関業者は、一定の営業所に通関士を置く義務が問題になる。", tf, "正しい", "通関士設置義務は営業所単位で問われる。", "会社全体に1人いればすべて足りる、という表現に注意。", "通関士", "標準", "trueFalse"],
+    ["通関士の設置・確認", "lesson-tsukangyoho-customs-broker-confirmation", "通関士でない従業者は、通関業者に雇われていれば当然に通関士の審査業務を行える。", tf, "誤り", "通関士と一般従業者は区別する。通関士の審査・記名に関する制度を確認する。", "従業者イコール通関士という主体混同がひっかけ。", "主体の混同", "標準", "trueFalse"],
+    ["通関士の設置・確認", "lesson-tsukangyoho-customs-broker-confirmation", "確認拒否事由は、通関士としての適格性を判断するために問われる。", tf, "正しい", "確認を受ける段階でも、一定の拒否事由が問題になる。", "試験合格者なら必ず確認、という表現に注意する。", "欠格事由", "応用", "trueFalse"],
+    ["通関士の設置・確認", "lesson-tsukangyoho-customs-broker-confirmation", "通関士の資格・確認が失われる場面では、通関士としての業務可否を改めて判断する必要がある。", tf, "正しい", "確認取消しや資格喪失は、通関士としての業務に直結する。", "過去に確認を受けた事実だけで永続すると読まない。", "通関士", "標準", "trueFalse"],
+    ["通関士の設置・確認", "lesson-tsukangyoho-customs-broker-confirmation", "記述「通関業の許可を受けた法人の全従業者は、税関長の確認なしに通関士となる。」の問題点はどれか。", trapChoices, "主体が誤り", "通関業者の従業者であることと通関士として確認を受けることは別。", "会社の許可を従業者個人の確認へ流用する表現がひっかけ。", "主体の混同", "ひっかけ", "trapCheck"],
+    ["通関士の設置・確認", "lesson-tsukangyoho-customs-broker-confirmation", "通関士の配置は、営業所ごとの通関業務量や制度上の設置義務と関連して整理する。", tf, "正しい", "通関士設置は営業所単位・業務内容との関係で問われる。", "本店だけ、全国一括、という単純化に注意。", "通関士", "応用", "trueFalse"],
+    ["通関士の設置・確認", "lesson-tsukangyoho-customs-broker-confirmation", "通関士の審査は、通関書類の内容を適正に確認する役割として出題される。", tf, "正しい", "通関士は通関書類の審査・記名等で重要な役割を担う。", "単なる名義だけ、形式的な押印だけと軽く見る表現に注意。", "通関士", "標準", "trueFalse"],
+    ["通関業者・通関士の義務", "lesson-tsukangyoho-name-lending", "通関業者は、自己の名義を他人に通関業のため使用させてはならない。", tf, "正しい", "名義貸し禁止は許可制を守るための重要義務。", "実質的に見て監督していれば自由、という表現に注意。", "名義貸し", "基礎", "trueFalse"],
+    ["通関業者・通関士の義務", "lesson-tsukangyoho-confidentiality", "秘密保持義務は、業務上知り得た秘密を正当な理由なく漏らさない義務である。", tf, "正しい", "秘密保持は通関業者・通関士等に関する重要義務。", "顧客が法人なら秘密でない、退職後なら自由、という表現に注意。", "秘密保持義務", "基礎", "trueFalse"],
+    ["通関業者・通関士の義務", "lesson-tsukangyoho-confidentiality", "退職後であれば、通関業務で知った依頼者の秘密を自由に漏らしてよい。", tf, "誤り", "秘密保持義務は退職後の扱いも含めて問われる。", "現職中だけ、という期間の狭め方がひっかけ。", "秘密保持義務", "標準", "trueFalse"],
+    ["通関業者・通関士の義務", "lesson-tsukangyoho-credit-penalty-trap", "法人である通関業者の役員も、信用又は品位を害する行為の禁止対象になり得る。", tf, "正しい", "信用失墜行為の主体には役員等も含めて整理する。", "役員は法人そのものではないから対象外、という読み方に注意。", "信用失墜行為", "標準", "trueFalse"],
+    ["通関業者・通関士の義務", "lesson-tsukangyoho-customs-broker-confirmation", "通関士は、一定の通関書類について審査し、記名する役割を担う。", tf, "正しい", "通関士の審査・記名は通関業法の中核論点。", "通関業者の一般義務と通関士個人の役割を分ける。", "通関士", "標準", "trueFalse"],
+    ["通関業者・通関士の義務", "lesson-tsukangyoho-credit-penalty-trap", "通関業者・通関士の義務違反は、常に同じ刑罰へ直結する。", tf, "誤り", "義務ごとに、監督処分、懲戒処分、罰則の有無を分ける。", "義務違反イコール罰金、という短絡が典型トラップ。", "義務規定と罰則の混同", "ひっかけ", "trueFalse"],
+    ["通関業者・通関士の義務", "lesson-tsukangyoho-confidentiality", "秘密保持義務について正しいものはどれか。", ["正当な理由なく業務上知り得た秘密を漏らしてはならない", "退職後は常に自由に漏らせる", "法人情報は常に秘密に当たらない", "税関職員だけが負う義務である"], "正当な理由なく業務上知り得た秘密を漏らしてはならない", "秘密保持は情報の性質と正当理由を確認する。", "退職後・法人情報・主体限定のひっかけに注意。", "秘密保持義務", "基礎", "singleChoice"],
+    ["通関業者・通関士の義務", "lesson-tsukangyoho-name-lending", "記述「名義貸しは依頼者の同意があれば許される。」の問題点はどれか。", trapChoices, "手続区分が誤り", "この記述は誤り。依頼者の同意があっても名義貸し禁止の趣旨は消えない。", "同意や監督を持ち出して禁止を弱める表現がひっかけ。", "名義貸し", "ひっかけ", "trapCheck"],
+    ["通関業者・通関士の義務", "lesson-tsukangyoho-business-related", "依頼者への説明や書類内容の確認は、適正な通関業務のために重要な実務上の義務として理解する。", tf, "正しい", "依頼者対応と書類確認は、適正・迅速な通関手続につながる。", "形式的に申告できれば説明不要、という読み方に注意。", "理解不足", "標準", "trueFalse"],
+    ["通関業者・通関士の義務", "lesson-tsukangyoho-credit-penalty-trap", "信用失墜行為の禁止は、通関業者だけでなく通関士についても問題になる。", tf, "正しい", "通関士も信用・品位を害する行為の禁止対象として整理する。", "通関業者だけの義務と限定する表現に注意。", "信用失墜行為", "標準", "trueFalse"],
+    ["信用失墜行為と罰則", "lesson-tsukangyoho-credit-penalty-trap", "法人である通関業者の役員が信用失墜行為をした場合でも、第20条違反そのものが直ちに罰金刑へ結び付くとは限らない。", tf, "正しい", "対象者に含まれることと罰則があることを分ける。", "役員も対象という正しい知識から罰金へ飛ばすのが狙い。", "義務規定と罰則の混同", "ひっかけ", "trueFalse"],
+    ["信用失墜行為と罰則", "lesson-tsukangyoho-credit-penalty-trap", "信用失墜行為の禁止に違反したときは、必ず刑事罰だけで処理され、監督処分や懲戒処分は問題にならない。", tf, "誤り", "信用失墜行為は監督処分・懲戒処分の文脈で問題になる。刑罰だけに限定しない。", "処分と刑罰を一つにする表現に注意。", "監督処分と懲戒処分の混同", "ひっかけ", "trueFalse"],
+    ["信用失墜行為と罰則", "lesson-tsukangyoho-credit-penalty-trap", "通関士が信用又は品位を害する行為をした場合、懲戒処分の検討対象になり得る。", tf, "正しい", "通関士個人については懲戒処分との関係で整理する。", "通関業者への監督処分だけに寄せる選択肢に注意。", "監督処分と懲戒処分の混同", "標準", "trueFalse"],
+    ["信用失墜行為と罰則", "lesson-tsukangyoho-credit-penalty-trap", "信用失墜行為のひっかけとして最も危険なものはどれか。", ["対象になることと罰則があることを同一視する", "主体を確認する", "処分と刑罰を分ける", "通関士も対象になるか確認する"], "対象になることと罰則があることを同一視する", "信用失墜行為は、主体・義務・処分・罰則を分ける。", "第20条違反そのものを罰金刑に直結させる表現が典型。", "義務規定と罰則の混同", "ひっかけ", "singleChoice"],
+    ["信用失墜行為と罰則", "lesson-tsukangyoho-credit-penalty-trap", "記述「通関士が信用失墜行為をした場合は、通関業者の許可取消しだけが唯一の処分である。」の問題点はどれか。", trapChoices, "主体が誤り", "通関士個人については懲戒処分が問題になる。通関業者の監督処分だけに限定しない。", "通関士と通関業者の処分を入れ替える表現がひっかけ。", "監督処分と懲戒処分の混同", "ひっかけ", "trapCheck"],
+    ["信用失墜行為と罰則", "lesson-tsukangyoho-credit-penalty-trap", "信用又は品位を害する行為の禁止は、通関制度への信頼を守る趣旨がある。", tf, "正しい", "通関業者・通関士の社会的信頼を維持するための規定として理解する。", "単なるマナー規定として軽視すると処分論点を落とす。", "信用失墜行為", "標準", "trueFalse"],
+    ["信用失墜行為と罰則", "lesson-tsukangyoho-credit-penalty-trap", "第20条違反という文言を見たら、まず罰則表だけを見れば足り、処分規定は確認しなくてよい。", tf, "誤り", "義務規定、監督処分、懲戒処分、罰則を横断して確認する。", "条文番号だけで刑罰へ飛びつく癖が危険。", "義務規定と罰則の混同", "ひっかけ", "trueFalse"],
+    ["信用失墜行為と罰則", "lesson-tsukangyoho-credit-penalty-trap", "信用失墜行為の問題では、法人役員・通関業者・通関士のどの主体が問われているかを最初に確認する。", tf, "正しい", "主体によって処分の整理が変わるため、誰の行為かが第一歩。", "主体を見ずに処分名だけで判断しない。", "主体の混同", "標準", "trueFalse"],
+    ["記帳・届出・報告", "lesson-tsukangyoho-permission", "通関業者には、帳簿の備付けや保存に関する義務が問題になる。", tf, "正しい", "記帳・保存は通関業務の適正を後から確認するための重要義務。", "申告が終われば記録不要、という表現に注意。", "記帳・届出・報告", "基礎", "trueFalse"],
+    ["記帳・届出・報告", "lesson-tsukangyoho-permission", "帳簿の保存義務は、通関士個人だけが負い、通関業者には関係しない。", tf, "誤り", "帳簿備付け・保存は通関業者の義務として整理する。", "通関士個人へ主体をすり替える問題に注意。", "主体の混同", "標準", "trueFalse"],
+    ["記帳・届出・報告", "lesson-tsukangyoho-permission", "届出事項の変更があった場合、通関業者は必要な届出手続を確認する必要がある。", tf, "正しい", "許可後も変更届等の手続が問われる。", "許可後の変更は自由、という表現に注意。", "許可・届出・確認の混同", "標準", "trueFalse"],
+    ["記帳・届出・報告", "lesson-tsukangyoho-permission", "報告義務に関する問題では、財務大臣と税関長のどちらに対するものかを確認する。", tf, "正しい", "権限者・提出先の混同は頻出。問題文の主体と相手方を読む。", "行政庁名を入れ替えるだけの選択肢に注意。", "権限者の混同", "応用", "trueFalse"],
+    ["記帳・届出・報告", "lesson-tsukangyoho-permission", "通関業者は、求められた報告について虚偽なく対応する義務が問題になる。", tf, "正しい", "報告義務は監督の実効性を支える。", "書面さえ出せば内容は問われない、という表現に注意。", "記帳・届出・報告", "標準", "trueFalse"],
+    ["記帳・届出・報告", "lesson-tsukangyoho-permission", "記述「営業所に関する変更は、すべて通関士個人が税関長へ確認申請する。」の問題点はどれか。", trapChoices, "主体が誤り", "営業所変更は通関業者側の手続として整理する。通関士個人の確認とは別。", "営業所・通関士・確認申請を混ぜる表現がひっかけ。", "許可・届出・確認の混同", "ひっかけ", "trapCheck"],
+    ["記帳・届出・報告", "lesson-tsukangyoho-permission", "帳簿保存の期間や期限が問われる場合は、保存開始時点と満了時点を確認する。", tf, "正しい", "期間問題は起算点が重要。数字だけを丸暗記しない。", "期間だけを見て、いつから数えるかを落とす問題に注意。", "期間・期限", "応用", "trueFalse"],
+    ["記帳・届出・報告", "lesson-tsukangyoho-permission", "記帳・届出・報告は、許可制の事後的な監督を支える制度として理解する。", tf, "正しい", "許可後の適正運営を確認するための義務群。", "許可時だけ審査すれば後は無関係、という読み方に注意。", "記帳・届出・報告", "標準", "trueFalse"],
+    ["料金の掲示", "lesson-tsukangyoho-business-related", "通関業者には、通関業務の料金を明確にするための掲示義務が問題になる。", tf, "正しい", "料金掲示は依頼者に費用を明確に示す趣旨。", "料金は完全に自由で表示不要、という表現に注意。", "料金掲示", "基礎", "trueFalse"],
+    ["料金の掲示", "lesson-tsukangyoho-business-related", "料金掲示義務は、依頼者への説明義務と同じであり、掲示場所や表示方法は一切問題にならない。", tf, "誤り", "料金掲示と個別説明は区別する。掲示の趣旨や場所が問われ得る。", "説明していれば掲示不要、という置換に注意。", "料金掲示", "標準", "trueFalse"],
+    ["料金の掲示", "lesson-tsukangyoho-business-related", "料金掲示の目的として最も適切なものはどれか。", ["依頼者が料金を把握できるようにする", "税率を通関業者が決める", "通関士試験の合格発表をする", "輸入許可を自動化する"], "依頼者が料金を把握できるようにする", "料金掲示は依頼者保護と透明性の観点で理解する。", "関税率や許可手続と混同しない。", "料金掲示", "基礎", "singleChoice"],
+    ["料金の掲示", "lesson-tsukangyoho-business-related", "記述「料金掲示義務に違反すると、常に通関士個人の確認が取り消される。」の問題点はどれか。", trapChoices, "主体が誤り", "料金掲示は通関業者の義務として整理する。通関士個人の確認取消しに直結させない。", "義務主体と処分対象を入れ替える表現がひっかけ。", "主体の混同", "ひっかけ", "trapCheck"],
+    ["監督処分", "lesson-tsukangyoho-supervision", "通関業者に対する監督処分には、許可取消しや業務停止などが問題になる。", tf, "正しい", "監督処分は通関業者に対する行政上の措置として整理する。", "通関士個人への懲戒処分と混同しない。", "監督処分と懲戒処分の混同", "基礎", "trueFalse"],
+    ["監督処分", "lesson-tsukangyoho-supervision", "通関業者に対する監督処分の権限者は、原則として財務大臣として整理する。", tf, "正しい", "通関業者への監督処分は財務大臣の権限として押さえる。", "税関長や通関士会に置き換える問題に注意。", "権限者の混同", "標準", "trueFalse"],
+    ["監督処分", "lesson-tsukangyoho-supervision", "業務改善命令は、刑罰そのものではなく行政上の監督措置として理解する。", tf, "正しい", "業務改善命令は監督処分・行政措置の文脈で整理する。", "命令という語から直ちに罰金刑へ飛ばない。", "義務規定と罰則の混同", "標準", "trueFalse"],
+    ["監督処分", "lesson-tsukangyoho-supervision", "監督処分は、通関士個人に対する戒告・従事停止・確認取消しだけをいう。", tf, "誤り", "それは通関士への懲戒処分。監督処分は通関業者を対象に整理する。", "処分名ではなく対象者を見る。", "監督処分と懲戒処分の混同", "ひっかけ", "trueFalse"],
+    ["監督処分", "lesson-tsukangyoho-supervision", "監督処分の対象として最も適切なものはどれか。", ["通関業者", "輸入貨物そのもの", "依頼者の販売先", "通関士試験の受験者全員"], "通関業者", "監督処分は通関業者への処分として理解する。", "通関士個人への懲戒処分との入れ替えに注意。", "主体の混同", "基礎", "singleChoice"],
+    ["監督処分", "lesson-tsukangyoho-supervision", "監督処分の事由を判断するときは、許可条件違反、法令違反、業務運営の適正性を確認する。", tf, "正しい", "通関業者が適正に業務を行っているかが処分事由の中心。", "処分は刑事裁判がなければ一切できない、という表現に注意。", "理解不足", "応用", "trueFalse"],
+    ["監督処分", "lesson-tsukangyoho-supervision", "記述「通関業者への業務停止は、通関士個人の懲戒処分である。」の問題点はどれか。", trapChoices, "主体が誤り", "業務停止は通関業者に対する監督処分として整理する。", "通関業者と通関士個人を入れ替える典型。", "監督処分と懲戒処分の混同", "ひっかけ", "trapCheck"],
+    ["監督処分", "lesson-tsukangyoho-supervision", "監督処分と刑罰は、目的・手続・効果が異なるため区別して判断する。", tf, "正しい", "監督処分は行政上の業務規制、刑罰は犯罪に対する制裁として分ける。", "処分を受けるイコール罰金刑、という読み方に注意。", "義務規定と罰則の混同", "標準", "trueFalse"],
+    ["通関士に対する懲戒処分", "lesson-tsukangyoho-customs-broker-discipline", "通関士に対する懲戒処分には、戒告、通関業務従事停止、確認取消しが問題になる。", tf, "正しい", "通関士個人への懲戒処分の種類を押さえる。", "通関業者への許可取消しと入れ替えない。", "監督処分と懲戒処分の混同", "基礎", "trueFalse"],
+    ["通関士に対する懲戒処分", "lesson-tsukangyoho-customs-broker-discipline", "通関士に対する懲戒処分の権限者は、財務大臣として整理する。", tf, "正しい", "懲戒処分でも権限者を確認する。", "通関業者が自由に懲戒処分を法律上決定する、という表現に注意。", "権限者の混同", "標準", "trueFalse"],
+    ["通関士に対する懲戒処分", "lesson-tsukangyoho-customs-broker-discipline", "通関士に対する懲戒処分は、通関業者の許可取消しだけをいう。", tf, "誤り", "通関士個人には戒告、従事停止、確認取消しが問題になる。", "許可取消しは通関業者側の処分として区別する。", "監督処分と懲戒処分の混同", "ひっかけ", "trueFalse"],
+    ["通関士に対する懲戒処分", "lesson-tsukangyoho-customs-broker-discipline", "通関士が信用失墜行為をした場合、通関士への懲戒処分を検討する。", tf, "正しい", "信用失墜行為は通関士個人の懲戒処分事由として問われる。", "会社の監督処分だけに寄せない。", "信用失墜行為", "標準", "trueFalse"],
+    ["通関士に対する懲戒処分", "lesson-tsukangyoho-customs-broker-discipline", "通関士の懲戒処分として最も適切なものはどれか。", ["戒告", "輸入許可", "営業所新設許可", "関税率変更"], "戒告", "戒告は通関士への懲戒処分の一つ。", "税関手続や許可制度の用語と混ぜない。", "選択肢読解", "基礎", "singleChoice"],
+    ["通関士に対する懲戒処分", "lesson-tsukangyoho-customs-broker-discipline", "記述「通関士への確認取消しは、通関業者への業務改善命令と同じ対象・同じ効果である。」の問題点はどれか。", trapChoices, "主体が誤り", "確認取消しは通関士個人、業務改善命令は通関業者側の処分として分ける。", "処分名が似ていなくても対象者を必ず見る。", "監督処分と懲戒処分の混同", "ひっかけ", "trapCheck"],
+    ["罰則", "lesson-tsukangyoho-name-lending", "無許可で通関業を営む行為や名義貸しは、罰則との関係で重要な論点である。", tf, "正しい", "許可制を空洞化する行為は罰則論点として押さえる。", "義務違反の全部ではなく、罰則があるものを分ける。", "罰則", "標準", "trueFalse"],
+    ["罰則", "lesson-tsukangyoho-confidentiality", "秘密保持義務違反は、罰則との関係で問われやすい。", tf, "正しい", "秘密保持義務は罰則論点として重要。", "信用失墜行為と同じ扱いにしない。", "秘密保持義務", "標準", "trueFalse"],
+    ["罰則", "lesson-tsukangyoho-credit-penalty-trap", "信用失墜行為の禁止違反そのものは、常に罰金刑へ直結する。", tf, "誤り", "信用失墜行為は対象・処分との関係で重要だが、違反そのものが常に罰金刑とはいえない。", "第20条違反＝罰金と暗記するのが典型ミス。", "義務規定と罰則の混同", "ひっかけ", "trueFalse"],
+    ["罰則", "lesson-tsukangyoho-permission", "虚偽の申請や報告は、罰則の有無を個別に確認する必要がある。", tf, "正しい", "虚偽申請・虚偽報告は罰則表で個別確認する。", "虚偽なら全部同じ刑罰、という雑な処理に注意。", "罰則", "応用", "trueFalse"],
+    ["罰則", "lesson-tsukangyoho-name-lending", "罰則がある義務と、監督処分・懲戒処分にとどまる義務を分けて覚える必要がある。", tf, "正しい", "通関業法では義務、処分、刑罰を分離して判断する。", "義務規定を見つけたら全部罰則あり、としない。", "義務規定と罰則の混同", "標準", "trueFalse"],
+    ["罰則", "lesson-tsukangyoho-name-lending", "両罰規定は、法人等の業務に関して違反があった場合の法人処罰との関係で問題になる。", tf, "正しい", "行為者だけでなく法人等への罰則適用を整理する。", "法人だから刑罰と無関係、という表現に注意。", "罰則", "応用", "trueFalse"],
+    ["罰則", "lesson-tsukangyoho-confidentiality", "罰則の学習で最も危険なものはどれか。", ["義務名だけで罰則の有無を決めつける", "秘密保持義務を確認する", "無許可営業を確認する", "両罰規定を確認する"], "義務名だけで罰則の有無を決めつける", "義務ごとに罰則の有無と処分との関係を確認する。", "信用失墜行為を罰金刑に直結させるミスが典型。", "義務規定と罰則の混同", "ひっかけ", "singleChoice"],
+    ["罰則", "lesson-tsukangyoho-name-lending", "記述「名義貸し禁止は罰則と一切関係せず、道徳上の注意にすぎない。」の問題点はどれか。", trapChoices, "罰則との混同", "名義貸しは禁止義務であり罰則論点としても重要。単なる道徳規定ではない。", "罰則がない義務とある義務を逆にする表現がひっかけ。", "名義貸し", "ひっかけ", "trapCheck"],
+    ["総合ひっかけ", "lesson-tsukangyoho-permission", "記述「通関業の許可、通関士の確認、変更届はすべて同じ手続であり、権限者も同一である。」の問題点はどれか。", trapChoices, "手続区分が誤り", "許可・確認・届出は制度目的も対象も異なる。権限者も個別に確認する。", "三つの手続語を一括処理させる総合ひっかけ。", "許可・届出・確認の混同", "ひっかけ", "trapCheck"],
+    ["総合ひっかけ", "lesson-tsukangyoho-supervision", "記述「通関業者への監督処分として、通関士個人に戒告を行う。」の問題点はどれか。", trapChoices, "主体が誤り", "戒告は通関士への懲戒処分として整理する。通関業者への監督処分とは対象が異なる。", "監督処分と懲戒処分の対象者入れ替え。", "監督処分と懲戒処分の混同", "ひっかけ", "trapCheck"],
+    ["総合ひっかけ", "lesson-tsukangyoho-disqualification", "記述「欠格事由は永久に続くため、期間を確認する必要はない。」の問題点はどれか。", trapChoices, "手続区分が誤り", "この記述は誤り。欠格事由では経過期間が問われるものがある。", "期間問題を捨てさせる表現がひっかけ。", "期間・期限", "ひっかけ", "trapCheck"],
+    ["総合ひっかけ", "lesson-tsukangyoho-credit-penalty-trap", "記述「信用失墜行為は通関業者の役員も対象になる。したがって第20条違反は常に罰金刑である。」の問題点はどれか。", trapChoices, "罰則との混同", "前半は正しい方向だが、対象になることと罰則直結は別。", "正しい知識を一つ混ぜて、結論を誤らせる問題。", "義務規定と罰則の混同", "ひっかけ", "trapCheck"],
+    ["総合ひっかけ", "lesson-tsukangyoho-customs-broker-confirmation", "記述「通関士試験合格者は、財務大臣の通関業許可を受ければ確認なしに通関士となる。」の問題点はどれか。", trapChoices, "手続区分が誤り", "通関業許可と通関士確認は別。通関士としては税関長の確認が必要。", "許可権者と確認権者を混ぜる複合トラップ。", "許可・届出・確認の混同", "ひっかけ", "trapCheck"],
+    ["総合ひっかけ", "lesson-tsukangyoho-confidentiality", "通関業法の総合問題では、主体、権限者、手続区分、罰則の有無を一つずつ分解して読む。", tf, "正しい", "総合ひっかけは複数論点の混同で作られる。分解して読むのが安定する。", "一つの正しい語に引っ張られて全体を正しいと判断しない。", "選択肢読解", "標準", "trueFalse"]
+  ];
+  return rows.map((row, index) => makeBankQuestion(
+    `qb-tsukangyoho-${String(index + 6).padStart(3, "0")}`,
+    "通関業法",
+    row[0],
+    row[1],
+    row[8],
+    row[9],
+    row[2],
+    row[3],
+    row[4],
+    row[5],
+    row[6],
+    row[7],
+    "original"
+  ));
+}
+
 const state = {
   units: [],
   practiceLogs: [],
   pastExamLogs: [],
   practicalLogs: [],
   mockExamResults: [],
+  drillResults: [],
   aiAnalyses: [],
   lessonOverrides: [],
   aiSettings: {
@@ -1205,7 +1351,10 @@ const state = {
     mode: "通関業法ドリル",
     currentQuestionId: "",
     selectedAnswer: "",
-    graded: false
+    graded: false,
+    sessionQuestionIds: [],
+    answers: [],
+    startedAt: ""
   },
   todayMenu: null,
   activeView: "home",
@@ -1614,6 +1763,7 @@ function loadState() {
   state.pastExamLogs = normalizeArray(readJson(STORAGE_KEYS.pastExamLogs)).map(normalizePastExamLog);
   state.practicalLogs = normalizeArray(readJson(STORAGE_KEYS.practicalLogs)).map(normalizePracticalLog);
   state.mockExamResults = normalizeArray(readJson(STORAGE_KEYS.mockExamResults)).map(normalizeMockExamResult);
+  state.drillResults = normalizeArray(readJson(STORAGE_KEYS.drillResults)).map(normalizeDrillResult);
   state.aiAnalyses = normalizeArray(readJson(STORAGE_KEYS.aiAnalyses)).map(normalizeAiAnalysis);
   state.lessonOverrides = normalizeArray(readJson(STORAGE_KEYS.lessonOverrides)).map(normalizeLessonOverride);
   state.aiSettings = normalizeAiSettings(readJson(STORAGE_KEYS.aiSettings));
@@ -1752,6 +1902,45 @@ function normalizeMockExamResult(result) {
   return normalized;
 }
 
+function normalizeDrillResult(result) {
+  const normalized = {
+    id: "",
+    subject: "通関業法",
+    mode: "通関業法10問",
+    startedAt: "",
+    completedAt: "",
+    totalQuestions: 0,
+    correctCount: 0,
+    scoreRate: 0,
+    resultLevel: "未判定",
+    answers: [],
+    weaknessTags: [],
+    reviewNeeded: false,
+    ...(result || {})
+  };
+  if (!normalized.id) normalized.id = makeDrillResultId();
+  normalized.subject = String(normalized.subject || "通関業法");
+  normalized.mode = String(normalized.mode || "通関業法10問");
+  normalized.startedAt = String(normalized.startedAt || "");
+  normalized.completedAt = String(normalized.completedAt || "");
+  normalized.answers = normalizeArray(normalized.answers).map((answer) => ({
+    questionId: String(answer?.questionId || ""),
+    userAnswer: String(answer?.userAnswer || ""),
+    correct: Boolean(answer?.correct),
+    weaknessTag: String(answer?.weaknessTag || "")
+  })).filter((answer) => answer.questionId);
+  normalized.totalQuestions = Number(normalized.totalQuestions || normalized.answers.length || 0);
+  normalized.correctCount = Number(normalized.correctCount || normalized.answers.filter((answer) => answer.correct).length || 0);
+  normalized.scoreRate = normalized.totalQuestions ? Math.round((normalized.correctCount / normalized.totalQuestions) * 100) : Number(normalized.scoreRate || 0);
+  normalized.resultLevel = normalized.scoreRate >= 90 ? "A" : normalized.scoreRate >= 70 ? "B" : normalized.totalQuestions ? "C" : "未判定";
+  normalized.weaknessTags = normalizeArray(normalized.weaknessTags).map(String).filter(Boolean);
+  if (!normalized.weaknessTags.length) {
+    normalized.weaknessTags = [...new Set(normalized.answers.filter((answer) => !answer.correct).map((answer) => answer.weaknessTag).filter(Boolean))];
+  }
+  normalized.reviewNeeded = Boolean(normalized.reviewNeeded || normalized.resultLevel === "C");
+  return normalized;
+}
+
 function normalizeAiAnalysis(item) {
   const normalized = {
     id: "",
@@ -1819,7 +2008,7 @@ function normalizeAiSettings(item) {
     enabled: false,
     endpointUrl: "",
     lastTestedAt: String(item?.lastTestedAt || ""),
-    lastStatus: "v2.0で廃止",
+    lastStatus: "v2.1で廃止",
     lastError: ""
   };
 }
@@ -1954,6 +2143,7 @@ function saveUnits() {
   localStorage.setItem(STORAGE_KEYS.pastExamLogs, JSON.stringify(state.pastExamLogs));
   localStorage.setItem(STORAGE_KEYS.practicalLogs, JSON.stringify(state.practicalLogs));
   localStorage.setItem(STORAGE_KEYS.mockExamResults, JSON.stringify(state.mockExamResults));
+  localStorage.setItem(STORAGE_KEYS.drillResults, JSON.stringify(state.drillResults));
   localStorage.setItem(STORAGE_KEYS.aiAnalyses, JSON.stringify(state.aiAnalyses));
   localStorage.setItem(STORAGE_KEYS.lessonOverrides, JSON.stringify(state.lessonOverrides));
   localStorage.setItem(STORAGE_KEYS.aiSettings, JSON.stringify(sanitizeAiSettings(state.aiSettings)));
@@ -1967,7 +2157,7 @@ function sanitizeAiSettings(settings) {
     enabled: false,
     endpointUrl: "",
     lastTestedAt: "",
-    lastStatus: "v2.0で廃止",
+    lastStatus: "v2.1で廃止",
     lastError: ""
   };
 }
@@ -1996,6 +2186,11 @@ function makePracticalLogId() {
 function makeMockExamResultId() {
   const random = Math.random().toString(36).slice(2, 10);
   return `mock-${Date.now().toString(36)}-${random}`;
+}
+
+function makeDrillResultId() {
+  const random = Math.random().toString(36).slice(2, 10);
+  return `drill-${Date.now().toString(36)}-${random}`;
 }
 
 function makeAiAnalysisId() {
@@ -2462,7 +2657,9 @@ function generateTodayMenu(duration = "30分") {
   const practicalItems = buildTodayPracticalItems().slice(0, limits.practical);
   const mockItems = buildTodayMockItems(duration);
   const crossReviewItems = buildTodayCrossReviewItems(duration);
+  const drillItems = buildTodayDrillItems(duration);
   const priorityItems = uniqueTodayItems([
+    ...drillItems.filter((item) => item.priority === "最優先" || item.priority === "高"),
     ...mockItems.filter((item) => item.priority === "最優先" || item.priority === "高"),
     ...crossReviewItems.filter((item) => item.priority === "最優先" || item.priority === "高"),
     ...lessonItems.filter((item) => item.priority === "最優先"),
@@ -2487,6 +2684,7 @@ function generateTodayMenu(duration = "30分") {
     ...priorityItems,
     ...mockItems,
     ...crossReviewItems,
+    ...drillItems,
     ...lessonItems,
     ...pastExamItems,
     ...practicalItems,
@@ -2495,8 +2693,54 @@ function generateTodayMenu(duration = "30分") {
     ...aiItems,
     ...unitItems
   ]).slice(0, limits.total);
-  const allItems = uniqueTodayItems([...recommended, ...manualItems, ...priorityItems, ...mockItems, ...crossReviewItems, ...lessonItems, ...practiceItems, ...pastExamItems, ...practicalItems, ...weaknessItems, ...aiItems]);
-  return { duration, date: plan.date, plan, recommended, priorityItems, lessonItems, practiceItems, pastExamItems, practicalItems, mockItems, crossReviewItems, weaknessItems, aiItems, manualItems, allItems };
+  const allItems = uniqueTodayItems([...recommended, ...manualItems, ...priorityItems, ...mockItems, ...crossReviewItems, ...drillItems, ...lessonItems, ...practiceItems, ...pastExamItems, ...practicalItems, ...weaknessItems, ...aiItems]);
+  return { duration, date: plan.date, plan, recommended, priorityItems, lessonItems, practiceItems, pastExamItems, practicalItems, mockItems, crossReviewItems, drillItems, weaknessItems, aiItems, manualItems, allItems };
+}
+
+function buildTodayDrillItems(duration) {
+  const items = [];
+  const latest = state.drillResults.find((result) => result.subject === "通関業法");
+  const weakTags = getDrillWeaknessTagRanking();
+  const cLesson = getTsukangyohoLessons().some((lesson) => getLessonProgress(lesson.id).understanding === "C");
+  const stale = !latest || daysSinceIso(latest.completedAt) >= 7;
+  const hasPenaltyWeak = weakTags.some((item) => /罰則|処分|義務|信用|通関士|確認/.test(item.tag) && item.count >= 1);
+  if (cLesson || latest?.resultLevel === "C" || stale) {
+    items.push(makeTodayMenuItem({
+      id: "drill-tsukangyoho-10",
+      type: "通関業法ドリル",
+      title: "通関業法10問ドリル",
+      description: latest ? `直近 ${latest.scoreRate}% / 判定${latest.resultLevel}` : "未実施",
+      reason: latest?.resultLevel === "C" ? "通関業法ドリルC判定" : cLesson ? "通関業法レッスンにC判定あり" : "通関業法問題をしばらく解いていない",
+      priority: latest?.resultLevel === "C" || cLesson ? "最優先" : "高",
+      priorityScore: latest?.resultLevel === "C" ? 120 : cLesson ? 105 : 70,
+      estimatedMinutes: 12
+    }));
+  }
+  if (hasPenaltyWeak) {
+    items.push(makeTodayMenuItem({
+      id: "drill-tsukangyoho-trap",
+      type: "通関業法ドリル",
+      title: weakTags.some((item) => /監督処分|懲戒/.test(item.tag)) ? "通関士・確認制度復習" : "罰則トラップ復習",
+      description: weakTags.slice(0, 3).map((item) => `${item.tag}${item.count}`).join(" / "),
+      reason: "罰則・処分・義務系の弱点タグが多い",
+      priority: "高",
+      priorityScore: 95,
+      estimatedMinutes: 10
+    }));
+  }
+  if (duration !== "15分") {
+    items.push(makeTodayMenuItem({
+      id: "drill-tsukangyoho-hikkake",
+      type: "通関業法ドリル",
+      title: "通関業法ひっかけ確認",
+      description: "主体・権限者・罰則混同を10問で確認",
+      reason: "通関業法の失点しやすい表現確認",
+      priority: hasPenaltyWeak ? "高" : "中",
+      priorityScore: hasPenaltyWeak ? 90 : 55,
+      estimatedMinutes: 10
+    }));
+  }
+  return uniqueTodayItems(items);
 }
 
 function buildTodayLessonItems() {
@@ -3378,6 +3622,7 @@ function todayMenuCard(item, compact = false) {
         ${item.relatedUnitId ? `<button class="ghost-button" type="button" data-open-unit="${escapeAttribute(item.relatedUnitId)}">開く</button>` : ""}
         ${item.relatedLogId ? `<button class="ghost-button" type="button" data-open-today-log="${escapeAttribute(item.type)}:${escapeAttribute(item.relatedLogId)}">ログを開く</button>` : ""}
         ${item.mockMode ? `<button class="primary-button" type="button" data-start-mock="${escapeAttribute(item.mockMode)}">開始</button>` : ""}
+        ${item.type === "通関業法ドリル" ? `<button class="primary-button" type="button" data-start-drill-mode="${escapeAttribute(item.id.includes("hikkake") || item.id.includes("trap") ? "通関業法ひっかけ" : "通関業法10問")}">開始</button>` : ""}
         ${item.relatedMockResultId ? `<button class="ghost-button" type="button" data-show-mock-result="${escapeAttribute(item.relatedMockResultId)}">模試詳細</button>` : ""}
         <button class="ghost-button" type="button" data-ai-today-consult>相談文を作る</button>
       </div>
@@ -3469,7 +3714,9 @@ function renderLearningView() {
 function renderDrillView() {
   const host = document.querySelector("#drillArea");
   if (!host) return;
-  const modes = ["通関業法ドリル", "関税法等ドリル", "通関実務ドリル", "弱点タグ別ドリル", "ひっかけ問題ドリル"];
+  const modes = ["通関業法10問", "通関業法ランダム", "通関業法順番", "通関業法ひっかけ", "弱点タグ別ドリル", "関税法等ドリル", "通関実務ドリル"];
+  if (!modes.includes(state.drill.mode)) state.drill.mode = "通関業法10問";
+  ensureDrillSession();
   const questions = getDrillQuestions(state.drill.mode);
   const current = questions.find((question) => question.id === state.drill.currentQuestionId) || questions[0];
   if (current && state.drill.currentQuestionId !== current.id) {
@@ -3481,34 +3728,68 @@ function renderDrillView() {
     <div class="drill-controls">
       ${modes.map((mode) => `<button class="duration-button ${state.drill.mode === mode ? "is-active" : ""}" type="button" data-drill-mode="${escapeAttribute(mode)}">${escapeHtml(mode)}</button>`).join("")}
     </div>
+    <div class="card-meta">
+      <span class="badge">回答 ${state.drill.answers.length}/${questions.length}</span>
+      <span class="badge">保存済み ${state.drillResults.length}回</span>
+    </div>
     ${current ? renderDrillQuestion(current, questions) : `<div class="empty-state"><p class="muted">この条件のドリル問題はまだありません。</p></div>`}
   `;
 }
 
 function getDrillQuestions(mode) {
+  if (state.drill.sessionQuestionIds?.length) {
+    const byId = new Map(QUESTION_BANK.map((question) => [question.id, question]));
+    return state.drill.sessionQuestionIds.map((id) => byId.get(id)).filter(Boolean);
+  }
+  if (mode === "通関業法10問") return pickDrillQuestions(QUESTION_BANK.filter((question) => question.subject === "通関業法"), 10, true);
+  if (mode === "通関業法ランダム") return pickDrillQuestions(QUESTION_BANK.filter((question) => question.subject === "通関業法"), 10, true);
+  if (mode === "通関業法順番") return QUESTION_BANK.filter((question) => question.subject === "通関業法");
+  if (mode === "通関業法ひっかけ") return pickDrillQuestions(QUESTION_BANK.filter((question) => question.subject === "通関業法" && (question.questionType === "trapCheck" || question.difficulty === "ひっかけ" || /ひっかけ|罰則|混同/.test(`${question.trapExplanation}${question.weaknessTag}`))), 10, true);
   if (mode === "通関業法ドリル") return QUESTION_BANK.filter((question) => question.subject === "通関業法");
   if (mode === "関税法等ドリル") return QUESTION_BANK.filter((question) => question.subject === "関税法等");
   if (mode === "通関実務ドリル") return QUESTION_BANK.filter((question) => question.subject === "通関実務");
   if (mode === "弱点タグ別ドリル") {
-    const tags = getTopWeaknessTags();
+    const tags = [...new Set([...getTopWeaknessTags(), ...getDrillWeaknessTagRanking().slice(0, 3).map((item) => item.tag)])];
     const matched = tags.length ? QUESTION_BANK.filter((question) => tags.some((tag) => question.weaknessTag.includes(tag) || tag.includes(question.weaknessTag))) : [];
-    return matched.length ? matched : QUESTION_BANK;
+    return pickDrillQuestions(matched.length ? matched : QUESTION_BANK.filter((question) => question.subject === "通関業法"), 10, true);
   }
   if (mode === "ひっかけ問題ドリル") return QUESTION_BANK.filter((question) => question.trapExplanation);
   return QUESTION_BANK;
+}
+
+function pickDrillQuestions(questions, limit, randomize = false) {
+  const list = [...questions];
+  if (randomize) {
+    for (let index = list.length - 1; index > 0; index -= 1) {
+      const swap = Math.floor(Math.random() * (index + 1));
+      [list[index], list[swap]] = [list[swap], list[index]];
+    }
+  }
+  return list.slice(0, Math.min(limit, list.length));
+}
+
+function ensureDrillSession() {
+  if (state.drill.sessionQuestionIds?.length) return;
+  const questions = getDrillQuestions(state.drill.mode);
+  state.drill.sessionQuestionIds = questions.map((question) => question.id);
+  state.drill.answers = [];
+  state.drill.startedAt = new Date().toISOString();
 }
 
 function renderDrillQuestion(question, questions) {
   const index = questions.findIndex((item) => item.id === question.id);
   const selected = state.drill.selectedAnswer;
   const isCorrect = selected && selected === question.answer;
+  const answered = state.drill.answers.find((answer) => answer.questionId === question.id);
   return `
     <article class="drill-card">
       <div class="card-meta">
         <span class="badge">${escapeHtml(question.subject)}</span>
         <span class="badge">${escapeHtml(question.topic)}</span>
         <span class="badge">${escapeHtml(question.difficulty)}</span>
+        <span class="badge">${escapeHtml(question.questionType)}</span>
         <span class="badge">${escapeHtml(question.weaknessTag)}</span>
+        ${answered ? `<span class="badge ${answered.correct ? "ok" : "priority"}">${answered.correct ? "回答済み 正解" : "回答済み 不正解"}</span>` : ""}
       </div>
       <h4>問${index + 1} / ${questions.length}</h4>
       <p class="drill-question">${escapeHtml(question.question)}</p>
@@ -3523,6 +3804,7 @@ function renderDrillQuestion(question, questions) {
       <div class="form-actions">
         <button class="primary-button" type="button" data-grade-drill>採点</button>
         <button class="ghost-button" type="button" data-next-drill>次の問題</button>
+        <button class="ghost-button" type="button" data-finish-drill>結果を保存</button>
         <button class="ghost-button" type="button" data-open-lesson="${escapeAttribute(question.lessonId)}">関連レッスン</button>
       </div>
       ${state.drill.graded ? `
@@ -3548,6 +3830,9 @@ function setDrillMode(mode) {
   state.drill.currentQuestionId = "";
   state.drill.selectedAnswer = "";
   state.drill.graded = false;
+  state.drill.sessionQuestionIds = [];
+  state.drill.answers = [];
+  state.drill.startedAt = "";
   renderDrillView();
 }
 
@@ -3559,6 +3844,22 @@ function gradeCurrentDrill() {
   }
   state.drill.selectedAnswer = selected;
   state.drill.graded = true;
+  const questions = getDrillQuestions(state.drill.mode);
+  const question = questions.find((item) => item.id === state.drill.currentQuestionId);
+  if (question) {
+    const answer = {
+      questionId: question.id,
+      userAnswer: selected,
+      correct: selected === question.answer,
+      weaknessTag: question.weaknessTag
+    };
+    state.drill.answers = state.drill.answers.filter((item) => item.questionId !== question.id);
+    state.drill.answers.push(answer);
+  }
+  if (questions.length && state.drill.answers.length >= questions.length) {
+    finishCurrentDrill();
+    return;
+  }
   renderDrillView();
 }
 
@@ -3571,6 +3872,40 @@ function moveNextDrill() {
   state.drill.selectedAnswer = "";
   state.drill.graded = false;
   renderDrillView();
+}
+
+function finishCurrentDrill() {
+  const questions = getDrillQuestions(state.drill.mode);
+  if (!questions.length || !state.drill.answers.length) {
+    showToast("保存するドリル結果がありません。");
+    return;
+  }
+  const correctCount = state.drill.answers.filter((answer) => answer.correct).length;
+  const scoreRate = Math.round((correctCount / questions.length) * 100);
+  const wrongTags = [...new Set(state.drill.answers.filter((answer) => !answer.correct).map((answer) => answer.weaknessTag).filter(Boolean))];
+  const result = normalizeDrillResult({
+    id: makeDrillResultId(),
+    subject: "通関業法",
+    mode: state.drill.mode,
+    startedAt: state.drill.startedAt || new Date().toISOString(),
+    completedAt: new Date().toISOString(),
+    totalQuestions: questions.length,
+    correctCount,
+    scoreRate,
+    answers: state.drill.answers,
+    weaknessTags: wrongTags,
+    reviewNeeded: scoreRate < 70
+  });
+  state.drillResults.unshift(result);
+  state.drill.currentQuestionId = "";
+  state.drill.selectedAnswer = "";
+  state.drill.graded = false;
+  state.drill.sessionQuestionIds = [];
+  state.drill.answers = [];
+  state.drill.startedAt = "";
+  saveUnits();
+  render();
+  showToast(`ドリル結果を保存しました。判定${result.resultLevel}`);
 }
 
 function renderLessonFilters() {
@@ -4426,8 +4761,59 @@ function renderAnalysisView() {
   document.querySelector("#analysisPractical").innerHTML = renderPracticalAnalysis(analysis.performance.practical);
   document.querySelector("#analysisCurriculum").innerHTML = renderCurriculumAnalysis();
   document.querySelector("#analysisMockExam").innerHTML = renderMockExamAnalysis();
+  document.querySelector("#analysisQuestionBank").innerHTML = renderDrillBankAnalysis();
   document.querySelector("#analysisRetryTargets").innerHTML = renderRetryTargets(analysis.retryTargets);
   document.querySelector("#analysisAiUsage").innerHTML = renderAiUsage(analysis.aiUsage);
+}
+
+function renderDrillBankAnalysis() {
+  const questions = QUESTION_BANK.filter((question) => question.subject === "通関業法");
+  const difficulty = rankFromValues(questions.map((question) => question.difficulty));
+  const topics = rankFromValues(questions.map((question) => question.topic));
+  const tags = rankFromValues(questions.map((question) => question.weaknessTag));
+  const results = state.drillResults.filter((result) => result.subject === "通関業法");
+  const average = results.length ? Math.round(results.reduce((sum, result) => sum + result.scoreRate, 0) / results.length) : 0;
+  const wrongTags = getDrillWeaknessTagRanking();
+  return `
+    <section class="panel analysis-section">
+      <div class="panel-heading"><h3>通関業法問題バンク分析</h3></div>
+      <div class="analysis-card-grid two-col">
+        <article class="analysis-card">
+          <h4>問題バンク</h4>
+          <dl class="analysis-facts">
+            <div><dt>通関業法問題数</dt><dd>${questions.length}</dd></div>
+            <div><dt>難易度別問題数</dt><dd>${escapeHtml(difficulty.map((item) => `${item.label}:${item.count}`).join(" / "))}</dd></div>
+            <div><dt>論点別問題数</dt><dd>${escapeHtml(topics.slice(0, 12).map((item) => `${item.label}:${item.count}`).join(" / "))}</dd></div>
+            <div><dt>弱点タグ別問題数</dt><dd>${escapeHtml(tags.slice(0, 12).map((item) => `${item.label}:${item.count}`).join(" / "))}</dd></div>
+          </dl>
+        </article>
+        <article class="analysis-card">
+          <h4>ドリル結果</h4>
+          <dl class="analysis-facts">
+            <div><dt>ドリル実施回数</dt><dd>${results.length}</dd></div>
+            <div><dt>ドリル平均正答率</dt><dd>${results.length ? `${average}%` : "未実施"}</dd></div>
+            <div><dt>よく間違える弱点タグ</dt><dd>${escapeHtml(wrongTags.slice(0, 8).map((item) => `${item.tag}:${item.count}`).join(" / ") || "なし")}</dd></div>
+          </dl>
+          <div class="card-actions">
+            <button class="primary-button" type="button" data-start-drill-mode="通関業法10問">10問ドリル</button>
+            <button class="ghost-button" type="button" data-start-drill-mode="通関業法ひっかけ">ひっかけ</button>
+          </div>
+        </article>
+      </div>
+    </section>
+  `;
+}
+
+function getDrillWeaknessTagRanking() {
+  const counts = {};
+  state.drillResults
+    .filter((result) => result.subject === "通関業法")
+    .flatMap((result) => result.answers || [])
+    .filter((answer) => !answer.correct && answer.weaknessTag)
+    .forEach((answer) => {
+      counts[answer.weaknessTag] = (counts[answer.weaknessTag] || 0) + 1;
+    });
+  return Object.entries(counts).map(([tag, count]) => ({ tag, count })).sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag));
 }
 
 function renderMockExamAnalysis() {
@@ -6154,7 +6540,7 @@ function renderAiSuggestionTargetSelect() {
   const label = document.querySelector("#aiSuggestionTargetSelectLabel");
   if (!select || !label) return;
   const options = getAiSuggestionTargetOptions(state.aiSuggestionForm.targetType);
-  const needsSelect = !["今日のメニュー", "通関業法カリキュラム", "関税法等カリキュラム", "通関実務カリキュラム", "自由入力"].includes(state.aiSuggestionForm.targetType);
+  const needsSelect = !["今日のメニュー", "通関業法カリキュラム", "通関業法ドリル結果", "関税法等カリキュラム", "通関実務カリキュラム", "自由入力"].includes(state.aiSuggestionForm.targetType);
   label.classList.toggle("is-hidden", !needsSelect);
   if (!needsSelect) {
     select.innerHTML = `<option value="">自動選択</option>`;
@@ -6198,10 +6584,7 @@ function getAiSuggestionTargetOptions(targetType) {
 function renderAiSuggestionModeHint() {
   const host = document.querySelector("#aiSuggestionModeHint");
   if (!host) return;
-  const available = Boolean(state.aiSettings.enabled && state.aiSettings.endpointUrl.trim());
-  host.innerHTML = available
-    ? `<span class="badge ok">API送信可能</span><span class="muted"> AI提案は反映前に必ず確認します。</span>`
-    : `<span class="badge priority">手動コピーのみ</span><span class="muted"> API連携OFFでもプロンプトをコピーして使えます。</span>`;
+  host.innerHTML = `<span class="badge priority">手動コピーのみ</span><span class="muted"> アプリ内通信は行わず、相談文のコピーだけを行います。</span>`;
 }
 
 function renderAiSuggestionResponse() {
@@ -6343,10 +6726,7 @@ function getAiTutorTargetOptions(targetType) {
 function renderAiTutorModeHint() {
   const host = document.querySelector("#aiTutorModeHint");
   if (!host) return;
-  const available = Boolean(state.aiSettings.enabled && state.aiSettings.endpointUrl.trim());
-  host.innerHTML = available
-    ? `<span class="badge ok">API送信可能</span><span class="muted"> AI講師に質問ボタンで中継サーバーへ送信します。</span>`
-    : `<span class="badge priority">手動コピーのみ</span><span class="muted"> AI API連携を使うには設定画面で中継サーバーURLを設定してください。</span>`;
+  host.innerHTML = `<span class="badge priority">手動コピーのみ</span><span class="muted"> アプリ内通信は行わず、外部ChatGPT用の相談文を作成します。</span>`;
 }
 
 function renderAiTutorResponse() {
@@ -6647,6 +7027,7 @@ function buildAiSuggestionTargetData() {
     return { id: tag, title: tag || "弱点タグ", body: buildAiTutorWeaknessTagData(tag) };
   }
   if (type === "通関業法カリキュラム") return { id: "course-tsukangyoho-basic", title: type, body: buildTsukangyohoCurriculumPromptData() };
+  if (type === "通関業法ドリル結果") return { id: "drill-tsukangyoho", title: type, body: buildDrillPromptSummary() };
   if (type === "関税法等カリキュラム") return { id: "course-kanzeihou-intro", title: type, body: buildKanzeihouCurriculumPromptData() };
   if (type === "通関実務カリキュラム") return { id: "course-practical-intro", title: type, body: buildPracticalCurriculumPromptData() };
   return { id: "free", title: "自由入力", body: state.aiSuggestionForm.memo || "自由入力の添削対象が未入力です。" };
@@ -7019,6 +7400,9 @@ function buildAiTargetData() {
   if (state.aiForm.targetType === "通関業法カリキュラム") {
     return { id: "course-tsukangyoho-basic", title: "通関業法カリキュラム", body: buildTsukangyohoPromptData() };
   }
+  if (state.aiForm.targetType === "通関業法ドリル結果") {
+    return { id: "drill-tsukangyoho", title: "通関業法ドリル結果", body: buildDrillPromptSummary() };
+  }
   if (state.aiForm.targetType === "関税法等カリキュラム") {
     return { id: "course-kanzeihou-intro", title: "関税法等カリキュラム", body: buildKanzeihouPromptData() };
   }
@@ -7361,6 +7745,7 @@ function buildOverallSummaryPromptData() {
     ["多い弱点タグ上位", getTopWeaknessTags().join(" / ")],
     ["危険度上位単元", analysis.unitRisks.slice(0, 5).map((item) => `${item.unit.title}:${item.risk.label}/${item.score}点/${item.reasons.join("・") || "理由なし"}`).join("\n")],
     ["今日の学習メニュー", todaySummary],
+    ["通関業法ドリル結果", buildDrillPromptSummary()],
     ["科目別危険度", analysis.subjects.map((item) => `${item.subject}:${item.risk.label}`).join(" / ")],
     ["本試験で危険な論点", analysis.dangerTopics.map((item) => `${item.subject} ${item.topic}（×${item.wrong} / △${item.partial} / 高優先度${item.high} / 再演習${item.retry}）`).join("\n") || "未記録"],
     ["直近の×演習ログ", summarizeRecentWrongPracticeLogs()],
@@ -7380,7 +7765,29 @@ function buildTodayPromptSummary() {
     ["今日のおすすめ", menu.recommended.map((item) => `${item.type}:${item.title}（${item.priority}/${item.reason}）`).join("\n")],
     ["未完了項目", incomplete.map((item) => `${item.type}:${item.title}`).join("\n") || "なし"],
     ["弱点タグ上位", getTopWeaknessTags().join(" / ") || "なし"],
+    ["通関業法ドリル", buildDrillPromptSummary()],
     ["今日のメモ", menu.plan.memo || "未入力"]
+  ]);
+}
+
+function buildDrillPromptSummary() {
+  const results = state.drillResults.filter((result) => result.subject === "通関業法");
+  const latest = results[0];
+  const wrongTags = getDrillWeaknessTagRanking().slice(0, 8).map((item) => `${item.tag}(${item.count})`).join(" / ");
+  const wrongQuestions = latest ? latest.answers
+    .filter((answer) => !answer.correct)
+    .map((answer) => {
+      const question = QUESTION_BANK.find((item) => item.id === answer.questionId);
+      return question ? `${question.topic}:${question.question} / 自分の回答:${answer.userAnswer} / 正答:${question.answer}` : "";
+    })
+    .filter(Boolean)
+    .join("\n") : "";
+  return keyValueLines([
+    ["実施回数", results.length],
+    ["直近結果", latest ? `${latest.mode} / ${latest.scoreRate}% / ${latest.resultLevel}` : "未実施"],
+    ["よく間違える弱点タグ", wrongTags || "なし"],
+    ["直近の誤答", wrongQuestions || "なし"],
+    ["相談したい観点例", "通関業法ドリルの誤答分析をお願いします / 義務規定と罰則の混同を整理してください / 監督処分と懲戒処分の違いを確認したいです"]
   ]);
 }
 
@@ -7547,7 +7954,7 @@ function resolveAiSubject(target) {
 }
 
 async function postAiApiRequest(payload) {
-  throw new Error("v2.0ではアプリ内通信を行いません。相談文をコピーして外部ChatGPTに貼り付けてください。");
+  throw new Error("v2.1ではアプリ内通信を行いません。相談文をコピーして外部ChatGPTに貼り付けてください。");
 }
 
 function buildAiConnectionHint(prefix) {
@@ -7556,8 +7963,7 @@ function buildAiConnectionHint(prefix) {
     prefix,
     "Worker URLが正しいか確認してください。",
     "/api/ai まで含めて入力してください。",
-    "Cloudflare WorkerのCORS設定を確認してください。",
-    "OPENAI_API_KEY Secretが設定されているか確認してください。"
+    "v2.1では外部通信を行わないため、相談文をコピーして外部ChatGPTに貼り付けてください。"
   ].join(" ");
 }
 
@@ -7575,9 +7981,9 @@ function inferAiHealthUrl(endpointUrl) {
 
 async function checkAiWorkerHealth() {
   const result = document.querySelector("#aiConnectionTestResult");
-  state.aiSettings.lastStatus = "v2.0で廃止";
+  state.aiSettings.lastStatus = "v2.1で廃止";
   state.aiSettings.lastError = "";
-  if (result) result.textContent = "v2.0ではアプリ内通信を行いません。";
+  if (result) result.textContent = "v2.1ではアプリ内通信を行いません。";
   saveUnits();
   renderSettings();
 }
@@ -7592,7 +7998,7 @@ async function sendCurrentAiPromptToApi() {
     return;
   }
   state.aiForm.apiStatus = "コピー用";
-  state.aiForm.apiError = "v2.0ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
+  state.aiForm.apiError = "v2.1ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
   renderAiResponse();
   await copyAiPrompt();
 }
@@ -7602,7 +8008,7 @@ async function askAiTutor() {
   const { target, promptText } = generateAiTutorPrompt();
   if (!promptText) return;
   state.aiTutorForm.apiStatus = "コピー用";
-  state.aiTutorForm.apiError = "v2.0ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
+  state.aiTutorForm.apiError = "v2.1ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
   saveAiTutorAnalysis({ target, sentViaApi: false });
   renderAiTutorView();
   showToast("相談文を生成しました。");
@@ -7633,7 +8039,7 @@ async function runAiSuggestion() {
   const { target, promptText } = generateAiSuggestionPrompt();
   if (!promptText) return;
   state.aiSuggestionForm.apiStatus = "コピー用";
-  state.aiSuggestionForm.apiError = "v2.0ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
+  state.aiSuggestionForm.apiError = "v2.1ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
   saveAiSuggestionAnalysis({ target, sentViaApi: false });
   renderAiSuggestionView();
   showToast("相談文を生成しました。");
@@ -7927,9 +8333,9 @@ function saveCurrentAiResponse() {
 async function testAiConnection() {
   const result = document.querySelector("#aiConnectionTestResult");
   state.aiSettings.lastTestedAt = new Date().toISOString();
-  state.aiSettings.lastStatus = "v2.0で廃止";
+  state.aiSettings.lastStatus = "v2.1で廃止";
   state.aiSettings.lastError = "";
-  if (result) result.textContent = "v2.0ではアプリ内通信を行いません。";
+  if (result) result.textContent = "v2.1ではアプリ内通信を行いません。";
   saveUnits();
   renderSettings();
 }
@@ -7942,7 +8348,7 @@ function saveAiSettingsFromInputs(showMessage = true) {
   saveUnits();
   renderSettings();
   renderAiResponse();
-  if (showMessage) showToast("AI API設定を保存しました。");
+  if (showMessage) showToast("外部相談文作成の設定を保存しました。");
 }
 
 function prepareAiPromptDraft() {
@@ -8282,6 +8688,47 @@ function renderReviewList() {
     `;
     }).join("")
     : `<div class="empty-state"><p class="muted">復習対象レッスンはありません。</p></div>`;
+  document.querySelector("#reviewLessonCards").insertAdjacentHTML("beforeend", renderDrillReviewCards());
+}
+
+function renderDrillReviewCards() {
+  const wrongMap = new Map();
+  state.drillResults
+    .filter((result) => result.subject === "通関業法")
+    .forEach((result) => {
+      (result.answers || []).filter((answer) => !answer.correct).forEach((answer) => {
+        const question = QUESTION_BANK.find((item) => item.id === answer.questionId);
+        if (!question) return;
+        const current = wrongMap.get(question.id) || { question, count: 0, latest: "" };
+        current.count += 1;
+        current.latest = result.completedAt || current.latest;
+        wrongMap.set(question.id, current);
+      });
+    });
+  const items = [...wrongMap.values()].sort((a, b) => b.count - a.count || (b.latest || "").localeCompare(a.latest || "")).slice(0, 12);
+  if (!items.length) return "";
+  return `
+    <section class="panel">
+      <div class="panel-heading"><h3>通関業法ドリル誤答</h3></div>
+      ${items.map(({ question, count }) => `
+        <article class="lesson-card">
+          <div>
+            <p class="eyebrow">${escapeHtml(question.topic)} / ${escapeHtml(question.weaknessTag)}</p>
+            <h4>${escapeHtml(question.question)}</h4>
+            <dl class="review-facts compact">
+              <div><dt>論点</dt><dd>${escapeHtml(question.topic)}</dd></div>
+              <div><dt>弱点タグ</dt><dd>${escapeHtml(question.weaknessTag)}</dd></div>
+              <div><dt>間違えた回数</dt><dd>${count}回</dd></div>
+            </dl>
+          </div>
+          <div class="card-actions">
+            <button class="primary-button" type="button" data-start-drill-mode="弱点タグ別ドリル">解き直す</button>
+            <button class="ghost-button" type="button" data-open-lesson="${escapeAttribute(question.lessonId)}">関連レッスン</button>
+          </div>
+        </article>
+      `).join("")}
+    </section>
+  `;
 }
 
 function renderReviewMockCards() {
@@ -8968,6 +9415,7 @@ function renderSettings() {
     <div><dt>保存中の過去問ログ数</dt><dd>${state.pastExamLogs.length}件</dd></div>
     <div><dt>保存中の実務ログ数</dt><dd>${state.practicalLogs.length}件</dd></div>
     <div><dt>保存中の模試結果数</dt><dd>${state.mockExamResults.length}件</dd></div>
+    <div><dt>保存中のドリル結果数</dt><dd>${state.drillResults.length}件</dd></div>
     <div><dt>保存中の過去AIメモ・相談文数</dt><dd>${state.aiAnalyses.length}件</dd></div>
     <div><dt>保存中の追加教材数</dt><dd>${state.lessonOverrides.length}件</dd></div>
     <div><dt>保存中の学習メニュー数</dt><dd>${state.studyPlans.length}件</dd></div>
@@ -8994,6 +9442,7 @@ function makeBackupPayload() {
     pastExamLogs: state.pastExamLogs,
     practicalLogs: state.practicalLogs,
     mockExamResults: state.mockExamResults,
+    drillResults: state.drillResults,
     aiAnalyses: state.aiAnalyses,
     lessonOverrides: state.lessonOverrides,
     studyPlans: state.studyPlans,
@@ -9044,6 +9493,7 @@ function importBackup(file) {
       state.pastExamLogs = normalizeArray(parsed.pastExamLogs).map(normalizePastExamLog);
       state.practicalLogs = normalizeArray(parsed.practicalLogs).map(normalizePracticalLog);
       state.mockExamResults = normalizeArray(parsed.mockExamResults).map(normalizeMockExamResult);
+      state.drillResults = normalizeArray(parsed.drillResults).map(normalizeDrillResult);
       state.aiAnalyses = normalizeArray(parsed.aiAnalyses).map(normalizeAiAnalysis);
       state.lessonOverrides = normalizeArray(parsed.lessonOverrides).map(normalizeLessonOverride);
       state.aiSettings = normalizeAiSettings(null);
@@ -9444,12 +9894,23 @@ function attachEvents() {
       setDrillMode(drillModeButton.dataset.drillMode);
       return;
     }
+    const startDrillButton = event.target.closest("[data-start-drill-mode]");
+    if (startDrillButton) {
+      switchView("learning");
+      setDrillMode(startDrillButton.dataset.startDrillMode);
+      document.querySelector("#drillArea")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
     if (event.target.closest("[data-grade-drill]")) {
       gradeCurrentDrill();
       return;
     }
     if (event.target.closest("[data-next-drill]")) {
       moveNextDrill();
+      return;
+    }
+    if (event.target.closest("[data-finish-drill]")) {
+      finishCurrentDrill();
       return;
     }
     if (event.target.closest("[data-open-ai-suggestions]")) {
@@ -9811,6 +10272,7 @@ function attachEvents() {
     localStorage.removeItem(STORAGE_KEYS.pastExamLogs);
     localStorage.removeItem(STORAGE_KEYS.practicalLogs);
     localStorage.removeItem(STORAGE_KEYS.mockExamResults);
+    localStorage.removeItem(STORAGE_KEYS.drillResults);
     localStorage.removeItem(STORAGE_KEYS.aiAnalyses);
     localStorage.removeItem(STORAGE_KEYS.lessonOverrides);
     localStorage.removeItem(STORAGE_KEYS.aiSettings);
@@ -9821,6 +10283,7 @@ function attachEvents() {
     state.pastExamLogs = [];
     state.practicalLogs = [];
     state.mockExamResults = [];
+    state.drillResults = [];
     state.aiAnalyses = [];
     state.lessonOverrides = [];
     state.aiSettings = normalizeAiSettings(null);
