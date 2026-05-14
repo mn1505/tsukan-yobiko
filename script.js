@@ -1,4 +1,4 @@
-const APP_VERSION = "v2.2";
+const APP_VERSION = "v2.3";
 const AI_API_TIMEOUT_MS = 30000;
 const AI_HEALTH_TIMEOUT_MS = 10000;
 const STORAGE_KEYS = {
@@ -119,7 +119,7 @@ const AI_PROMPT_TYPES = [
   "過去問分析",
   "総合学習相談"
 ];
-const AI_TARGET_TYPES = ["単元", "レッスン", "通関業法カリキュラム", "通関業法ドリル結果", "関税法等カリキュラム", "通関実務カリキュラム", "演習ログ", "過去問ログ", "実務ログ", "復習対象", "総合模試結果", "最新模試結果", "横断弱点", "全体サマリー"];
+const AI_TARGET_TYPES = ["単元", "レッスン", "通関業法カリキュラム", "通関業法ドリル結果", "関税法等カリキュラム", "関税法等ドリル結果", "通関実務カリキュラム", "通関実務ドリル結果", "演習ログ", "過去問ログ", "実務ログ", "復習対象", "総合模試結果", "最新模試結果", "横断弱点", "全体サマリー"];
 const STUDY_DURATIONS = ["15分", "30分", "1時間", "2時間", "じっくり"];
 const MOCK_EXAM_MODES = {
   light15: {
@@ -182,7 +182,7 @@ const AI_TUTOR_QUESTION_INSTRUCTIONS = {
   "質問に直接回答": "ユーザーの自由質問へ、通関士試験対策として簡潔に回答してください。"
 };
 
-const AI_SUGGESTION_TARGET_TYPES = ["レッスン確認問題", "レッスン理解度", "模試結果", "今日のメニュー", "弱点タグ", "通関業法カリキュラム", "通関業法ドリル結果", "関税法等カリキュラム", "通関実務カリキュラム", "自由入力"];
+const AI_SUGGESTION_TARGET_TYPES = ["レッスン確認問題", "レッスン理解度", "模試結果", "今日のメニュー", "弱点タグ", "通関業法カリキュラム", "通関業法ドリル結果", "関税法等カリキュラム", "関税法等ドリル結果", "通関実務カリキュラム", "通関実務ドリル結果", "自由入力"];
 const AI_SUGGESTION_TYPES = ["回答添削", "誤答原因分析", "弱点タグ提案", "A/B/C判定提案", "復習対象提案", "次にやること提案", "総合診断", "類似問題提案"];
 const AI_SUGGESTION_MARKER = "TSUKAN_YOBIKO_SUGGESTION:";
 const AI_SUGGESTION_TYPE_INSTRUCTIONS = {
@@ -1215,6 +1215,7 @@ const QUESTION_BANK = [
 
 QUESTION_BANK.push(...buildTsukangyohoQuestionBankV21());
 QUESTION_BANK.push(...buildKanzeihouQuestionBankV22());
+QUESTION_BANK.push(...buildJitsumuQuestionBankV23());
 
 function buildTsukangyohoQuestionBankV21() {
   const tf = ["正しい", "誤り"];
@@ -1409,6 +1410,79 @@ function buildKanzeihouQuestionBankV22() {
       : /主体|納税義務者/.test(spec.tag) ? "主体が誤り"
       : "手続区分が誤り";
     return makeBankQuestion(id, "関税法等", spec.topic, spec.lessonId, difficulty, "trapCheck", `記述「${spec.wrong}」の問題点はどれか。`, trapChoices, trapAnswer, spec.core, `${concept}の表現を見たら、まず誰が、誰に、いつ、どの手続をするのかに分解します。`, spec.tag, "original");
+  }));
+}
+
+function buildJitsumuQuestionBankV23() {
+  const tf = ["正しい", "誤り"];
+  const trapChoices = ["問題なし", "資料読取が誤り", "計算順序が誤り", "加算要素の扱いが誤り", "端数処理が誤り"];
+  const processChoices = [
+    "問題要求を確認 → インボイス読取 → 分類 → 価格計算 → 税額計算 → 転記確認",
+    "税額計算 → インボイス読取 → 分類 → 問題要求を確認",
+    "分類を省略 → 価格条件だけ確認 → 税額計算",
+    "選択肢を先に決める → 資料を後で読む → 端数処理を省略"
+  ];
+  const calculationChoices = [
+    "計算の基礎額、加算・不算入、税率、端数処理の順に確認する",
+    "最終税額だけを見て、途中の基礎額は確認しない",
+    "外貨額に直接消費税率を掛ければ足りる",
+    "税率が低い選択肢を常に採用する"
+  ];
+  const documentChoices = ["資料から読み取れる", "資料だけでは判断できない", "価格条件を読み違えている", "数量または通貨の読取が誤り"];
+  const specs = [
+    { count: 10, topic: "通関実務の全体像・時間配分", lessonId: "lesson-practical-time-management", tag: "時間配分", concepts: ["出題構成", "申告書問題", "計算問題", "品目分類", "時間配分", "問題要求の確認", "資料を読む前の方針決定", "捨て問判断", "見直し時間", "実務での失点パターン"], core: "通関実務は、問題要求を確認してから資料読取、分類、価格、税額、転記確認へ進む処理順の科目です。", wrong: "通関実務では、資料を読む前に計算を始めても失点にはつながらない。" },
+    { count: 12, topic: "輸出申告の基本構造", lessonId: "lesson-practical-export-structure", tag: "輸出申告", concepts: ["輸出申告書", "統計品目番号", "申告価格", "数量", "インボイス価格", "価格条件", "通貨換算", "同一税番のまとめ", "申告価格の順序", "少額貨物", "NACCS入力欄", "輸入申告との違い"], core: "輸出申告では統計品目番号、品名、数量、申告価格、価格条件、通貨を資料と対応させて整理します。", wrong: "輸出申告では関税計算が中心なので、統計品目番号や数量の確認は不要である。" },
+    { count: 12, topic: "輸入申告の基本構造", lessonId: "lesson-practical-import-structure", tag: "輸入申告", concepts: ["輸入申告書", "課税価格", "税番", "税率", "関税額", "消費税", "地方消費税", "価格条件", "運賃・保険料", "課税標準", "輸出申告との違い", "輸入許可との関係"], core: "輸入申告では、税番と課税価格を確定し、関税額、消費税、地方消費税へ順に連動させます。", wrong: "輸入申告では輸出申告価格だけを使い、運賃・保険料や関税額は確認しない。" },
+    { count: 12, topic: "申告書作成の手順", lessonId: "lesson-practical-declaration", tag: "申告書作成手順", concepts: ["問題要求の確認", "資料読取", "品目分類", "数量確認", "価格条件確認", "課税価格算出", "税率適用", "税額計算", "申告価格順", "端数処理", "見直し", "転記ミス防止"], core: "申告書作成は、要求確認、資料読取、分類、数量・価格、税率、税額、端数、転記確認の順で進めます。", wrong: "申告書作成では、先に選択肢を決めてから資料を読む方が安定する。" },
+    { count: 14, topic: "インボイス読取", lessonId: "lesson-practical-invoice-reading", tag: "インボイス読取", concepts: ["品名", "数量", "単価", "金額", "通貨", "価格条件", "FOB", "CIF", "CFR", "運賃", "保険料", "梱包費", "値引き", "取引条件"], core: "インボイスは品名、数量、単価、金額、通貨、価格条件、運賃・保険料等の注記を分けて読みます。", wrong: "インボイスでは商品名だけを読めば、分類・価格・税額計算まで処理できる。" },
+    { count: 10, topic: "価格条件と申告価格", lessonId: "lesson-practical-price-terms", tag: "価格条件", concepts: ["FOB", "CIF", "CFR", "EXW", "本邦到着までの費用", "輸出申告価格", "輸入申告価格", "加算すべき費用", "加算しない費用", "価格条件の読み替え"], core: "価格条件は、価格にどこまでの費用が含まれるかを示すため、申告価格や課税価格の出発点になります。", wrong: "FOB、CIF、CFR、EXWはいずれも同じ費用範囲を示すため、読み替えは不要である。" },
+    { count: 10, topic: "為替換算", lessonId: "lesson-practical-exchange", tag: "為替換算", concepts: ["外貨建て価格", "税関長公示相場", "申告価格への換算", "通貨単位", "円換算", "小数点", "レートの見落とし", "USD/EUR等の混同", "換算順序", "端数処理との関係"], core: "外貨建て資料は、指定された通貨とレートを確認し、円換算してから必要な端数処理へ進みます。", wrong: "外貨建て価格は、資料の指定レートではなく現在の市場レートで換算する。" },
+    { count: 14, topic: "品目分類の基本", lessonId: "lesson-practical-classification", tag: "品目分類", concepts: ["類", "項", "号", "統計細分", "類注", "号注", "商品名だけで判断しない", "材質", "用途", "成分", "容器容量", "アルコール分", "食品・飲料", "部品と完成品"], core: "品目分類は商品名だけでなく、材質、用途、成分、容量、注、通則、完成品か部品かを確認します。", wrong: "品目分類は販売名の印象だけで決め、類注や号注は見なくてよい。" },
+    { count: 8, topic: "統計品目番号・税番", lessonId: "lesson-practical-statistical-code", tag: "統計品目番号", concepts: ["統計品目番号", "関税率表番号", "9桁/細分", "税率適用", "同一税番のまとめ", "統計単位", "NACCS欄", "税番転記ミス"], core: "統計品目番号・税番は、分類結果、税率、統計単位、同一税番のまとめ、転記欄と連動します。", wrong: "統計品目番号は税率や統計単位と無関係に任意で選べる。" },
+    { count: 12, topic: "課税価格の基本構造", lessonId: "lesson-practical-customs-value", tag: "課税価格", concepts: ["現実支払価格", "輸入取引", "加算要素", "不算入要素", "本邦到着まで", "本邦到着後", "買手負担", "売手への支払", "運賃", "保険料", "無償提供物", "ロイヤルティ"], core: "課税価格は現実支払価格を基礎に、輸入貨物に関連する加算要素と不算入要素を区分します。", wrong: "課税価格はインボイス総額を常にそのまま使い、加算要素や不算入要素は考慮しない。" },
+    { count: 14, topic: "加算要素・不算入要素", lessonId: "lesson-practical-additions", tag: "加算要素", concepts: ["運賃", "保険料", "仲介料", "容器費", "包装費", "無償提供物", "ロイヤルティ", "売手帰属収益", "本邦到着後の運賃", "据付費", "技術指導費", "関税その他公課", "区分明記", "加算条件"], core: "加算要素は買手負担・輸入貨物関連・本邦到着まで等を確認し、不算入要素は区分明記などの条件を確認します。", wrong: "買手が負担した費用は、本邦到着後の費用も含め条件を問わずすべて課税価格に加算する。" },
+    { count: 8, topic: "関税額計算", lessonId: "lesson-practical-duty-calculation", tag: "関税額計算", concepts: ["課税価格", "関税率", "従価税", "従量税", "税額計算", "端数処理", "税率の取り違え", "関税額と課税価格の混同"], core: "関税額は課税価格と適用税率を対応させ、従価税・従量税の別と端数処理を確認します。", wrong: "関税額は課税価格そのものと同じ金額であり、税率を掛ける必要はない。" },
+    { count: 10, topic: "消費税・地方消費税計算", lessonId: "lesson-practical-consumption-tax", tag: "消費税計算", concepts: ["消費税の課税標準", "課税価格＋関税額", "消費税率", "地方消費税", "消費税額", "地方消費税額", "端数処理", "関税額からの流れ", "課税標準の混同", "計算順序"], core: "輸入消費税は課税価格に関税額等を加えた課税標準から計算し、地方消費税へ順に進みます。", wrong: "輸入消費税は外貨建てインボイス価格だけに税率を掛けて計算する。" },
+    { count: 8, topic: "端数処理", lessonId: "lesson-practical-rounding", tag: "端数処理", concepts: ["課税価格の端数", "関税額の端数", "消費税の端数", "地方消費税の端数", "千円未満", "百円未満", "円未満", "処理順序"], core: "端数処理は対象金額、処理単位、処理タイミングを分け、途中で勝手に丸めないことが重要です。", wrong: "端数処理は最後に一度だけ好きな単位で丸めればよい。" },
+    { count: 8, topic: "税率適用", lessonId: "lesson-practical-tax-rate", tag: "税率適用", concepts: ["基本税率", "協定税率", "特恵税率", "暫定税率", "税率表", "税番と税率", "低い税率が常に使えるわけではない", "適用条件"], core: "税率は税番、適用条件、原産地、時点を確認して選び、低い税率を常に使えるわけではありません。", wrong: "複数の税率が見えるときは、条件を問わず最も低い税率を選ぶ。" },
+    { count: 8, topic: "NACCS入力項目の基本", lessonId: "lesson-practical-naccs", tag: "NACCS入力", concepts: ["申告価格", "税番", "数量", "課税価格", "税額", "原産国", "価格条件", "入力欄の混同"], core: "NACCS入力は、欄名と資料上の根拠を対応させ、税番、数量、価格条件、原産国、税額を混同しないようにします。", wrong: "NACCS入力は欄名を覚えればよく、インボイスや税率表との対応は不要である。" },
+    { count: 10, topic: "資料読取・ミス発見", lessonId: "lesson-practical-material-exercise", tag: "資料読取", concepts: ["インボイス", "包装明細", "運賃明細", "保険料明細", "税率表", "分類資料", "原産地資料", "レート表", "条件注記", "見落としチェック"], core: "資料読取では、インボイス、包装明細、運賃・保険料、税率表、レート表、条件注記を照合します。", wrong: "資料読取では、最初に目に入った金額だけを使えばよく、注記や別紙明細は確認しなくてよい。" }
+  ];
+  const difficultyPlan = [
+    ...Array(35).fill("基礎"),
+    ...Array(60).fill("標準"),
+    ...Array(30).fill("応用"),
+    ...Array(25).fill("ひっかけ")
+  ];
+  let serial = 1;
+  return specs.flatMap((spec) => Array.from({ length: spec.count }, (_, index) => {
+    const id = `qb-jitsumu-${String(serial).padStart(3, "0")}`;
+    const difficulty = difficultyPlan[serial - 1] || "標準";
+    const concept = spec.concepts[index % spec.concepts.length];
+    const typePattern = ["trueFalse", "singleChoice", "processChoice", "calculationCheck", "documentRead", "trapCheck"];
+    const questionType = typePattern[(serial - 1) % typePattern.length];
+    serial += 1;
+    if (questionType === "trueFalse") {
+      const isCorrect = index % 2 === 0;
+      return makeBankQuestion(id, "通関実務", spec.topic, spec.lessonId, difficulty, "trueFalse", `${concept}について、${isCorrect ? spec.core : spec.wrong}`, tf, isCorrect ? "正しい" : "誤り", spec.core, `${concept}は、正しい語が入っていても順序・対象・条件を入れ替えた表現に注意します。`, spec.tag, "original");
+    }
+    if (questionType === "singleChoice") {
+      const correct = `${concept}は、資料上の根拠と申告書上の欄を対応させて判断する`;
+      return makeBankQuestion(id, "通関実務", spec.topic, spec.lessonId, difficulty, "singleChoice", `${spec.topic}で「${concept}」を扱うときの考え方として最も適切なものはどれか。`, [correct, "選択肢の税率が低いものを優先して選ぶ", "資料を読まずに過去に見た商品名だけで決める", "計算結果だけ合えば、分類や価格条件は確認しない"], correct, spec.core, "得点に直結するのは結論だけでなく、資料から根拠を拾う順序です。", spec.tag, "original");
+    }
+    if (questionType === "processChoice") {
+      return makeBankQuestion(id, "通関実務", spec.topic, spec.lessonId, difficulty, "processChoice", `${concept}を含む申告書問題を解く手順として最も安定するものはどれか。`, processChoices, processChoices[0], spec.core, "いきなり税額計算や選択肢決めに入ると、通貨・価格条件・税番の見落としが連鎖します。", "申告書作成手順", "original");
+    }
+    if (questionType === "calculationCheck") {
+      return makeBankQuestion(id, "通関実務", spec.topic, spec.lessonId, difficulty, "calculationCheck", `${concept}を含む計算過程の確認として正しいものはどれか。`, calculationChoices, calculationChoices[0], spec.core, "計算問題は最終額だけでなく、どの金額を基礎にしたか、いつ端数処理したかを確認します。", /消費税/.test(spec.topic) ? "消費税計算" : /関税額/.test(spec.topic) ? "関税額計算" : /端数/.test(spec.topic) ? "端数処理" : spec.tag, "original");
+    }
+    if (questionType === "documentRead") {
+      const material = `【簡易資料】Invoice No. TY-${String(index + 1).padStart(2, "0")} / Item: ${concept} sample goods / Qty: ${10 + index} CT / Unit price: USD ${20 + index}.00 / Terms: ${index % 3 === 0 ? "FOB" : index % 3 === 1 ? "CIF" : "CFR"} Tokyo / Freight: USD ${80 + index} / Insurance: USD ${12 + index} / Exchange: USD1=JPY${145 + (index % 5)} / Note: 国内据付費は別掲。`;
+      const answer = index % 2 === 0 ? "資料から読み取れる" : "価格条件を読み違えている";
+      return makeBankQuestion(id, "通関実務", spec.topic, spec.lessonId, difficulty, "documentRead", `${material}\n【問】${concept}について、この資料から最初に確認すべき判断として最も適切なものはどれか。`, documentChoices, answer, spec.core, "資料読取では、価格条件、運賃、保険料、通貨、別掲費用を一つずつ確認します。CIFとFOBの費用範囲を混同しないようにします。", spec.tag, "original");
+    }
+    const trapAnswer = /端数/.test(spec.topic) ? "端数処理が誤り" : /加算|課税価格|価格条件/.test(spec.topic) ? "加算要素の扱いが誤り" : /計算|消費税|関税額/.test(spec.topic) ? "計算順序が誤り" : "資料読取が誤り";
+    return makeBankQuestion(id, "通関実務", spec.topic, spec.lessonId, difficulty, "trapCheck", `記述「${spec.wrong}」の問題点はどれか。`, trapChoices, trapAnswer, spec.core, `${concept}のひっかけは、資料読取、計算順序、加算・不算入、端数処理のどこが崩れているかに分解します。`, spec.tag, "original");
   }));
 }
 
@@ -2091,7 +2165,7 @@ function normalizeAiSettings(item) {
     enabled: false,
     endpointUrl: "",
     lastTestedAt: String(item?.lastTestedAt || ""),
-    lastStatus: "v2.2で廃止",
+    lastStatus: "v2.3で廃止",
     lastError: ""
   };
 }
@@ -2240,7 +2314,7 @@ function sanitizeAiSettings(settings) {
     enabled: false,
     endpointUrl: "",
     lastTestedAt: "",
-    lastStatus: "v2.2で廃止",
+    lastStatus: "v2.3で廃止",
     lastError: ""
   };
 }
@@ -2784,14 +2858,19 @@ function buildTodayDrillItems(duration) {
   const items = [];
   const latest = state.drillResults.find((result) => result.subject === "通関業法");
   const latestKanzeihou = state.drillResults.find((result) => result.subject === "関税法等");
+  const latestJitsumu = state.drillResults.find((result) => result.subject === "通関実務");
   const weakTags = getDrillWeaknessTagRanking("通関業法");
   const kanzeihouWeakTags = getDrillWeaknessTagRanking("関税法等");
+  const jitsumuWeakTags = getDrillWeaknessTagRanking("通関実務");
   const cLesson = getTsukangyohoLessons().some((lesson) => getLessonProgress(lesson.id).understanding === "C");
   const kanzeihouCLesson = getKanzeihouLessons().some((lesson) => getLessonProgress(lesson.id).understanding === "C");
+  const jitsumuCLesson = getPracticalLessons().some((lesson) => getLessonProgress(lesson.id).understanding === "C");
   const stale = !latest || daysSinceIso(latest.completedAt) >= 7;
   const staleKanzeihou = !latestKanzeihou || daysSinceIso(latestKanzeihou.completedAt) >= 7;
+  const staleJitsumu = !latestJitsumu || daysSinceIso(latestJitsumu.completedAt) >= 5;
   const hasPenaltyWeak = weakTags.some((item) => /罰則|処分|義務|信用|通関士|確認/.test(item.tag) && item.count >= 1);
   const hasKanzeihouCoreWeak = kanzeihouWeakTags.some((item) => /保税|納期限|法定納期限|課税価格|加算要素|延滞税|加算税|申告・許可/.test(item.tag) && item.count >= 1);
+  const hasJitsumuCoreWeak = jitsumuWeakTags.some((item) => /インボイス|品目分類|課税価格|加算要素|消費税|端数処理|資料読取|為替換算/.test(item.tag) && item.count >= 1);
   if (cLesson || latest?.resultLevel === "C" || stale) {
     items.push(makeTodayMenuItem({
       id: "drill-tsukangyoho-10",
@@ -2851,6 +2930,49 @@ function buildTodayDrillItems(duration) {
       reason: "保税・納税・課税価格系の弱点タグが多い",
       priority: "高",
       priorityScore: 97,
+      estimatedMinutes: 10
+    }));
+  }
+  if (jitsumuCLesson || latestJitsumu?.resultLevel === "C" || staleJitsumu) {
+    items.push(makeTodayMenuItem({
+      id: "drill-jitsumu-10",
+      type: "通関実務ドリル",
+      title: "通関実務10問ドリル",
+      description: latestJitsumu ? `直近 ${latestJitsumu.scoreRate}% / 判定${latestJitsumu.resultLevel}` : "未実施",
+      reason: latestJitsumu?.resultLevel === "C" ? "通関実務ドリルC判定" : jitsumuCLesson ? "通関実務レッスンにC判定あり" : "通関実務問題をしばらく解いていない",
+      priority: latestJitsumu?.resultLevel === "C" || jitsumuCLesson ? "最優先" : "高",
+      priorityScore: latestJitsumu?.resultLevel === "C" ? 122 : jitsumuCLesson ? 108 : 76,
+      estimatedMinutes: 15
+    }));
+  }
+  if (hasJitsumuCoreWeak) {
+    const top = jitsumuWeakTags[0]?.tag || "インボイス読取";
+    const mode = /品目分類|税番/.test(top) ? "品目分類ドリル"
+      : /課税価格|加算要素|不算入/.test(top) ? "通関実務課税価格ドリル"
+      : /消費税|地方消費税/.test(top) ? "消費税・地方消費税ドリル"
+      : /端数/.test(top) ? "端数処理ドリル"
+      : /資料読取/.test(top) ? "資料読取ドリル"
+      : "インボイス読取ドリル";
+    items.push(makeTodayMenuItem({
+      id: `drill-jitsumu-${mode}`,
+      type: "通関実務ドリル",
+      title: mode,
+      description: jitsumuWeakTags.slice(0, 3).map((item) => `${item.tag}${item.count}`).join(" / "),
+      reason: "通関実務の弱点タグが多い",
+      priority: "高",
+      priorityScore: 99,
+      estimatedMinutes: 12
+    }));
+  }
+  if (duration !== "15分") {
+    items.push(makeTodayMenuItem({
+      id: "drill-jitsumu-process",
+      type: "通関実務ドリル",
+      title: "手順ドリル",
+      description: "問題要求、資料読取、分類、価格、税額の順を確認",
+      reason: "通関実務は処理順の固定が得点に直結する",
+      priority: hasJitsumuCoreWeak ? "高" : "中",
+      priorityScore: hasJitsumuCoreWeak ? 94 : 58,
       estimatedMinutes: 10
     }));
   }
@@ -3737,11 +3859,25 @@ function todayMenuCard(item, compact = false) {
         ${item.relatedLogId ? `<button class="ghost-button" type="button" data-open-today-log="${escapeAttribute(item.type)}:${escapeAttribute(item.relatedLogId)}">ログを開く</button>` : ""}
         ${item.mockMode ? `<button class="primary-button" type="button" data-start-mock="${escapeAttribute(item.mockMode)}">開始</button>` : ""}
         ${item.type === "通関業法ドリル" ? `<button class="primary-button" type="button" data-start-drill-mode="${escapeAttribute(item.id.includes("hikkake") || item.id.includes("trap") ? "通関業法ひっかけ" : "通関業法10問")}">開始</button>` : ""}
+        ${item.type === "関税法等ドリル" ? `<button class="primary-button" type="button" data-start-drill-mode="${escapeAttribute(item.title.includes("課税価格") ? "課税価格ドリル" : "関税法等10問")}">開始</button>` : ""}
+        ${item.type === "通関実務ドリル" ? `<button class="primary-button" type="button" data-start-drill-mode="${escapeAttribute(getTodayJitsumuDrillMode(item))}">開始</button>` : ""}
         ${item.relatedMockResultId ? `<button class="ghost-button" type="button" data-show-mock-result="${escapeAttribute(item.relatedMockResultId)}">模試詳細</button>` : ""}
         <button class="ghost-button" type="button" data-ai-today-consult>相談文を作る</button>
       </div>
     </article>
   `;
+}
+
+function getTodayJitsumuDrillMode(item) {
+  if (item.title.includes("手順")) return "手順ドリル";
+  if (item.title.includes("計算過程")) return "計算過程ドリル";
+  if (item.title.includes("資料読取")) return "資料読取ドリル";
+  if (item.title.includes("インボイス")) return "インボイス読取ドリル";
+  if (item.title.includes("品目分類")) return "品目分類ドリル";
+  if (item.title.includes("課税価格")) return "通関実務課税価格ドリル";
+  if (item.title.includes("消費税")) return "消費税・地方消費税ドリル";
+  if (item.title.includes("端数")) return "端数処理ドリル";
+  return "通関実務10問";
 }
 
 function renderTodayMiniItems(items) {
@@ -3832,7 +3968,10 @@ function renderDrillView() {
     "通関業法10問", "通関業法ランダム", "通関業法順番", "通関業法ひっかけ",
     "関税法等10問", "関税法等20問", "関税法等ランダム", "関税法等順番", "関税法等ひっかけ",
     "輸出入申告ドリル", "保税地域ドリル", "保税運送ドリル", "納税申告・更正ドリル", "納期限・加算税ドリル", "課税価格ドリル", "減免税ドリル", "輸入禁止貨物・原産地表示ドリル", "罰則ドリル",
-    "弱点タグ別ドリル", "関税法等ドリル", "通関実務ドリル"
+    "弱点タグ別ドリル", "関税法等ドリル",
+    "通関実務10問", "通関実務20問", "通関実務ランダム", "通関実務順番", "通関実務ひっかけ", "通関実務ドリル",
+    "手順ドリル", "計算過程ドリル", "資料読取ドリル",
+    "インボイス読取ドリル", "輸出申告ドリル", "輸入申告ドリル", "品目分類ドリル", "統計品目番号ドリル", "通関実務課税価格ドリル", "加算要素・不算入要素ドリル", "為替換算ドリル", "関税額計算ドリル", "消費税・地方消費税ドリル", "端数処理ドリル", "税率適用ドリル", "NACCS入力ドリル", "資料読取論点ドリル", "時間配分ドリル"
   ];
   if (!modes.includes(state.drill.mode)) state.drill.mode = "通関業法10問";
   ensureDrillSession();
@@ -3880,7 +4019,30 @@ function getDrillQuestions(mode) {
   if (mode === "輸入禁止貨物・原産地表示ドリル") return pickKanzeihouTopicDrill(/輸入してはならない|輸入禁止|原産地|虚偽表示/);
   if (mode === "罰則ドリル") return pickKanzeihouTopicDrill(/罰則|没収|追徴|密輸/);
   if (mode === "関税法等ドリル") return QUESTION_BANK.filter((question) => question.subject === "関税法等");
-  if (mode === "通関実務ドリル") return QUESTION_BANK.filter((question) => question.subject === "通関実務");
+  if (mode === "通関実務10問") return pickDrillQuestions(getJitsumuQuestions(), 10, true);
+  if (mode === "通関実務20問") return pickDrillQuestions(getJitsumuQuestions(), 20, true);
+  if (mode === "通関実務ランダム") return pickDrillQuestions(getJitsumuQuestions(), 10, true);
+  if (mode === "通関実務順番") return getJitsumuQuestions();
+  if (mode === "通関実務ひっかけ") return pickDrillQuestions(getJitsumuQuestions().filter((question) => question.questionType === "trapCheck" || question.difficulty === "ひっかけ" || /ひっかけ|誤り|混同|見落とし/.test(`${question.trapExplanation}${question.weaknessTag}`)), 10, true);
+  if (mode === "通関実務ドリル") return getJitsumuQuestions();
+  if (mode === "手順ドリル") return pickJitsumuTopicDrill(/申告書作成手順|問題要求|手順|時間配分/, "processChoice", 10);
+  if (mode === "計算過程ドリル") return pickJitsumuTopicDrill(/課税価格|関税額|消費税|地方消費税|端数処理|税率適用|為替換算|加算要素/, "calculationCheck", 10);
+  if (mode === "資料読取ドリル") return pickJitsumuTopicDrill(/資料読取|インボイス読取|価格条件|運賃・保険料|転記ミス/, "documentRead", 10);
+  if (mode === "インボイス読取ドリル") return pickJitsumuTopicDrill(/インボイス読取|価格条件|運賃|保険料/);
+  if (mode === "輸出申告ドリル") return pickJitsumuTopicDrill(/輸出申告/);
+  if (mode === "輸入申告ドリル") return pickJitsumuTopicDrill(/輸入申告/);
+  if (mode === "品目分類ドリル") return pickJitsumuTopicDrill(/品目分類|税番|統計品目番号|税率適用/);
+  if (mode === "統計品目番号ドリル") return pickJitsumuTopicDrill(/統計品目番号|税番/);
+  if (mode === "通関実務課税価格ドリル") return pickJitsumuTopicDrill(/課税価格|価格条件|加算要素|不算入要素|運賃・保険料/);
+  if (mode === "加算要素・不算入要素ドリル") return pickJitsumuTopicDrill(/加算要素|不算入要素|無償提供物|ロイヤルティ|運賃|保険料/);
+  if (mode === "為替換算ドリル") return pickJitsumuTopicDrill(/為替換算/);
+  if (mode === "関税額計算ドリル") return pickJitsumuTopicDrill(/関税額計算|税率適用|端数処理/);
+  if (mode === "消費税・地方消費税ドリル") return pickJitsumuTopicDrill(/消費税計算|地方消費税計算|消費税・地方消費税/);
+  if (mode === "端数処理ドリル") return pickJitsumuTopicDrill(/端数処理/);
+  if (mode === "税率適用ドリル") return pickJitsumuTopicDrill(/税率適用|税番/);
+  if (mode === "NACCS入力ドリル") return pickJitsumuTopicDrill(/NACCS入力/);
+  if (mode === "資料読取論点ドリル") return pickJitsumuTopicDrill(/資料読取|インボイス|レート表|税率表/);
+  if (mode === "時間配分ドリル") return pickJitsumuTopicDrill(/時間配分|問題要求の確認/);
   if (mode === "弱点タグ別ドリル") {
     const tags = [...new Set([...getTopWeaknessTags(), ...getDrillWeaknessTagRanking().slice(0, 3).map((item) => item.tag)])];
     const matched = tags.length ? QUESTION_BANK.filter((question) => tags.some((tag) => question.weaknessTag.includes(tag) || tag.includes(question.weaknessTag))) : [];
@@ -3894,9 +4056,22 @@ function getKanzeihouQuestions() {
   return QUESTION_BANK.filter((question) => question.subject === "関税法等");
 }
 
+function getJitsumuQuestions() {
+  return QUESTION_BANK.filter((question) => question.subject === "通関実務");
+}
+
 function pickKanzeihouTopicDrill(pattern) {
   const matched = getKanzeihouQuestions().filter((question) => pattern.test(`${question.topic}${question.weaknessTag}${question.explanation}${question.trapExplanation}`));
   return pickDrillQuestions(matched, 10, true);
+}
+
+function pickJitsumuTopicDrill(pattern, questionType = "", limit = 10) {
+  const matched = getJitsumuQuestions().filter((question) => {
+    const haystack = `${question.topic}${question.weaknessTag}${question.explanation}${question.trapExplanation}`;
+    return pattern.test(haystack) && (!questionType || question.questionType === questionType);
+  });
+  const fallback = questionType ? getJitsumuQuestions().filter((question) => question.questionType === questionType) : getJitsumuQuestions();
+  return pickDrillQuestions(matched.length ? matched : fallback, limit, true);
 }
 
 function pickDrillQuestions(questions, limit, randomize = false) {
@@ -3923,6 +4098,14 @@ function renderDrillQuestion(question, questions) {
   const selected = state.drill.selectedAnswer;
   const isCorrect = selected && selected === question.answer;
   const answered = state.drill.answers.find((answer) => answer.questionId === question.id);
+  const documentParts = splitDocumentQuestion(question.question);
+  const correctThinkingLabel = question.questionType === "processChoice" ? "正しい手順"
+    : question.questionType === "calculationCheck" ? "正しい考え方"
+    : question.questionType === "documentRead" ? "読み取るポイント"
+    : "正答";
+  const trapLabel = question.questionType === "documentRead" ? "読み落とし注意"
+    : question.questionType === "processChoice" || question.questionType === "calculationCheck" ? "ミス防止ポイント"
+    : "ひっかけ解説";
   return `
     <article class="drill-card">
       <div class="card-meta">
@@ -3934,7 +4117,13 @@ function renderDrillQuestion(question, questions) {
         ${answered ? `<span class="badge ${answered.correct ? "ok" : "priority"}">${answered.correct ? "回答済み 正解" : "回答済み 不正解"}</span>` : ""}
       </div>
       <h4>問${index + 1} / ${questions.length}</h4>
-      <p class="drill-question">${escapeHtml(question.question)}</p>
+      ${documentParts.material ? `
+        <details class="drill-document-card" open>
+          <summary>簡易資料</summary>
+          <p>${escapeHtml(documentParts.material)}</p>
+        </details>
+      ` : ""}
+      <p class="drill-question">${escapeHtml(documentParts.body)}</p>
       <div class="drill-choices">
         ${question.choices.map((choice) => `
           <label class="check-card">
@@ -3954,17 +4143,27 @@ function renderDrillQuestion(question, questions) {
           <strong>${isCorrect ? "正解" : "不正解"}</strong>
           <dl class="review-facts compact">
             <div><dt>あなたの回答</dt><dd>${escapeHtml(selected || "未回答")}</dd></div>
-            <div><dt>正答</dt><dd>${escapeHtml(question.answer)}</dd></div>
+            <div><dt>${escapeHtml(correctThinkingLabel)}</dt><dd>${escapeHtml(question.answer)}</dd></div>
             <div><dt>弱点タグ</dt><dd>${escapeHtml(question.weaknessTag)}</dd></div>
           </dl>
           <h4>解説</h4>
           <p>${escapeHtml(question.explanation)}</p>
-          <h4>ひっかけ解説</h4>
+          <h4>${escapeHtml(trapLabel)}</h4>
           <p>${escapeHtml(question.trapExplanation)}</p>
         </div>
       ` : ""}
     </article>
   `;
+}
+
+function splitDocumentQuestion(text) {
+  const value = String(text || "");
+  const marker = "\n【問】";
+  if (!value.startsWith("【簡易資料】") || !value.includes(marker)) {
+    return { material: "", body: value };
+  }
+  const [material, body] = value.split(marker);
+  return { material: material.replace(/^【簡易資料】\s*/, ""), body: `【問】${body || ""}` };
 }
 
 function setDrillMode(mode) {
@@ -4914,12 +5113,14 @@ function renderDrillBankAnalysis() {
     const questions = QUESTION_BANK.filter((question) => question.subject === subject);
     const difficulty = rankFromValues(questions.map((question) => question.difficulty));
     const topics = rankFromValues(questions.map((question) => question.topic));
+    const questionTypes = rankFromValues(questions.map((question) => question.questionType));
     const tags = rankFromValues(questions.map((question) => question.weaknessTag));
     const results = state.drillResults.filter((result) => result.subject === subject);
     const average = results.length ? Math.round(results.reduce((sum, result) => sum + result.scoreRate, 0) / results.length) : 0;
     const wrongTags = getDrillWeaknessTagRanking(subject);
     const topicRates = getDrillTopicAccuracy(subject);
     const cTopics = getDrillCLevelTopics(subject);
+    const typeRate = (type) => getDrillQuestionTypeAccuracy(subject, type);
     return `
       <section class="panel analysis-section">
         <div class="panel-heading"><h3>${escapeHtml(subject)}問題バンク分析</h3></div>
@@ -4930,6 +5131,7 @@ function renderDrillBankAnalysis() {
               <div><dt>${escapeHtml(subject)}問題数</dt><dd>${questions.length}</dd></div>
               <div><dt>難易度別問題数</dt><dd>${escapeHtml(difficulty.map((item) => `${item.label}:${item.count}`).join(" / "))}</dd></div>
               <div><dt>論点別問題数</dt><dd>${escapeHtml(topics.slice(0, 12).map((item) => `${item.label}:${item.count}`).join(" / "))}</dd></div>
+              <div><dt>問題形式別問題数</dt><dd>${escapeHtml(questionTypes.map((item) => `${item.label}:${item.count}`).join(" / "))}</dd></div>
               <div><dt>弱点タグ別問題数</dt><dd>${escapeHtml(tags.slice(0, 12).map((item) => `${item.label}:${item.count}`).join(" / "))}</dd></div>
             </dl>
           </article>
@@ -4939,6 +5141,11 @@ function renderDrillBankAnalysis() {
               <div><dt>ドリル実施回数</dt><dd>${results.length}</dd></div>
               <div><dt>ドリル平均正答率</dt><dd>${results.length ? `${average}%` : "未実施"}</dd></div>
               <div><dt>論点別正答率</dt><dd>${escapeHtml(topicRates.slice(0, 10).map((item) => `${item.topic}:${item.rate}%(${item.correct}/${item.total})`).join(" / ") || "未実施")}</dd></div>
+              ${subject === "通関実務" ? `
+                <div><dt>手順ドリル正答率</dt><dd>${escapeHtml(typeRate("processChoice"))}</dd></div>
+                <div><dt>計算過程ドリル正答率</dt><dd>${escapeHtml(typeRate("calculationCheck"))}</dd></div>
+                <div><dt>資料読取ドリル正答率</dt><dd>${escapeHtml(typeRate("documentRead"))}</dd></div>
+              ` : ""}
               <div><dt>よく間違える弱点タグ</dt><dd>${escapeHtml(wrongTags.slice(0, 8).map((item) => `${item.tag}:${item.count}`).join(" / ") || "なし")}</dd></div>
               <div><dt>C判定が多い論点</dt><dd>${escapeHtml(cTopics.map((item) => `${item.topic}:${item.count}`).join(" / ") || "なし")}</dd></div>
             </dl>
@@ -4954,6 +5161,7 @@ function renderDrillBankAnalysis() {
   return `
     ${renderSubjectBank("通関業法", "通関業法10問", "通関業法ひっかけ")}
     ${renderSubjectBank("関税法等", "関税法等10問", "課税価格ドリル")}
+    ${renderSubjectBank("通関実務", "通関実務10問", "手順ドリル")}
   `;
 }
 
@@ -4985,6 +5193,17 @@ function getDrillTopicAccuracy(subject) {
   return [...map.values()]
     .map((item) => ({ ...item, rate: item.total ? Math.round((item.correct / item.total) * 100) : 0 }))
     .sort((a, b) => a.rate - b.rate || b.total - a.total || a.topic.localeCompare(b.topic, "ja"));
+}
+
+function getDrillQuestionTypeAccuracy(subject, questionType) {
+  const rows = state.drillResults
+    .filter((result) => result.subject === subject)
+    .flatMap((result) => result.answers || [])
+    .map((answer) => ({ answer, question: QUESTION_BANK.find((item) => item.id === answer.questionId) }))
+    .filter((row) => row.question?.questionType === questionType);
+  if (!rows.length) return "未実施";
+  const correct = rows.filter((row) => row.answer.correct).length;
+  return `${Math.round((correct / rows.length) * 100)}%（${correct}/${rows.length}）`;
 }
 
 function getDrillCLevelTopics(subject) {
@@ -6725,7 +6944,7 @@ function renderAiSuggestionTargetSelect() {
   const label = document.querySelector("#aiSuggestionTargetSelectLabel");
   if (!select || !label) return;
   const options = getAiSuggestionTargetOptions(state.aiSuggestionForm.targetType);
-  const needsSelect = !["今日のメニュー", "通関業法カリキュラム", "通関業法ドリル結果", "関税法等カリキュラム", "通関実務カリキュラム", "自由入力"].includes(state.aiSuggestionForm.targetType);
+  const needsSelect = !["今日のメニュー", "通関業法カリキュラム", "通関業法ドリル結果", "関税法等カリキュラム", "関税法等ドリル結果", "通関実務カリキュラム", "通関実務ドリル結果", "自由入力"].includes(state.aiSuggestionForm.targetType);
   label.classList.toggle("is-hidden", !needsSelect);
   if (!needsSelect) {
     select.innerHTML = `<option value="">自動選択</option>`;
@@ -7214,7 +7433,9 @@ function buildAiSuggestionTargetData() {
   if (type === "通関業法カリキュラム") return { id: "course-tsukangyoho-basic", title: type, body: buildTsukangyohoCurriculumPromptData() };
   if (type === "通関業法ドリル結果") return { id: "drill-tsukangyoho", title: type, body: buildDrillPromptSummary() };
   if (type === "関税法等カリキュラム") return { id: "course-kanzeihou-intro", title: type, body: buildKanzeihouCurriculumPromptData() };
+  if (type === "関税法等ドリル結果") return { id: "drill-kanzeihou", title: type, body: buildDrillPromptSummary() };
   if (type === "通関実務カリキュラム") return { id: "course-practical-intro", title: type, body: buildPracticalCurriculumPromptData() };
+  if (type === "通関実務ドリル結果") return { id: "drill-jitsumu", title: type, body: buildDrillPromptSummary() };
   return { id: "free", title: "自由入力", body: state.aiSuggestionForm.memo || "自由入力の添削対象が未入力です。" };
 }
 
@@ -7588,11 +7809,17 @@ function buildAiTargetData() {
   if (state.aiForm.targetType === "通関業法ドリル結果") {
     return { id: "drill-tsukangyoho", title: "通関業法ドリル結果", body: buildDrillPromptSummary() };
   }
+  if (state.aiForm.targetType === "関税法等ドリル結果") {
+    return { id: "drill-kanzeihou", title: "関税法等ドリル結果", body: buildDrillPromptSummary() };
+  }
   if (state.aiForm.targetType === "関税法等カリキュラム") {
     return { id: "course-kanzeihou-intro", title: "関税法等カリキュラム", body: buildKanzeihouPromptData() };
   }
   if (state.aiForm.targetType === "通関実務カリキュラム") {
     return { id: "course-practical-intro", title: "通関実務カリキュラム", body: buildPracticalCurriculumPromptData() };
+  }
+  if (state.aiForm.targetType === "通関実務ドリル結果") {
+    return { id: "drill-jitsumu", title: "通関実務ドリル結果", body: buildDrillPromptSummary() };
   }
   return { id: "", title: "全体サマリー", body: buildOverallSummaryPromptData() };
 }
@@ -7930,7 +8157,7 @@ function buildOverallSummaryPromptData() {
     ["多い弱点タグ上位", getTopWeaknessTags().join(" / ")],
     ["危険度上位単元", analysis.unitRisks.slice(0, 5).map((item) => `${item.unit.title}:${item.risk.label}/${item.score}点/${item.reasons.join("・") || "理由なし"}`).join("\n")],
     ["今日の学習メニュー", todaySummary],
-    ["通関業法ドリル結果", buildDrillPromptSummary()],
+    ["科目別ドリル結果", buildDrillPromptSummary()],
     ["科目別危険度", analysis.subjects.map((item) => `${item.subject}:${item.risk.label}`).join(" / ")],
     ["本試験で危険な論点", analysis.dangerTopics.map((item) => `${item.subject} ${item.topic}（×${item.wrong} / △${item.partial} / 高優先度${item.high} / 再演習${item.retry}）`).join("\n") || "未記録"],
     ["直近の×演習ログ", summarizeRecentWrongPracticeLogs()],
@@ -7950,16 +8177,17 @@ function buildTodayPromptSummary() {
     ["今日のおすすめ", menu.recommended.map((item) => `${item.type}:${item.title}（${item.priority}/${item.reason}）`).join("\n")],
     ["未完了項目", incomplete.map((item) => `${item.type}:${item.title}`).join("\n") || "なし"],
     ["弱点タグ上位", getTopWeaknessTags().join(" / ") || "なし"],
-    ["通関業法ドリル", buildDrillPromptSummary()],
+    ["科目別ドリル結果", buildDrillPromptSummary()],
     ["今日のメモ", menu.plan.memo || "未入力"]
   ]);
 }
 
 function buildDrillPromptSummary() {
-  const results = state.drillResults.filter((result) => ["通関業法", "関税法等"].includes(result.subject));
+  const results = state.drillResults.filter((result) => ["通関業法", "関税法等", "通関実務"].includes(result.subject));
   const latest = results[0];
   const tsukangyohoWrongTags = getDrillWeaknessTagRanking("通関業法").slice(0, 5).map((item) => `${item.tag}(${item.count})`).join(" / ");
   const kanzeihouWrongTags = getDrillWeaknessTagRanking("関税法等").slice(0, 8).map((item) => `${item.tag}(${item.count})`).join(" / ");
+  const jitsumuWrongTags = getDrillWeaknessTagRanking("通関実務").slice(0, 8).map((item) => `${item.tag}(${item.count})`).join(" / ");
   const wrongQuestions = latest ? latest.answers
     .filter((answer) => !answer.correct)
     .map((answer) => {
@@ -7973,8 +8201,12 @@ function buildDrillPromptSummary() {
     ["直近結果", latest ? `${latest.mode} / ${latest.scoreRate}% / ${latest.resultLevel}` : "未実施"],
     ["通関業法でよく間違える弱点タグ", tsukangyohoWrongTags || "なし"],
     ["関税法等でよく間違える弱点タグ", kanzeihouWrongTags || "なし"],
+    ["通関実務でよく間違える弱点タグ", jitsumuWrongTags || "なし"],
+    ["通関実務手順ドリル正答率", getDrillQuestionTypeAccuracy("通関実務", "processChoice")],
+    ["通関実務計算過程ドリル正答率", getDrillQuestionTypeAccuracy("通関実務", "calculationCheck")],
+    ["通関実務資料読取ドリル正答率", getDrillQuestionTypeAccuracy("通関実務", "documentRead")],
     ["直近の誤答", wrongQuestions || "なし"],
-    ["相談したい観点例", "関税法等ドリルの誤答分析をお願いします / 保税地域と保税運送の混同を整理してください / 納期限と法定納期限、延滞税・加算税の関係を整理してください / 課税価格の加算要素と不算入要素を復習したいです"]
+    ["相談したい観点例", "通関実務ドリルの誤答分析をお願いします / インボイス読取で間違いが多いので見る順番を整理してください / 課税価格の加算要素と不算入要素を整理してください / 関税額、消費税、地方消費税の計算順序を整理してください / 品目分類の判断手順を確認したいです"]
   ]);
 }
 
@@ -8141,16 +8373,15 @@ function resolveAiSubject(target) {
 }
 
 async function postAiApiRequest(payload) {
-  throw new Error("v2.2ではアプリ内通信を行いません。相談文をコピーして外部ChatGPTに貼り付けてください。");
+  throw new Error("v2.3ではアプリ内通信を行いません。相談文をコピーして外部ChatGPTに貼り付けてください。");
 }
 
 function buildAiConnectionHint(prefix) {
-  if (String(prefix || "").includes("Worker URLが正しいか確認してください。")) return prefix;
+  if (String(prefix || "").includes("外部API設定は使いません。")) return prefix;
   return [
     prefix,
-    "Worker URLが正しいか確認してください。",
-    "/api/ai まで含めて入力してください。",
-    "v2.2では外部通信を行わないため、相談文をコピーして外部ChatGPTに貼り付けてください。"
+    "外部API設定は使いません。",
+    "v2.3では外部通信を行わないため、相談文をコピーして外部ChatGPTに貼り付けてください。"
   ].join(" ");
 }
 
@@ -8168,9 +8399,9 @@ function inferAiHealthUrl(endpointUrl) {
 
 async function checkAiWorkerHealth() {
   const result = document.querySelector("#aiConnectionTestResult");
-  state.aiSettings.lastStatus = "v2.2で廃止";
+  state.aiSettings.lastStatus = "v2.3で廃止";
   state.aiSettings.lastError = "";
-  if (result) result.textContent = "v2.2ではアプリ内通信を行いません。";
+  if (result) result.textContent = "v2.3ではアプリ内通信を行いません。";
   saveUnits();
   renderSettings();
 }
@@ -8185,7 +8416,7 @@ async function sendCurrentAiPromptToApi() {
     return;
   }
   state.aiForm.apiStatus = "コピー用";
-  state.aiForm.apiError = "v2.2ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
+  state.aiForm.apiError = "v2.3ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
   renderAiResponse();
   await copyAiPrompt();
 }
@@ -8195,7 +8426,7 @@ async function askAiTutor() {
   const { target, promptText } = generateAiTutorPrompt();
   if (!promptText) return;
   state.aiTutorForm.apiStatus = "コピー用";
-  state.aiTutorForm.apiError = "v2.2ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
+  state.aiTutorForm.apiError = "v2.3ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
   saveAiTutorAnalysis({ target, sentViaApi: false });
   renderAiTutorView();
   showToast("相談文を生成しました。");
@@ -8226,7 +8457,7 @@ async function runAiSuggestion() {
   const { target, promptText } = generateAiSuggestionPrompt();
   if (!promptText) return;
   state.aiSuggestionForm.apiStatus = "コピー用";
-  state.aiSuggestionForm.apiError = "v2.2ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
+  state.aiSuggestionForm.apiError = "v2.3ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
   saveAiSuggestionAnalysis({ target, sentViaApi: false });
   renderAiSuggestionView();
   showToast("相談文を生成しました。");
@@ -8520,9 +8751,9 @@ function saveCurrentAiResponse() {
 async function testAiConnection() {
   const result = document.querySelector("#aiConnectionTestResult");
   state.aiSettings.lastTestedAt = new Date().toISOString();
-  state.aiSettings.lastStatus = "v2.2で廃止";
+  state.aiSettings.lastStatus = "v2.3で廃止";
   state.aiSettings.lastError = "";
-  if (result) result.textContent = "v2.2ではアプリ内通信を行いません。";
+  if (result) result.textContent = "v2.3ではアプリ内通信を行いません。";
   saveUnits();
   renderSettings();
 }
@@ -8881,7 +9112,7 @@ function renderReviewList() {
 function renderDrillReviewCards() {
   const wrongMap = new Map();
   state.drillResults
-    .filter((result) => ["通関業法", "関税法等"].includes(result.subject))
+    .filter((result) => ["通関業法", "関税法等", "通関実務"].includes(result.subject))
     .forEach((result) => {
       (result.answers || []).filter((answer) => !answer.correct).forEach((answer) => {
         const question = QUESTION_BANK.find((item) => item.id === answer.questionId);
@@ -8889,7 +9120,7 @@ function renderDrillReviewCards() {
         const current = wrongMap.get(question.id) || { question, count: 0, latest: "", reasons: new Set() };
         current.count += 1;
         current.latest = result.completedAt || current.latest;
-        current.reasons.add(question.subject === "関税法等" ? `${question.topic}で誤答` : `${question.subject}ドリルで誤答`);
+        current.reasons.add(question.subject === "通関実務" ? getJitsumuReviewReason(question) : question.subject === "関税法等" ? `${question.topic}で誤答` : `${question.subject}ドリルで誤答`);
         wrongMap.set(question.id, current);
       });
     });
@@ -8911,13 +9142,34 @@ function renderDrillReviewCards() {
             </dl>
           </div>
           <div class="card-actions">
-            <button class="primary-button" type="button" data-start-drill-mode="${question.subject === "関税法等" ? "関税法等10問" : "弱点タグ別ドリル"}">解き直す</button>
+            <button class="primary-button" type="button" data-start-drill-mode="${escapeAttribute(getReviewDrillModeForQuestion(question))}">解き直す</button>
             <button class="ghost-button" type="button" data-open-lesson="${escapeAttribute(question.lessonId)}">関連レッスン</button>
           </div>
         </article>
       `).join("")}
     </section>
   `;
+}
+
+function getJitsumuReviewReason(question) {
+  if (/インボイス/.test(question.weaknessTag)) return "インボイス読取で誤答";
+  if (/課税価格|加算要素|不算入要素/.test(question.weaknessTag)) return "課税価格で誤答";
+  if (/関税額|消費税|地方消費税|端数/.test(question.weaknessTag) || question.questionType === "calculationCheck") return "計算過程で誤答";
+  if (/品目分類|税番|統計品目番号/.test(question.weaknessTag)) return "品目分類で誤答";
+  if (/資料読取/.test(question.weaknessTag) || question.questionType === "documentRead") return "資料読取で誤答";
+  return "通関実務ドリルで誤答";
+}
+
+function getReviewDrillModeForQuestion(question) {
+  if (question.subject === "関税法等") return "関税法等10問";
+  if (question.subject !== "通関実務") return "弱点タグ別ドリル";
+  if (question.questionType === "processChoice") return "手順ドリル";
+  if (question.questionType === "calculationCheck") return "計算過程ドリル";
+  if (question.questionType === "documentRead") return "資料読取ドリル";
+  if (/インボイス/.test(question.weaknessTag)) return "インボイス読取ドリル";
+  if (/品目分類|税番/.test(question.weaknessTag)) return "品目分類ドリル";
+  if (/課税価格|加算要素|不算入/.test(question.weaknessTag)) return "通関実務課税価格ドリル";
+  return "通関実務10問";
 }
 
 function renderReviewMockCards() {
