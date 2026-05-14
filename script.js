@@ -1,4 +1,4 @@
-const APP_VERSION = "v2.1";
+const APP_VERSION = "v2.2";
 const AI_API_TIMEOUT_MS = 30000;
 const AI_HEALTH_TIMEOUT_MS = 10000;
 const STORAGE_KEYS = {
@@ -52,6 +52,7 @@ const WEAKNESS_TAGS = [
   "手続要件",
   "許可・承認・届出の混同",
   "期間・期限",
+  "期限・期間",
   "例外規定",
   "罰則",
   "義務規定と罰則の混同",
@@ -65,6 +66,18 @@ const WEAKNESS_TAGS = [
   "記帳・届出・報告",
   "料金掲示",
   "課税価格",
+  "保税地域",
+  "保税運送",
+  "収容・留置",
+  "輸入禁止貨物",
+  "原産地表示",
+  "納税申告",
+  "修正申告・更正の請求",
+  "更正・決定",
+  "納期限・法定納期限",
+  "延滞税・加算税",
+  "課税物件の確定時期",
+  "納税義務者",
   "税額計算",
   "申告書",
   "品目分類",
@@ -78,6 +91,11 @@ const WEAKNESS_TAGS = [
   "統計品目番号",
   "課税価格計算",
   "加算要素",
+  "不算入要素",
+  "減免税",
+  "戻し税",
+  "外為法",
+  "罰則・没収・追徴",
   "控除要素",
   "税率適用",
   "関税額計算",
@@ -1196,6 +1214,7 @@ const QUESTION_BANK = [
 ];
 
 QUESTION_BANK.push(...buildTsukangyohoQuestionBankV21());
+QUESTION_BANK.push(...buildKanzeihouQuestionBankV22());
 
 function buildTsukangyohoQuestionBankV21() {
   const tf = ["正しい", "誤り"];
@@ -1327,6 +1346,70 @@ function buildTsukangyohoQuestionBankV21() {
     row[7],
     "original"
   ));
+}
+
+function buildKanzeihouQuestionBankV22() {
+  const tf = ["正しい", "誤り"];
+  const trapChoices = ["問題なし", "主体が誤り", "権限者が誤り", "手続区分が誤り", "期限・期間が誤り", "課税価格の扱いが誤り"];
+  const commonWrongChoices = ["その説明が最も適切", "申告しただけで許可になる", "税関長ではなく常に輸入者が処分する", "期限や主体は問題にならない"];
+  const specs = [
+    { count: 4, topic: "関税法等の全体像", lessonId: "lesson-kanzeihou-overview", tag: "全体像理解", concepts: ["関税の徴収と通関秩序", "税関の役割", "関税法と他法令", "科目範囲"], core: "関税法等は、関税の徴収、輸出入通関、保税制度、他法令確認などを一体で整理する科目です。", wrong: "関税法等は税率暗記だけの科目で、通関手続や保税制度とは関係しない。" },
+    { count: 8, topic: "輸出申告", lessonId: "lesson-kanzeihou-export-declaration", tag: "申告・許可・承認・届出の混同", concepts: ["輸出申告", "輸出許可", "輸出者", "申告先", "輸出貨物", "他法令確認", "申告事項", "輸入申告との違い"], core: "輸出しようとする貨物は、必要事項を税関長に申告し、審査・検査等を経て輸出許可を受ける流れで整理します。", wrong: "輸出貨物は関税がかからないため、税関への輸出申告や輸出許可は不要である。" },
+    { count: 11, topic: "輸入申告と輸入の許可", lessonId: "lesson-kanzeihou-import-permission", tag: "申告・許可・承認・届出の混同", concepts: ["輸入申告", "輸入許可", "税関長", "輸入者", "保税地域", "許可前引取承認", "検査", "申告時期", "申告先", "輸入禁止貨物", "他法令確認"], core: "輸入申告と輸入許可は別段階であり、税関長の審査・検査、納税や他法令確認を経て許可されます。", wrong: "輸入申告書を提出した時点で、審査や納税を待たず輸入許可があったものとみなされる。" },
+    { count: 6, topic: "特例輸入申告・特例申告", lessonId: "lesson-kanzeihou-special-import", tag: "納税申告", concepts: ["特例輸入者", "特例申告", "引取り後申告", "納期限", "通常申告との違い", "帳簿保存"], core: "特例申告は、一定の承認等を前提に、通常の輸入申告と納税申告の時期を分ける制度として整理します。", wrong: "特例申告を利用すれば、輸入者は関税の納税義務と帳簿保存義務を免れる。" },
+    { count: 9, topic: "保税地域の種類", lessonId: "lesson-kanzeihou-bonded-area-types", tag: "保税地域", concepts: ["指定保税地域", "保税蔵置場", "保税工場", "保税展示場", "総合保税地域", "許可・指定", "置ける貨物", "期間", "権限者"], core: "保税地域は機能ごとに種類があり、指定・許可、置ける貨物、期間、管理責任を分けて覚えます。", wrong: "保税地域は保税蔵置場だけを指し、加工・展示・複合機能の区別はない。" },
+    { count: 6, topic: "外国貨物を置く場所の制限", lessonId: "lesson-kanzeihou-foreign-goods-place", tag: "保税地域", concepts: ["外国貨物", "保税地域", "例外", "税関長の許可", "蔵置制限", "亡失"], core: "外国貨物は原則として保税地域に置くものとし、保税地域外に置く場合は例外要件や税関長の許可を確認します。", wrong: "外国貨物は輸入許可前であっても、輸入者の都合で国内の任意の場所に自由に置ける。" },
+    { count: 8, topic: "保税蔵置場", lessonId: "lesson-kanzeihou-bonded-warehouse", tag: "保税地域", concepts: ["保税蔵置場の許可", "外国貨物の蔵置", "蔵置期間", "許可を受けた者", "亡失", "管理責任", "記帳", "搬入・搬出"], core: "保税蔵置場は外国貨物の蔵置を中心に、許可を受けた者の管理責任、記帳、期間、亡失時の扱いを押さえます。", wrong: "保税蔵置場では、許可を受けた者に管理責任はなく、亡失しても関税徴収と無関係である。" },
+    { count: 8, topic: "保税工場・保税展示場・総合保税地域", lessonId: "lesson-kanzeihou-bonded-factory-exhibition", tag: "保税地域", concepts: ["加工・製造", "展示", "複合機能", "許可", "期間", "置ける貨物", "見本市", "権限者"], core: "保税工場は加工・製造、保税展示場は展示等、総合保税地域は複合機能として、機能差を軸に整理します。", wrong: "保税工場、保税展示場、総合保税地域はいずれも単なる一時蔵置だけの制度で、機能差はない。" },
+    { count: 9, topic: "保税運送", lessonId: "lesson-kanzeihou-bonded-transport", tag: "保税運送", concepts: ["保税運送", "税関長の承認", "運送期間", "到着確認", "未到着", "亡失", "保税地域間運送", "納税義務者", "罰則"], core: "保税運送は外国貨物を保税状態のまま運送する制度で、税関長の承認、期間、到着確認、未到着・亡失時の責任を確認します。", wrong: "保税運送では、外国貨物であっても承認や到着確認を要せず、国内運送と同じに扱う。" },
+    { count: 5, topic: "特定保税運送", lessonId: "lesson-kanzeihou-specified-bonded-transport", tag: "保税運送", concepts: ["特定保税運送者", "手続簡素化", "通常運送との違い", "事後管理", "亡失"], core: "特定保税運送は一定の要件を満たす者について手続を簡素化する制度であり、通常の保税運送との違いと事後管理を押さえます。", wrong: "特定保税運送者になれば、外国貨物の亡失や事後管理について一切責任を負わない。" },
+    { count: 6, topic: "収容・留置", lessonId: "lesson-kanzeihou-detention-storage", tag: "収容・留置", concepts: ["収容", "留置", "外国貨物", "期間", "公売", "通知"], core: "収容・留置は外国貨物の管理・処分に関わる制度で、輸入許可とは別に、期間、通知、公売との関係を整理します。", wrong: "収容と留置は輸入許可そのものであり、貨物の管理・処分手続とは区別しない。" },
+    { count: 8, topic: "輸入してはならない貨物", lessonId: "lesson-kanzeihou-prohibited-imports", tag: "輸入禁止貨物", concepts: ["輸入禁止貨物", "没収", "廃棄", "積戻し", "知的財産侵害物品", "公安・風俗", "麻薬等", "税関長の処分"], core: "輸入してはならない貨物は、申告しても当然に許可されるものではなく、没収・廃棄・積戻し等の処分と結びつけて整理します。", wrong: "輸入してはならない貨物でも、関税を納付すれば税関長は必ず輸入を許可する。" },
+    { count: 6, topic: "原産地虚偽表示等貨物", lessonId: "lesson-kanzeihou-origin-false", tag: "原産地表示", concepts: ["原産地虚偽表示", "誤認表示", "通知", "是正", "積戻し", "表示除去"], core: "原産地虚偽表示等貨物は、輸入禁止貨物と混同せず、税関長の通知、輸入者による表示除去・訂正、積戻し等を整理します。", wrong: "原産地の表示に誤認のおそれがある貨物は、常に麻薬等と同じ輸入禁止貨物として没収される。" },
+    { count: 6, topic: "関税の確定方式", lessonId: "lesson-kanzeihou-duty-determination", tag: "納税申告", concepts: ["申告納税方式", "賦課課税方式", "納税申告", "税関長の処分", "確定方式", "例外"], core: "関税の確定は申告納税方式と賦課課税方式を分け、誰がどの手続で税額を確定するかを確認します。", wrong: "関税はすべて輸入者の申告だけで確定し、税関長が税額を確定する場面は存在しない。" },
+    { count: 9, topic: "納税申告・修正申告・更正の請求", lessonId: "lesson-kanzeihou-tax-declaration-correction", tag: "修正申告・更正の請求", concepts: ["納税申告", "修正申告", "更正の請求", "増額方向", "減額方向", "納税者の手続", "期限", "還付", "計算誤り"], core: "税額が不足する場合は修正申告、税額が過大な場合は更正の請求という増減方向を軸に整理します。", wrong: "納付すべき税額が不足しているときは、更正の請求により税額を増額する。" },
+    { count: 8, topic: "更正・決定・賦課決定", lessonId: "lesson-kanzeihou-reassessment-decision", tag: "更正・決定", concepts: ["更正", "決定", "賦課決定", "税関長", "申告がある場合", "申告がない場合", "加算税", "通知"], core: "更正・決定・賦課決定は、税関長が行う処分として、申告の有無や加算税との関係を分けます。", wrong: "更正、決定、賦課決定はいずれも納税者が自分で行う申告手続である。" },
+    { count: 8, topic: "納期限・法定納期限", lessonId: "lesson-kanzeihou-due-date", tag: "納期限・法定納期限", concepts: ["納期限", "法定納期限", "輸入許可の日", "特例申告", "延滞税", "加算税", "繰上請求", "担保"], core: "納期限と法定納期限は同じ語ではなく、納付すべき時期、延滞税・加算税との関係、特例申告の期限を分けます。", wrong: "納期限と法定納期限は常に同じ意味であり、延滞税や加算税の判断では区別しない。" },
+    { count: 9, topic: "延滞税・過少申告加算税・無申告加算税", lessonId: "lesson-kanzeihou-additional-tax", tag: "延滞税・加算税", concepts: ["延滞税", "過少申告加算税", "無申告加算税", "重加算税", "税額不足", "無申告", "仮装・隠蔽", "法定納期限", "修正申告"], core: "延滞税は納付遅れ、過少申告加算税は税額不足、無申告加算税は申告なし、重加算税は仮装・隠蔽を軸に区別します。", wrong: "延滞税、過少申告加算税、無申告加算税、重加算税は、名称が違うだけで発生原因は同じである。" },
+    { count: 6, topic: "課税物件の確定時期", lessonId: "lesson-kanzeihou-taxable-goods-timing", tag: "課税物件の確定時期", concepts: ["課税物件", "輸入申告時", "保税地域からの引取り", "亡失", "収容", "関税率適用時期"], core: "課税物件の確定時期は、輸入申告、保税地域からの引取り、亡失など場面ごとに整理し、関税率適用時期と混同しません。", wrong: "課税物件の確定時期は常に輸入者が販売した日であり、輸入申告や亡失とは関係しない。" },
+    { count: 6, topic: "納税義務者", lessonId: "lesson-kanzeihou-taxpayer", tag: "納税義務者", concepts: ["輸入者", "輸入する者", "保税地域での亡失", "保税運送中の亡失", "許可を受けた者", "運送承認を受けた者"], core: "納税義務者は原則として輸入する者ですが、保税地域や保税運送中の亡失では許可者・承認者など主体を個別に確認します。", wrong: "外国貨物が亡失した場合でも、保税地域許可者や運送承認を受けた者が納税義務者となることはない。" },
+    { count: 9, topic: "課税価格の決定の原則", lessonId: "lesson-kanzeihou-customs-value-principle", tag: "課税価格", concepts: ["現実支払価格", "輸入取引", "買手", "売手", "本邦到着まで", "取引価格方式", "加算要素", "不算入要素", "特殊関係"], core: "課税価格は輸入取引の現実支払価格を基礎に、本邦到着までの費用や法定加算・不算入を確認します。", wrong: "課税価格は輸入者が国内で販売した希望小売価格を基礎に、常に自由に決める。" },
+    { count: 9, topic: "課税価格の加算要素", lessonId: "lesson-kanzeihou-customs-value-additions", tag: "加算要素", concepts: ["運賃", "保険料", "仲介料", "容器費", "包装費", "無償提供物", "ロイヤルティ", "売手への帰属収益", "買手負担"], core: "加算要素は、買手負担、本邦到着まで、輸入貨物との関連などの条件を確認し、運賃・保険料・無償提供物等を整理します。", wrong: "買手が負担した費用は、輸入後の国内費用も含め、条件を問わずすべて課税価格に加算する。" },
+    { count: 6, topic: "課税価格に算入しない費用", lessonId: "lesson-kanzeihou-customs-value-exclusions", tag: "不算入要素", concepts: ["本邦到着後の運賃", "本邦到着後の保険料", "据付費", "技術指導費", "建設費", "公課"], core: "本邦到着後の運賃・保険料、据付費、技術指導費、関税その他の公課などは、区分明記等の条件を見て不算入を判断します。", wrong: "本邦到着後の国内運賃や据付費も、区分できる場合を含め常に課税価格に算入する。" },
+    { count: 8, topic: "減免税・戻し税", lessonId: "lesson-kanzeihou-exemption-reduction", tag: "減免税", concepts: ["免税", "減税", "戻し税", "再輸出免税", "再輸入免税", "違約品等の戻し税", "用途外使用", "手続"], core: "減免税・戻し税は制度ごとに要件、手続、期限、用途外使用時の扱いを分け、申請・承認を混同しないようにします。", wrong: "免税、減税、戻し税はすべて同じ制度であり、用途外使用や期限を確認する必要はない。" },
+    { count: 4, topic: "外為法関連・他法令確認", lessonId: "lesson-kanzeihou-foreign-exchange-law", tag: "外為法", concepts: ["他法令確認", "輸入承認", "輸出承認", "証明・確認"], core: "他法令で許可・承認・証明等を要する貨物は、税関手続でその確認が問題になります。関税法の許可と主務官庁の承認を分けます。", wrong: "外為法等の輸出入承認が必要な貨物でも、税関への申告だけで他法令確認は不要である。" },
+    { count: 6, topic: "罰則・没収・追徴", lessonId: "lesson-kanzeihou-penalties-confiscation", tag: "罰則・没収・追徴", concepts: ["密輸", "無許可輸出入", "虚偽申告", "没収", "追徴", "両罰規定"], core: "罰則・没収・追徴は、行政上の加算税と区別し、犯罪行為、没収できない場合の追徴、両罰規定を整理します。", wrong: "過少申告加算税が課される場面は、常に刑事罰の没収・追徴と同じ手続で処理される。" },
+    { count: 7, topic: "関税法等総合ひっかけ", lessonId: "lesson-kanzeihou-trap-review", tag: "選択肢読解", concepts: ["手続区分", "主体", "権限者", "期限", "加算・不算入", "保税運送", "納税義務者"], core: "総合ひっかけでは、申告・許可・承認・届出、税関長と財務大臣、納期限と法定納期限、加算要素と不算入要素を一つずつ照合します。", wrong: "関税法等では、主体や手続名が多少違っていても結論が近ければ正しいものとして扱う。" }
+  ];
+  let serial = 6;
+  const difficultyPlan = [
+    ...Array(43).fill("基礎"),
+    ...Array(82).fill("標準"),
+    ...Array(35).fill("応用"),
+    ...Array(35).fill("ひっかけ")
+  ];
+  return specs.flatMap((spec) => Array.from({ length: spec.count }, (_, index) => {
+    const concept = spec.concepts[index % spec.concepts.length];
+    const typeIndex = index % 4;
+    const difficulty = difficultyPlan[serial - 6] || ["基礎", "標準", "応用", "ひっかけ"][typeIndex];
+    const id = `qb-kanzeihou-${String(serial++).padStart(3, "0")}`;
+    if (typeIndex === 0) {
+      return makeBankQuestion(id, "関税法等", spec.topic, spec.lessonId, difficulty, "trueFalse", `${concept}については、${spec.core}`, tf, "正しい", spec.core, `${concept}を単独暗記せず、主体・手続・時期と結びつけて判断します。`, spec.tag, "original");
+    }
+    if (typeIndex === 1) {
+      return makeBankQuestion(id, "関税法等", spec.topic, spec.lessonId, difficulty, "trueFalse", `${concept}について、${spec.wrong}`, tf, "誤り", spec.core, `${concept}の正しい語を含んでいても、手続区分・主体・期限を入れ替える表現は誤りです。`, spec.tag, "original");
+    }
+    if (typeIndex === 2) {
+      const correct = `${concept}は、${spec.core}`;
+      return makeBankQuestion(id, "関税法等", spec.topic, spec.lessonId, difficulty, "singleChoice", `${spec.topic}の理解として最も適切なものはどれか。`, [correct, ...commonWrongChoices.slice(1)], correct, spec.core, "もっともらしい用語が入っていても、申告・許可・承認・届出、主体、期限を置き換える選択肢を除外します。", spec.tag, "original");
+    }
+    const trapAnswer = spec.tag === "課税価格" || spec.tag === "加算要素" || spec.tag === "不算入要素" ? "課税価格の扱いが誤り"
+      : /期限|納期限|延滞/.test(spec.tag) ? "期限・期間が誤り"
+      : /権限/.test(spec.tag) ? "権限者が誤り"
+      : /主体|納税義務者/.test(spec.tag) ? "主体が誤り"
+      : "手続区分が誤り";
+    return makeBankQuestion(id, "関税法等", spec.topic, spec.lessonId, difficulty, "trapCheck", `記述「${spec.wrong}」の問題点はどれか。`, trapChoices, trapAnswer, spec.core, `${concept}の表現を見たら、まず誰が、誰に、いつ、どの手続をするのかに分解します。`, spec.tag, "original");
+  }));
 }
 
 const state = {
@@ -2008,7 +2091,7 @@ function normalizeAiSettings(item) {
     enabled: false,
     endpointUrl: "",
     lastTestedAt: String(item?.lastTestedAt || ""),
-    lastStatus: "v2.1で廃止",
+    lastStatus: "v2.2で廃止",
     lastError: ""
   };
 }
@@ -2157,7 +2240,7 @@ function sanitizeAiSettings(settings) {
     enabled: false,
     endpointUrl: "",
     lastTestedAt: "",
-    lastStatus: "v2.1で廃止",
+    lastStatus: "v2.2で廃止",
     lastError: ""
   };
 }
@@ -2700,10 +2783,15 @@ function generateTodayMenu(duration = "30分") {
 function buildTodayDrillItems(duration) {
   const items = [];
   const latest = state.drillResults.find((result) => result.subject === "通関業法");
-  const weakTags = getDrillWeaknessTagRanking();
+  const latestKanzeihou = state.drillResults.find((result) => result.subject === "関税法等");
+  const weakTags = getDrillWeaknessTagRanking("通関業法");
+  const kanzeihouWeakTags = getDrillWeaknessTagRanking("関税法等");
   const cLesson = getTsukangyohoLessons().some((lesson) => getLessonProgress(lesson.id).understanding === "C");
+  const kanzeihouCLesson = getKanzeihouLessons().some((lesson) => getLessonProgress(lesson.id).understanding === "C");
   const stale = !latest || daysSinceIso(latest.completedAt) >= 7;
+  const staleKanzeihou = !latestKanzeihou || daysSinceIso(latestKanzeihou.completedAt) >= 7;
   const hasPenaltyWeak = weakTags.some((item) => /罰則|処分|義務|信用|通関士|確認/.test(item.tag) && item.count >= 1);
+  const hasKanzeihouCoreWeak = kanzeihouWeakTags.some((item) => /保税|納期限|法定納期限|課税価格|加算要素|延滞税|加算税|申告・許可/.test(item.tag) && item.count >= 1);
   if (cLesson || latest?.resultLevel === "C" || stale) {
     items.push(makeTodayMenuItem({
       id: "drill-tsukangyoho-10",
@@ -2737,6 +2825,32 @@ function buildTodayDrillItems(duration) {
       reason: "通関業法の失点しやすい表現確認",
       priority: hasPenaltyWeak ? "高" : "中",
       priorityScore: hasPenaltyWeak ? 90 : 55,
+      estimatedMinutes: 10
+    }));
+  }
+  if (kanzeihouCLesson || latestKanzeihou?.resultLevel === "C" || staleKanzeihou) {
+    items.push(makeTodayMenuItem({
+      id: "drill-kanzeihou-10",
+      type: "関税法等ドリル",
+      title: "関税法等10問ドリル",
+      description: latestKanzeihou ? `直近 ${latestKanzeihou.scoreRate}% / 判定${latestKanzeihou.resultLevel}` : "未実施",
+      reason: latestKanzeihou?.resultLevel === "C" ? "関税法等ドリルC判定" : kanzeihouCLesson ? "関税法等レッスンにC判定あり" : "関税法等問題をしばらく解いていない",
+      priority: latestKanzeihou?.resultLevel === "C" || kanzeihouCLesson ? "最優先" : "高",
+      priorityScore: latestKanzeihou?.resultLevel === "C" ? 118 : kanzeihouCLesson ? 103 : 72,
+      estimatedMinutes: 12
+    }));
+  }
+  if (hasKanzeihouCoreWeak) {
+    const top = kanzeihouWeakTags[0]?.tag || "保税・納税・課税価格";
+    const mode = /課税価格|加算要素/.test(top) ? "課税価格ドリル" : /納期限|延滞税|加算税/.test(top) ? "納期限・加算税ドリル" : /保税運送/.test(top) ? "保税運送ドリル" : "保税地域ドリル";
+    items.push(makeTodayMenuItem({
+      id: `drill-kanzeihou-${mode}`,
+      type: "関税法等ドリル",
+      title: mode,
+      description: kanzeihouWeakTags.slice(0, 3).map((item) => `${item.tag}${item.count}`).join(" / "),
+      reason: "保税・納税・課税価格系の弱点タグが多い",
+      priority: "高",
+      priorityScore: 97,
       estimatedMinutes: 10
     }));
   }
@@ -3422,7 +3536,7 @@ function renderDashboard() {
       </dl>
       <div class="action-card-list">
         <button class="record-link" type="button" data-view-shortcut="learning" data-drill-home="通関業法ドリル"><strong>通関業法ドリル</strong><span>義務・許可・罰則</span></button>
-        <button class="record-link" type="button" data-view-shortcut="learning" data-drill-home="関税法等ドリル"><strong>関税法等ドリル</strong><span>保税・納税・課税価格</span></button>
+        <button class="record-link" type="button" data-view-shortcut="learning" data-drill-home="関税法等10問"><strong>関税法等ドリル</strong><span>保税・納税・課税価格</span></button>
         <button class="record-link" type="button" data-view-shortcut="learning" data-drill-home="通関実務ドリル"><strong>通関実務ドリル</strong><span>分類・価格・計算</span></button>
       </div>
     `;
@@ -3714,7 +3828,12 @@ function renderLearningView() {
 function renderDrillView() {
   const host = document.querySelector("#drillArea");
   if (!host) return;
-  const modes = ["通関業法10問", "通関業法ランダム", "通関業法順番", "通関業法ひっかけ", "弱点タグ別ドリル", "関税法等ドリル", "通関実務ドリル"];
+  const modes = [
+    "通関業法10問", "通関業法ランダム", "通関業法順番", "通関業法ひっかけ",
+    "関税法等10問", "関税法等20問", "関税法等ランダム", "関税法等順番", "関税法等ひっかけ",
+    "輸出入申告ドリル", "保税地域ドリル", "保税運送ドリル", "納税申告・更正ドリル", "納期限・加算税ドリル", "課税価格ドリル", "減免税ドリル", "輸入禁止貨物・原産地表示ドリル", "罰則ドリル",
+    "弱点タグ別ドリル", "関税法等ドリル", "通関実務ドリル"
+  ];
   if (!modes.includes(state.drill.mode)) state.drill.mode = "通関業法10問";
   ensureDrillSession();
   const questions = getDrillQuestions(state.drill.mode);
@@ -3746,6 +3865,20 @@ function getDrillQuestions(mode) {
   if (mode === "通関業法順番") return QUESTION_BANK.filter((question) => question.subject === "通関業法");
   if (mode === "通関業法ひっかけ") return pickDrillQuestions(QUESTION_BANK.filter((question) => question.subject === "通関業法" && (question.questionType === "trapCheck" || question.difficulty === "ひっかけ" || /ひっかけ|罰則|混同/.test(`${question.trapExplanation}${question.weaknessTag}`))), 10, true);
   if (mode === "通関業法ドリル") return QUESTION_BANK.filter((question) => question.subject === "通関業法");
+  if (mode === "関税法等10問") return pickDrillQuestions(getKanzeihouQuestions(), 10, true);
+  if (mode === "関税法等20問") return pickDrillQuestions(getKanzeihouQuestions(), 20, true);
+  if (mode === "関税法等ランダム") return pickDrillQuestions(getKanzeihouQuestions(), 10, true);
+  if (mode === "関税法等順番") return getKanzeihouQuestions();
+  if (mode === "関税法等ひっかけ") return pickDrillQuestions(getKanzeihouQuestions().filter((question) => question.questionType === "trapCheck" || question.difficulty === "ひっかけ" || /ひっかけ|混同|誤り/.test(`${question.trapExplanation}${question.weaknessTag}`)), 10, true);
+  if (mode === "輸出入申告ドリル") return pickKanzeihouTopicDrill(/輸出申告|輸入申告|輸入の許可|特例輸入|特例申告|申告・許可/);
+  if (mode === "保税地域ドリル") return pickKanzeihouTopicDrill(/保税地域|保税蔵置場|保税工場|保税展示場|総合保税|外国貨物を置く場所/);
+  if (mode === "保税運送ドリル") return pickKanzeihouTopicDrill(/保税運送|特定保税運送/);
+  if (mode === "納税申告・更正ドリル") return pickKanzeihouTopicDrill(/納税申告|修正申告|更正|決定|賦課|確定方式/);
+  if (mode === "納期限・加算税ドリル") return pickKanzeihouTopicDrill(/納期限|法定納期限|延滞税|加算税|無申告|重加算/);
+  if (mode === "課税価格ドリル") return pickKanzeihouTopicDrill(/課税価格|加算要素|不算入|現実支払価格|運賃|保険料|ロイヤルティ/);
+  if (mode === "減免税ドリル") return pickKanzeihouTopicDrill(/減免税|戻し税|免税|減税/);
+  if (mode === "輸入禁止貨物・原産地表示ドリル") return pickKanzeihouTopicDrill(/輸入してはならない|輸入禁止|原産地|虚偽表示/);
+  if (mode === "罰則ドリル") return pickKanzeihouTopicDrill(/罰則|没収|追徴|密輸/);
   if (mode === "関税法等ドリル") return QUESTION_BANK.filter((question) => question.subject === "関税法等");
   if (mode === "通関実務ドリル") return QUESTION_BANK.filter((question) => question.subject === "通関実務");
   if (mode === "弱点タグ別ドリル") {
@@ -3755,6 +3888,15 @@ function getDrillQuestions(mode) {
   }
   if (mode === "ひっかけ問題ドリル") return QUESTION_BANK.filter((question) => question.trapExplanation);
   return QUESTION_BANK;
+}
+
+function getKanzeihouQuestions() {
+  return QUESTION_BANK.filter((question) => question.subject === "関税法等");
+}
+
+function pickKanzeihouTopicDrill(pattern) {
+  const matched = getKanzeihouQuestions().filter((question) => pattern.test(`${question.topic}${question.weaknessTag}${question.explanation}${question.trapExplanation}`));
+  return pickDrillQuestions(matched, 10, true);
 }
 
 function pickDrillQuestions(questions, limit, randomize = false) {
@@ -3883,9 +4025,10 @@ function finishCurrentDrill() {
   const correctCount = state.drill.answers.filter((answer) => answer.correct).length;
   const scoreRate = Math.round((correctCount / questions.length) * 100);
   const wrongTags = [...new Set(state.drill.answers.filter((answer) => !answer.correct).map((answer) => answer.weaknessTag).filter(Boolean))];
+  const subjects = [...new Set(questions.map((question) => question.subject).filter(Boolean))];
   const result = normalizeDrillResult({
     id: makeDrillResultId(),
-    subject: "通関業法",
+    subject: subjects.length === 1 ? subjects[0] : "共通",
     mode: state.drill.mode,
     startedAt: state.drill.startedAt || new Date().toISOString(),
     completedAt: new Date().toISOString(),
@@ -4767,53 +4910,95 @@ function renderAnalysisView() {
 }
 
 function renderDrillBankAnalysis() {
-  const questions = QUESTION_BANK.filter((question) => question.subject === "通関業法");
-  const difficulty = rankFromValues(questions.map((question) => question.difficulty));
-  const topics = rankFromValues(questions.map((question) => question.topic));
-  const tags = rankFromValues(questions.map((question) => question.weaknessTag));
-  const results = state.drillResults.filter((result) => result.subject === "通関業法");
-  const average = results.length ? Math.round(results.reduce((sum, result) => sum + result.scoreRate, 0) / results.length) : 0;
-  const wrongTags = getDrillWeaknessTagRanking();
+  const renderSubjectBank = (subject, primaryMode, secondaryMode) => {
+    const questions = QUESTION_BANK.filter((question) => question.subject === subject);
+    const difficulty = rankFromValues(questions.map((question) => question.difficulty));
+    const topics = rankFromValues(questions.map((question) => question.topic));
+    const tags = rankFromValues(questions.map((question) => question.weaknessTag));
+    const results = state.drillResults.filter((result) => result.subject === subject);
+    const average = results.length ? Math.round(results.reduce((sum, result) => sum + result.scoreRate, 0) / results.length) : 0;
+    const wrongTags = getDrillWeaknessTagRanking(subject);
+    const topicRates = getDrillTopicAccuracy(subject);
+    const cTopics = getDrillCLevelTopics(subject);
+    return `
+      <section class="panel analysis-section">
+        <div class="panel-heading"><h3>${escapeHtml(subject)}問題バンク分析</h3></div>
+        <div class="analysis-card-grid two-col">
+          <article class="analysis-card">
+            <h4>問題バンク</h4>
+            <dl class="analysis-facts">
+              <div><dt>${escapeHtml(subject)}問題数</dt><dd>${questions.length}</dd></div>
+              <div><dt>難易度別問題数</dt><dd>${escapeHtml(difficulty.map((item) => `${item.label}:${item.count}`).join(" / "))}</dd></div>
+              <div><dt>論点別問題数</dt><dd>${escapeHtml(topics.slice(0, 12).map((item) => `${item.label}:${item.count}`).join(" / "))}</dd></div>
+              <div><dt>弱点タグ別問題数</dt><dd>${escapeHtml(tags.slice(0, 12).map((item) => `${item.label}:${item.count}`).join(" / "))}</dd></div>
+            </dl>
+          </article>
+          <article class="analysis-card">
+            <h4>ドリル結果</h4>
+            <dl class="analysis-facts">
+              <div><dt>ドリル実施回数</dt><dd>${results.length}</dd></div>
+              <div><dt>ドリル平均正答率</dt><dd>${results.length ? `${average}%` : "未実施"}</dd></div>
+              <div><dt>論点別正答率</dt><dd>${escapeHtml(topicRates.slice(0, 10).map((item) => `${item.topic}:${item.rate}%(${item.correct}/${item.total})`).join(" / ") || "未実施")}</dd></div>
+              <div><dt>よく間違える弱点タグ</dt><dd>${escapeHtml(wrongTags.slice(0, 8).map((item) => `${item.tag}:${item.count}`).join(" / ") || "なし")}</dd></div>
+              <div><dt>C判定が多い論点</dt><dd>${escapeHtml(cTopics.map((item) => `${item.topic}:${item.count}`).join(" / ") || "なし")}</dd></div>
+            </dl>
+            <div class="card-actions">
+              <button class="primary-button" type="button" data-start-drill-mode="${escapeAttribute(primaryMode)}">${escapeHtml(primaryMode)}</button>
+              <button class="ghost-button" type="button" data-start-drill-mode="${escapeAttribute(secondaryMode)}">${escapeHtml(secondaryMode)}</button>
+            </div>
+          </article>
+        </div>
+      </section>
+    `;
+  };
   return `
-    <section class="panel analysis-section">
-      <div class="panel-heading"><h3>通関業法問題バンク分析</h3></div>
-      <div class="analysis-card-grid two-col">
-        <article class="analysis-card">
-          <h4>問題バンク</h4>
-          <dl class="analysis-facts">
-            <div><dt>通関業法問題数</dt><dd>${questions.length}</dd></div>
-            <div><dt>難易度別問題数</dt><dd>${escapeHtml(difficulty.map((item) => `${item.label}:${item.count}`).join(" / "))}</dd></div>
-            <div><dt>論点別問題数</dt><dd>${escapeHtml(topics.slice(0, 12).map((item) => `${item.label}:${item.count}`).join(" / "))}</dd></div>
-            <div><dt>弱点タグ別問題数</dt><dd>${escapeHtml(tags.slice(0, 12).map((item) => `${item.label}:${item.count}`).join(" / "))}</dd></div>
-          </dl>
-        </article>
-        <article class="analysis-card">
-          <h4>ドリル結果</h4>
-          <dl class="analysis-facts">
-            <div><dt>ドリル実施回数</dt><dd>${results.length}</dd></div>
-            <div><dt>ドリル平均正答率</dt><dd>${results.length ? `${average}%` : "未実施"}</dd></div>
-            <div><dt>よく間違える弱点タグ</dt><dd>${escapeHtml(wrongTags.slice(0, 8).map((item) => `${item.tag}:${item.count}`).join(" / ") || "なし")}</dd></div>
-          </dl>
-          <div class="card-actions">
-            <button class="primary-button" type="button" data-start-drill-mode="通関業法10問">10問ドリル</button>
-            <button class="ghost-button" type="button" data-start-drill-mode="通関業法ひっかけ">ひっかけ</button>
-          </div>
-        </article>
-      </div>
-    </section>
+    ${renderSubjectBank("通関業法", "通関業法10問", "通関業法ひっかけ")}
+    ${renderSubjectBank("関税法等", "関税法等10問", "課税価格ドリル")}
   `;
 }
 
-function getDrillWeaknessTagRanking() {
+function getDrillWeaknessTagRanking(subject = "通関業法") {
   const counts = {};
   state.drillResults
-    .filter((result) => result.subject === "通関業法")
+    .filter((result) => result.subject === subject)
     .flatMap((result) => result.answers || [])
     .filter((answer) => !answer.correct && answer.weaknessTag)
     .forEach((answer) => {
       counts[answer.weaknessTag] = (counts[answer.weaknessTag] || 0) + 1;
     });
   return Object.entries(counts).map(([tag, count]) => ({ tag, count })).sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag));
+}
+
+function getDrillTopicAccuracy(subject) {
+  const map = new Map();
+  state.drillResults
+    .filter((result) => result.subject === subject)
+    .flatMap((result) => result.answers || [])
+    .forEach((answer) => {
+      const question = QUESTION_BANK.find((item) => item.id === answer.questionId);
+      if (!question) return;
+      const current = map.get(question.topic) || { topic: question.topic, total: 0, correct: 0 };
+      current.total += 1;
+      if (answer.correct) current.correct += 1;
+      map.set(question.topic, current);
+    });
+  return [...map.values()]
+    .map((item) => ({ ...item, rate: item.total ? Math.round((item.correct / item.total) * 100) : 0 }))
+    .sort((a, b) => a.rate - b.rate || b.total - a.total || a.topic.localeCompare(b.topic, "ja"));
+}
+
+function getDrillCLevelTopics(subject) {
+  const counts = {};
+  state.drillResults
+    .filter((result) => result.subject === subject && result.resultLevel === "C")
+    .flatMap((result) => result.answers || [])
+    .filter((answer) => !answer.correct)
+    .forEach((answer) => {
+      const question = QUESTION_BANK.find((item) => item.id === answer.questionId);
+      if (!question) return;
+      counts[question.topic] = (counts[question.topic] || 0) + 1;
+    });
+  return Object.entries(counts).map(([topic, count]) => ({ topic, count })).sort((a, b) => b.count - a.count || a.topic.localeCompare(b.topic, "ja")).slice(0, 8);
 }
 
 function renderMockExamAnalysis() {
@@ -7771,9 +7956,10 @@ function buildTodayPromptSummary() {
 }
 
 function buildDrillPromptSummary() {
-  const results = state.drillResults.filter((result) => result.subject === "通関業法");
+  const results = state.drillResults.filter((result) => ["通関業法", "関税法等"].includes(result.subject));
   const latest = results[0];
-  const wrongTags = getDrillWeaknessTagRanking().slice(0, 8).map((item) => `${item.tag}(${item.count})`).join(" / ");
+  const tsukangyohoWrongTags = getDrillWeaknessTagRanking("通関業法").slice(0, 5).map((item) => `${item.tag}(${item.count})`).join(" / ");
+  const kanzeihouWrongTags = getDrillWeaknessTagRanking("関税法等").slice(0, 8).map((item) => `${item.tag}(${item.count})`).join(" / ");
   const wrongQuestions = latest ? latest.answers
     .filter((answer) => !answer.correct)
     .map((answer) => {
@@ -7785,9 +7971,10 @@ function buildDrillPromptSummary() {
   return keyValueLines([
     ["実施回数", results.length],
     ["直近結果", latest ? `${latest.mode} / ${latest.scoreRate}% / ${latest.resultLevel}` : "未実施"],
-    ["よく間違える弱点タグ", wrongTags || "なし"],
+    ["通関業法でよく間違える弱点タグ", tsukangyohoWrongTags || "なし"],
+    ["関税法等でよく間違える弱点タグ", kanzeihouWrongTags || "なし"],
     ["直近の誤答", wrongQuestions || "なし"],
-    ["相談したい観点例", "通関業法ドリルの誤答分析をお願いします / 義務規定と罰則の混同を整理してください / 監督処分と懲戒処分の違いを確認したいです"]
+    ["相談したい観点例", "関税法等ドリルの誤答分析をお願いします / 保税地域と保税運送の混同を整理してください / 納期限と法定納期限、延滞税・加算税の関係を整理してください / 課税価格の加算要素と不算入要素を復習したいです"]
   ]);
 }
 
@@ -7954,7 +8141,7 @@ function resolveAiSubject(target) {
 }
 
 async function postAiApiRequest(payload) {
-  throw new Error("v2.1ではアプリ内通信を行いません。相談文をコピーして外部ChatGPTに貼り付けてください。");
+  throw new Error("v2.2ではアプリ内通信を行いません。相談文をコピーして外部ChatGPTに貼り付けてください。");
 }
 
 function buildAiConnectionHint(prefix) {
@@ -7963,7 +8150,7 @@ function buildAiConnectionHint(prefix) {
     prefix,
     "Worker URLが正しいか確認してください。",
     "/api/ai まで含めて入力してください。",
-    "v2.1では外部通信を行わないため、相談文をコピーして外部ChatGPTに貼り付けてください。"
+    "v2.2では外部通信を行わないため、相談文をコピーして外部ChatGPTに貼り付けてください。"
   ].join(" ");
 }
 
@@ -7981,9 +8168,9 @@ function inferAiHealthUrl(endpointUrl) {
 
 async function checkAiWorkerHealth() {
   const result = document.querySelector("#aiConnectionTestResult");
-  state.aiSettings.lastStatus = "v2.1で廃止";
+  state.aiSettings.lastStatus = "v2.2で廃止";
   state.aiSettings.lastError = "";
-  if (result) result.textContent = "v2.1ではアプリ内通信を行いません。";
+  if (result) result.textContent = "v2.2ではアプリ内通信を行いません。";
   saveUnits();
   renderSettings();
 }
@@ -7998,7 +8185,7 @@ async function sendCurrentAiPromptToApi() {
     return;
   }
   state.aiForm.apiStatus = "コピー用";
-  state.aiForm.apiError = "v2.1ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
+  state.aiForm.apiError = "v2.2ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
   renderAiResponse();
   await copyAiPrompt();
 }
@@ -8008,7 +8195,7 @@ async function askAiTutor() {
   const { target, promptText } = generateAiTutorPrompt();
   if (!promptText) return;
   state.aiTutorForm.apiStatus = "コピー用";
-  state.aiTutorForm.apiError = "v2.1ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
+  state.aiTutorForm.apiError = "v2.2ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
   saveAiTutorAnalysis({ target, sentViaApi: false });
   renderAiTutorView();
   showToast("相談文を生成しました。");
@@ -8039,7 +8226,7 @@ async function runAiSuggestion() {
   const { target, promptText } = generateAiSuggestionPrompt();
   if (!promptText) return;
   state.aiSuggestionForm.apiStatus = "コピー用";
-  state.aiSuggestionForm.apiError = "v2.1ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
+  state.aiSuggestionForm.apiError = "v2.2ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
   saveAiSuggestionAnalysis({ target, sentViaApi: false });
   renderAiSuggestionView();
   showToast("相談文を生成しました。");
@@ -8333,9 +8520,9 @@ function saveCurrentAiResponse() {
 async function testAiConnection() {
   const result = document.querySelector("#aiConnectionTestResult");
   state.aiSettings.lastTestedAt = new Date().toISOString();
-  state.aiSettings.lastStatus = "v2.1で廃止";
+  state.aiSettings.lastStatus = "v2.2で廃止";
   state.aiSettings.lastError = "";
-  if (result) result.textContent = "v2.1ではアプリ内通信を行いません。";
+  if (result) result.textContent = "v2.2ではアプリ内通信を行いません。";
   saveUnits();
   renderSettings();
 }
@@ -8694,14 +8881,15 @@ function renderReviewList() {
 function renderDrillReviewCards() {
   const wrongMap = new Map();
   state.drillResults
-    .filter((result) => result.subject === "通関業法")
+    .filter((result) => ["通関業法", "関税法等"].includes(result.subject))
     .forEach((result) => {
       (result.answers || []).filter((answer) => !answer.correct).forEach((answer) => {
         const question = QUESTION_BANK.find((item) => item.id === answer.questionId);
         if (!question) return;
-        const current = wrongMap.get(question.id) || { question, count: 0, latest: "" };
+        const current = wrongMap.get(question.id) || { question, count: 0, latest: "", reasons: new Set() };
         current.count += 1;
         current.latest = result.completedAt || current.latest;
+        current.reasons.add(question.subject === "関税法等" ? `${question.topic}で誤答` : `${question.subject}ドリルで誤答`);
         wrongMap.set(question.id, current);
       });
     });
@@ -8709,20 +8897,21 @@ function renderDrillReviewCards() {
   if (!items.length) return "";
   return `
     <section class="panel">
-      <div class="panel-heading"><h3>通関業法ドリル誤答</h3></div>
-      ${items.map(({ question, count }) => `
+      <div class="panel-heading"><h3>ドリル誤答復習</h3></div>
+      ${items.map(({ question, count, reasons }) => `
         <article class="lesson-card">
           <div>
-            <p class="eyebrow">${escapeHtml(question.topic)} / ${escapeHtml(question.weaknessTag)}</p>
+            <p class="eyebrow">${escapeHtml(question.subject)} / ${escapeHtml(question.topic)} / ${escapeHtml(question.weaknessTag)}</p>
             <h4>${escapeHtml(question.question)}</h4>
             <dl class="review-facts compact">
               <div><dt>論点</dt><dd>${escapeHtml(question.topic)}</dd></div>
               <div><dt>弱点タグ</dt><dd>${escapeHtml(question.weaknessTag)}</dd></div>
               <div><dt>間違えた回数</dt><dd>${count}回</dd></div>
+              <div><dt>復習理由</dt><dd>${escapeHtml([...reasons].join(" / ") || `${question.subject}ドリルで誤答`)}</dd></div>
             </dl>
           </div>
           <div class="card-actions">
-            <button class="primary-button" type="button" data-start-drill-mode="弱点タグ別ドリル">解き直す</button>
+            <button class="primary-button" type="button" data-start-drill-mode="${question.subject === "関税法等" ? "関税法等10問" : "弱点タグ別ドリル"}">解き直す</button>
             <button class="ghost-button" type="button" data-open-lesson="${escapeAttribute(question.lessonId)}">関連レッスン</button>
           </div>
         </article>
