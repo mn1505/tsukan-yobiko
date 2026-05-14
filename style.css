@@ -1357,6 +1357,41 @@ button:disabled {
   margin-bottom: 16px;
 }
 
+.weakness-drill-section {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.section-mini-title {
+  margin: 4px 0 0;
+}
+
+.weakness-tag-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.weakness-tag-card,
+.weakness-mini-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfa;
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.weakness-tag-card h4,
+.weakness-mini-card p {
+  margin: 0;
+}
+
+.weakness-mini-card + .weakness-mini-card {
+  margin-top: 10px;
+}
+
 .drill-card {
   display: grid;
   gap: 14px;

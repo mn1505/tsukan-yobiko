@@ -1,4 +1,4 @@
-const APP_VERSION = "v2.3";
+const APP_VERSION = "v2.4";
 const AI_API_TIMEOUT_MS = 30000;
 const AI_HEALTH_TIMEOUT_MS = 10000;
 const STORAGE_KEYS = {
@@ -108,6 +108,19 @@ const WEAKNESS_TAGS = [
   "時間不足"
 ];
 const PRACTICAL_WEAKNESS_TAGS = ["申告書欄ミス", "品目分類ミス", "統計品目番号", "課税価格計算", "加算要素", "控除要素", "税率適用", "関税額計算", "消費税計算", "按分計算", "為替換算", "インボイス読取", "別冊資料読取", "NACCS入力", "時間不足"];
+const V24_WEAKNESS_TAG_CANDIDATES = [
+  "義務規定と罰則の混同", "監督処分と懲戒処分の混同", "申告・許可・承認・届出の混同", "主体の混同", "権限者の混同", "期限・期間",
+  "保税地域", "保税運送", "納期限・法定納期限", "延滞税・加算税", "課税価格", "加算要素", "不算入要素", "品目分類", "インボイス読取",
+  "為替換算", "関税額計算", "消費税計算", "地方消費税計算", "端数処理", "税率適用", "NACCS入力", "資料読取", "選択肢読解", "暗記不足", "理解不足"
+];
+const WEAKNESS_GROUPS = [
+  { name: "手続区分グループ", tags: ["申告・許可・承認・届出の混同", "許可・届出・確認の混同", "権限者の混同", "主体の混同"] },
+  { name: "罰則・処分グループ", tags: ["義務規定と罰則の混同", "監督処分と懲戒処分の混同", "罰則", "罰則・没収・追徴", "延滞税・加算税"] },
+  { name: "保税グループ", tags: ["保税地域", "保税運送", "収容・留置", "納税義務者"] },
+  { name: "課税価格グループ", tags: ["課税価格", "加算要素", "不算入要素", "価格条件", "運賃・保険料", "無償提供物", "ロイヤルティ"] },
+  { name: "通関実務計算グループ", tags: ["為替換算", "関税額計算", "消費税計算", "地方消費税計算", "端数処理", "税率適用"] },
+  { name: "品目分類・資料読取グループ", tags: ["品目分類", "統計品目番号", "税番", "インボイス読取", "資料読取", "NACCS入力"] }
+];
 const AI_PROMPT_TYPES = [
   "回答添削",
   "誤答分析",
@@ -119,7 +132,7 @@ const AI_PROMPT_TYPES = [
   "過去問分析",
   "総合学習相談"
 ];
-const AI_TARGET_TYPES = ["単元", "レッスン", "通関業法カリキュラム", "通関業法ドリル結果", "関税法等カリキュラム", "関税法等ドリル結果", "通関実務カリキュラム", "通関実務ドリル結果", "演習ログ", "過去問ログ", "実務ログ", "復習対象", "総合模試結果", "最新模試結果", "横断弱点", "全体サマリー"];
+const AI_TARGET_TYPES = ["単元", "レッスン", "通関業法カリキュラム", "通関業法ドリル結果", "関税法等カリキュラム", "関税法等ドリル結果", "通関実務カリキュラム", "通関実務ドリル結果", "弱点別ドリル結果", "演習ログ", "過去問ログ", "実務ログ", "復習対象", "総合模試結果", "最新模試結果", "横断弱点", "全体サマリー"];
 const STUDY_DURATIONS = ["15分", "30分", "1時間", "2時間", "じっくり"];
 const MOCK_EXAM_MODES = {
   light15: {
@@ -160,7 +173,7 @@ const AI_OUTPUT_FORMATS = {
   "類似問題作成": ["問題", "選択肢", "正答", "解説", "引っかけポイント", "復習すべき知識"],
   "復習指示": ["最優先", "通常復習", "余裕があれば", "30分メニュー", "1時間メニュー"]
 };
-const AI_TUTOR_TARGET_TYPES = ["現在のレッスン", "確認問題", "模試問題", "今日のメニュー", "弱点タグ", "自由質問"];
+const AI_TUTOR_TARGET_TYPES = ["現在のレッスン", "確認問題", "模試問題", "今日のメニュー", "弱点タグ", "弱点別ドリル結果", "自由質問"];
 const AI_TUTOR_QUESTION_TYPES = ["やさしく説明", "本試験向けに説明", "なぜ間違えたか分析", "ひっかけポイント解説", "類似問題を出す", "暗記方法を教える", "30分復習メニューを作る", "A判定に上げる方法", "質問に直接回答"];
 const AI_TUTOR_EXPLANATION_LEVELS = ["初学者向け", "標準", "本試験直前", "詳しめ", "一問一答風"];
 const AI_TUTOR_OUTPUT_FORMATS = {
@@ -182,7 +195,7 @@ const AI_TUTOR_QUESTION_INSTRUCTIONS = {
   "質問に直接回答": "ユーザーの自由質問へ、通関士試験対策として簡潔に回答してください。"
 };
 
-const AI_SUGGESTION_TARGET_TYPES = ["レッスン確認問題", "レッスン理解度", "模試結果", "今日のメニュー", "弱点タグ", "通関業法カリキュラム", "通関業法ドリル結果", "関税法等カリキュラム", "関税法等ドリル結果", "通関実務カリキュラム", "通関実務ドリル結果", "自由入力"];
+const AI_SUGGESTION_TARGET_TYPES = ["レッスン確認問題", "レッスン理解度", "模試結果", "今日のメニュー", "弱点タグ", "弱点別ドリル結果", "通関業法カリキュラム", "通関業法ドリル結果", "関税法等カリキュラム", "関税法等ドリル結果", "通関実務カリキュラム", "通関実務ドリル結果", "自由入力"];
 const AI_SUGGESTION_TYPES = ["回答添削", "誤答原因分析", "弱点タグ提案", "A/B/C判定提案", "復習対象提案", "次にやること提案", "総合診断", "類似問題提案"];
 const AI_SUGGESTION_MARKER = "TSUKAN_YOBIKO_SUGGESTION:";
 const AI_SUGGESTION_TYPE_INSTRUCTIONS = {
@@ -1511,7 +1524,9 @@ const state = {
     graded: false,
     sessionQuestionIds: [],
     answers: [],
-    startedAt: ""
+    startedAt: "",
+    targetWeaknessTag: "",
+    targetWeaknessGroup: ""
   },
   todayMenu: null,
   activeView: "home",
@@ -2064,6 +2079,8 @@ function normalizeDrillResult(result) {
     id: "",
     subject: "通関業法",
     mode: "通関業法10問",
+    targetWeaknessTag: "",
+    targetWeaknessGroup: "",
     startedAt: "",
     completedAt: "",
     totalQuestions: 0,
@@ -2078,12 +2095,16 @@ function normalizeDrillResult(result) {
   if (!normalized.id) normalized.id = makeDrillResultId();
   normalized.subject = String(normalized.subject || "通関業法");
   normalized.mode = String(normalized.mode || "通関業法10問");
+  normalized.targetWeaknessTag = String(normalized.targetWeaknessTag || "");
+  normalized.targetWeaknessGroup = String(normalized.targetWeaknessGroup || "");
   normalized.startedAt = String(normalized.startedAt || "");
   normalized.completedAt = String(normalized.completedAt || "");
   normalized.answers = normalizeArray(normalized.answers).map((answer) => ({
     questionId: String(answer?.questionId || ""),
     userAnswer: String(answer?.userAnswer || ""),
     correct: Boolean(answer?.correct),
+    subject: String(answer?.subject || ""),
+    topic: String(answer?.topic || ""),
     weaknessTag: String(answer?.weaknessTag || "")
   })).filter((answer) => answer.questionId);
   normalized.totalQuestions = Number(normalized.totalQuestions || normalized.answers.length || 0);
@@ -2165,7 +2186,7 @@ function normalizeAiSettings(item) {
     enabled: false,
     endpointUrl: "",
     lastTestedAt: String(item?.lastTestedAt || ""),
-    lastStatus: "v2.3で廃止",
+    lastStatus: "v2.4でも廃止",
     lastError: ""
   };
 }
@@ -2314,7 +2335,7 @@ function sanitizeAiSettings(settings) {
     enabled: false,
     endpointUrl: "",
     lastTestedAt: "",
-    lastStatus: "v2.3で廃止",
+    lastStatus: "v2.4でも廃止",
     lastError: ""
   };
 }
@@ -2815,7 +2836,9 @@ function generateTodayMenu(duration = "30分") {
   const mockItems = buildTodayMockItems(duration);
   const crossReviewItems = buildTodayCrossReviewItems(duration);
   const drillItems = buildTodayDrillItems(duration);
+  const weaknessItems = buildTodayWeaknessItems().slice(0, duration === "15分" ? 1 : duration === "30分" ? 1 : duration === "1時間" ? 2 : duration === "2時間" ? 2 : 3);
   const priorityItems = uniqueTodayItems([
+    ...weaknessItems.filter((item) => item.priority === "最優先" || item.priority === "高"),
     ...drillItems.filter((item) => item.priority === "最優先" || item.priority === "高"),
     ...mockItems.filter((item) => item.priority === "最優先" || item.priority === "高"),
     ...crossReviewItems.filter((item) => item.priority === "最優先" || item.priority === "高"),
@@ -2825,7 +2848,6 @@ function generateTodayMenu(duration = "30分") {
     ...pastExamItems.filter((item) => item.priority === "高"),
     ...practicalItems.filter((item) => item.priority === "高")
   ]).slice(0, Math.max(limits.priority, 3));
-  const weaknessItems = buildTodayWeaknessItems().slice(0, duration === "じっくり" ? 3 : duration === "2時間" ? 2 : 0);
   const manualItems = normalizeArray(plan.manualItems).map(makeTodayMenuItem);
   const aiItems = duration === "じっくり" ? [makeTodayMenuItem({
     id: "today-ai-consult",
@@ -3135,7 +3157,17 @@ function buildTodayPracticalItems() {
 }
 
 function buildTodayWeaknessItems() {
-  return buildWeaknessRanking().slice(0, 5).map((item) => makeTodayMenuItem({
+  const weaknessDrills = getRecommendedWeaknessDrills().slice(0, 5).map((item) => makeTodayMenuItem({
+    id: `weakness-drill-${item.type}-${item.name}`,
+    type: "弱点別ドリル",
+    title: `弱点別ドリル：${item.name}${item.questionCount >= 10 ? "10問" : "5問"}`,
+    description: `危険度 ${item.risk.label} / 対応 ${item.questionCount}問 / 正答率 ${item.stats.total ? `${item.stats.rate}%` : "未実施"}`,
+    reason: item.reason,
+    priority: item.risk.label === "最優先" ? "最優先" : item.risk.label === "危険" ? "高" : "中",
+    priorityScore: item.score,
+    estimatedMinutes: item.questionCount >= 10 ? 18 : 10
+  }));
+  const tagChecks = buildWeaknessRanking().slice(0, 3).map((item) => makeTodayMenuItem({
     id: `weakness-${item.tag}`,
     type: "弱点確認",
     title: item.tag,
@@ -3145,6 +3177,7 @@ function buildTodayWeaknessItems() {
     priorityScore: item.count * 8,
     estimatedMinutes: 10
   }));
+  return uniqueTodayItems([...weaknessDrills, ...tagChecks]);
 }
 
 function buildTodayMockItems(duration) {
@@ -3861,11 +3894,16 @@ function todayMenuCard(item, compact = false) {
         ${item.type === "通関業法ドリル" ? `<button class="primary-button" type="button" data-start-drill-mode="${escapeAttribute(item.id.includes("hikkake") || item.id.includes("trap") ? "通関業法ひっかけ" : "通関業法10問")}">開始</button>` : ""}
         ${item.type === "関税法等ドリル" ? `<button class="primary-button" type="button" data-start-drill-mode="${escapeAttribute(item.title.includes("課税価格") ? "課税価格ドリル" : "関税法等10問")}">開始</button>` : ""}
         ${item.type === "通関実務ドリル" ? `<button class="primary-button" type="button" data-start-drill-mode="${escapeAttribute(getTodayJitsumuDrillMode(item))}">開始</button>` : ""}
+        ${item.type === "弱点別ドリル" ? `<button class="primary-button" type="button" data-start-weakness-drill="${escapeAttribute(extractTodayWeaknessTarget(item.title))}" data-weakness-count="${item.title.includes("10問") ? "10" : "5"}">開始</button>` : ""}
         ${item.relatedMockResultId ? `<button class="ghost-button" type="button" data-show-mock-result="${escapeAttribute(item.relatedMockResultId)}">模試詳細</button>` : ""}
         <button class="ghost-button" type="button" data-ai-today-consult>相談文を作る</button>
       </div>
     </article>
   `;
+}
+
+function extractTodayWeaknessTarget(title) {
+  return String(title || "").replace(/^弱点別ドリル：/, "").replace(/(?:5問|10問)$/, "");
 }
 
 function getTodayJitsumuDrillMode(item) {
@@ -3973,7 +4011,7 @@ function renderDrillView() {
     "手順ドリル", "計算過程ドリル", "資料読取ドリル",
     "インボイス読取ドリル", "輸出申告ドリル", "輸入申告ドリル", "品目分類ドリル", "統計品目番号ドリル", "通関実務課税価格ドリル", "加算要素・不算入要素ドリル", "為替換算ドリル", "関税額計算ドリル", "消費税・地方消費税ドリル", "端数処理ドリル", "税率適用ドリル", "NACCS入力ドリル", "資料読取論点ドリル", "時間配分ドリル"
   ];
-  if (!modes.includes(state.drill.mode)) state.drill.mode = "通関業法10問";
+  if (!modes.includes(state.drill.mode) && !isWeaknessDrillMode(state.drill.mode)) state.drill.mode = "通関業法10問";
   ensureDrillSession();
   const questions = getDrillQuestions(state.drill.mode);
   const current = questions.find((question) => question.id === state.drill.currentQuestionId) || questions[0];
@@ -3983,15 +4021,54 @@ function renderDrillView() {
     state.drill.graded = false;
   }
   host.innerHTML = `
+    ${renderWeaknessDrillSection()}
+    ${renderLatestWeaknessDrillResult()}
     <div class="drill-controls">
       ${modes.map((mode) => `<button class="duration-button ${state.drill.mode === mode ? "is-active" : ""}" type="button" data-drill-mode="${escapeAttribute(mode)}">${escapeHtml(mode)}</button>`).join("")}
     </div>
     <div class="card-meta">
       <span class="badge">回答 ${state.drill.answers.length}/${questions.length}</span>
       <span class="badge">保存済み ${state.drillResults.length}回</span>
+      ${isWeaknessDrillMode(state.drill.mode) ? `<span class="badge priority">${escapeHtml(state.drill.targetWeaknessGroup || state.drill.targetWeaknessTag || "弱点別")}</span>` : ""}
     </div>
     ${current ? renderDrillQuestion(current, questions) : `<div class="empty-state"><p class="muted">この条件のドリル問題はまだありません。</p></div>`}
   `;
+}
+
+function renderLatestWeaknessDrillResult() {
+  const result = state.drillResults.find((item) => item.mode.includes("弱点別ドリル") || item.targetWeaknessTag || item.targetWeaknessGroup);
+  if (!result) return "";
+  const tagStats = buildWeaknessResultTagStats(result);
+  return `
+    <article class="drill-result">
+      <div class="panel-heading"><h3>直近の弱点別ドリル結果</h3></div>
+      <dl class="review-facts compact">
+        <div><dt>対象</dt><dd>${escapeHtml(result.targetWeaknessGroup || result.targetWeaknessTag || result.mode)}</dd></div>
+        <div><dt>正答率</dt><dd>${result.scoreRate}%（${result.correctCount}/${result.totalQuestions}）</dd></div>
+        <div><dt>判定</dt><dd>${escapeHtml(result.resultLevel)}</dd></div>
+        <div><dt>実施日</dt><dd>${escapeHtml(formatDateTime(result.completedAt))}</dd></div>
+        <div><dt>タグ別正答率</dt><dd>${escapeHtml(tagStats.map((item) => `${item.tag}:${item.rate}%(${item.correct}/${item.total})`).join(" / ") || "なし")}</dd></div>
+      </dl>
+      <div class="card-actions">
+        <button class="primary-button" type="button" data-start-weakness-drill="${escapeAttribute(result.targetWeaknessGroup || result.targetWeaknessTag || "")}" data-weakness-type="${result.targetWeaknessGroup ? "group" : "tag"}" data-weakness-count="${result.totalQuestions >= 10 ? "10" : "5"}">もう一度</button>
+        <button class="ghost-button" type="button" data-view-shortcut="review">復習へ</button>
+        <button class="ghost-button" type="button" data-view-shortcut="learning">別の弱点へ</button>
+      </div>
+    </article>
+  `;
+}
+
+function buildWeaknessResultTagStats(result) {
+  const map = new Map();
+  (result.answers || []).forEach((answer) => {
+    const question = QUESTION_BANK.find((item) => item.id === answer.questionId);
+    const tag = answer.weaknessTag || question?.weaknessTag || "タグなし";
+    const item = map.get(tag) || { tag, total: 0, correct: 0 };
+    item.total += 1;
+    if (answer.correct) item.correct += 1;
+    map.set(tag, item);
+  });
+  return [...map.values()].map((item) => ({ ...item, rate: item.total ? Math.round((item.correct / item.total) * 100) : 0 }));
 }
 
 function getDrillQuestions(mode) {
@@ -4048,8 +4125,23 @@ function getDrillQuestions(mode) {
     const matched = tags.length ? QUESTION_BANK.filter((question) => tags.some((tag) => question.weaknessTag.includes(tag) || tag.includes(question.weaknessTag))) : [];
     return pickDrillQuestions(matched.length ? matched : QUESTION_BANK.filter((question) => question.subject === "通関業法"), 10, true);
   }
+  if (isWeaknessDrillMode(mode)) {
+    const count = getWeaknessDrillLimit(mode);
+    const matched = getWeaknessDrillQuestionPool(state.drill.targetWeaknessTag, state.drill.targetWeaknessGroup);
+    return pickDrillQuestions(matched.length ? matched : QUESTION_BANK, count || QUESTION_BANK.length, true);
+  }
   if (mode === "ひっかけ問題ドリル") return QUESTION_BANK.filter((question) => question.trapExplanation);
   return QUESTION_BANK;
+}
+
+function isWeaknessDrillMode(mode) {
+  return String(mode || "").startsWith("弱点別ドリル");
+}
+
+function getWeaknessDrillLimit(mode) {
+  if (String(mode).includes("5問")) return 5;
+  if (String(mode).includes("10問")) return 10;
+  return 0;
 }
 
 function getKanzeihouQuestions() {
@@ -4083,6 +4175,241 @@ function pickDrillQuestions(questions, limit, randomize = false) {
     }
   }
   return list.slice(0, Math.min(limit, list.length));
+}
+
+function getWeaknessTagCandidates() {
+  return [...new Set([
+    ...V24_WEAKNESS_TAG_CANDIDATES,
+    ...WEAKNESS_TAGS,
+    ...QUESTION_BANK.map((question) => question.weaknessTag).filter(Boolean)
+  ])].filter((tag) => getQuestionsByWeaknessTag(tag).length || V24_WEAKNESS_TAG_CANDIDATES.includes(tag));
+}
+
+function tagMatchesQuestion(tag, question) {
+  const target = String(tag || "");
+  const questionTag = String(question.weaknessTag || "");
+  const haystack = [question.weaknessTag, question.topic, question.explanation, question.trapExplanation].join(" ");
+  return Boolean(target && (haystack.includes(target) || (questionTag && target.includes(questionTag))));
+}
+
+function getQuestionsByWeaknessTag(tag) {
+  return QUESTION_BANK.filter((question) => tagMatchesQuestion(tag, question));
+}
+
+function getWeaknessGroupByName(groupName) {
+  return WEAKNESS_GROUPS.find((group) => group.name === groupName);
+}
+
+function getWeaknessDrillQuestionPool(tag = "", groupName = "") {
+  if (groupName) {
+    const group = getWeaknessGroupByName(groupName);
+    if (!group) return [];
+    return QUESTION_BANK.filter((question) => group.tags.some((tagName) => tagMatchesQuestion(tagName, question)));
+  }
+  return getQuestionsByWeaknessTag(tag);
+}
+
+function buildWeaknessTagStats() {
+  const map = new Map();
+  const ensure = (tag) => {
+    if (!map.has(tag)) {
+      map.set(tag, {
+        tag,
+        questionCount: getQuestionsByWeaknessTag(tag).length,
+        total: 0,
+        correct: 0,
+        wrong: 0,
+        latest: "",
+        cCount: 0,
+        recentAnswers: []
+      });
+    }
+    return map.get(tag);
+  };
+  getWeaknessTagCandidates().forEach(ensure);
+  state.drillResults.forEach((result) => {
+    const resultTags = new Set([...(result.weaknessTags || []), result.targetWeaknessTag].filter(Boolean));
+    if (result.resultLevel === "C") resultTags.forEach((tag) => ensure(tag).cCount += 1);
+    (result.answers || []).forEach((answer) => {
+      const question = QUESTION_BANK.find((item) => item.id === answer.questionId);
+      const answerTags = [...new Set([answer.weaknessTag, question?.weaknessTag].filter(Boolean))];
+      answerTags.forEach((tag) => {
+        const item = ensure(tag);
+        item.total += 1;
+        if (answer.correct) item.correct += 1;
+        else item.wrong += 1;
+        item.latest = [item.latest, result.completedAt || result.startedAt || ""].sort().pop() || "";
+        item.recentAnswers.push({ correct: answer.correct, date: result.completedAt || result.startedAt || "" });
+      });
+    });
+  });
+  state.mockExamResults.forEach((result) => {
+    (result.answers || []).filter((answer) => !answer.correct && answer.weaknessTag).forEach((answer) => {
+      const item = ensure(answer.weaknessTag);
+      item.wrong += 1;
+      item.total += 1;
+      item.latest = [item.latest, result.completedAt || ""].sort().pop() || "";
+      item.recentAnswers.push({ correct: false, date: result.completedAt || "" });
+    });
+  });
+  return [...map.values()].map((item) => {
+    const recent = [...item.recentAnswers].sort((a, b) => (b.date || "").localeCompare(a.date || "")).slice(0, 10);
+    const recentCorrect = recent.filter((answer) => answer.correct).length;
+    const rate = item.total ? Math.round((item.correct / item.total) * 100) : 0;
+    const recentRate = recent.length ? Math.round((recentCorrect / recent.length) * 100) : null;
+    const risk = judgeWeaknessRisk({ rate: recentRate ?? rate, wrong: item.wrong, cCount: item.cCount, total: item.total });
+    return { ...item, rate, recentRate, risk };
+  }).sort((a, b) => b.risk.weight - a.risk.weight || b.wrong - a.wrong || b.questionCount - a.questionCount || a.tag.localeCompare(b.tag, "ja"));
+}
+
+function judgeWeaknessRisk({ rate, wrong, cCount, total }) {
+  if (!total) return { label: "未実施", className: "normal", weight: 0 };
+  if (rate < 50 || wrong >= 5 || cCount >= 2) return { label: "最優先", className: "priority", weight: 4 };
+  if (rate < 70 || wrong >= 3 || cCount >= 1) return { label: "危険", className: "danger", weight: 3 };
+  if (rate < 90 || wrong >= 1) return { label: "注意", className: "medium", weight: 2 };
+  return { label: "安定", className: "ok", weight: 1 };
+}
+
+function buildWeaknessGroupStats() {
+  const tagStats = buildWeaknessTagStats();
+  return WEAKNESS_GROUPS.map((group) => {
+    const tags = tagStats.filter((item) => group.tags.some((tag) => item.tag === tag || item.tag.includes(tag) || tag.includes(item.tag)));
+    const questionCount = getWeaknessDrillQuestionPool("", group.name).length;
+    const total = tags.reduce((sum, item) => sum + item.total, 0);
+    const correct = tags.reduce((sum, item) => sum + item.correct, 0);
+    const wrong = tags.reduce((sum, item) => sum + item.wrong, 0);
+    const cCount = tags.reduce((sum, item) => sum + item.cCount, 0);
+    const latest = tags.map((item) => item.latest).filter(Boolean).sort().pop() || "";
+    const rate = total ? Math.round((correct / total) * 100) : 0;
+    const risk = judgeWeaknessRisk({ rate, wrong, cCount, total });
+    return { group: group.name, tags: group.tags, questionCount, total, correct, wrong, rate, cCount, latest, risk };
+  }).sort((a, b) => b.risk.weight - a.risk.weight || b.wrong - a.wrong || b.questionCount - a.questionCount);
+}
+
+function getRecommendedWeaknessDrills() {
+  const tagStats = buildWeaknessTagStats();
+  const groupStats = buildWeaknessGroupStats();
+  const cLessonTags = getReviewLessons()
+    .filter(({ progress }) => progress.understanding === "C")
+    .flatMap(({ lesson }) => [lesson.weaknessTag, ...(lesson.questions || []).map((question) => question.weaknessTag)])
+    .filter(Boolean);
+  const recentWrongTags = state.drillResults.slice(0, 5).flatMap((result) => (result.answers || []).filter((answer) => !answer.correct).map((answer) => answer.weaknessTag)).filter(Boolean);
+  const mockWrongTags = state.mockExamResults.flatMap((result) => result.answers.filter((answer) => !answer.correct).map((answer) => answer.weaknessTag)).filter(Boolean);
+  const tagItems = tagStats.filter((item) => item.questionCount).map((item) => {
+    const reasons = [];
+    if (recentWrongTags.includes(item.tag)) reasons.push("直近ドリルで誤答");
+    if (item.cCount) reasons.push("C判定ドリルに含まれる");
+    if (cLessonTags.includes(item.tag)) reasons.push("C判定レッスンに関連");
+    if (mockWrongTags.includes(item.tag)) reasons.push("模試で誤答");
+    if (!item.latest && item.questionCount >= 5) reasons.push("問題数があり未実施");
+    if (item.latest && daysSinceIso(item.latest) >= 14 && item.questionCount >= 5) reasons.push("最近解いていない");
+    return {
+      type: "tag",
+      name: item.tag,
+      stats: item,
+      questionCount: item.questionCount,
+      risk: item.risk,
+      reason: reasons.join(" / ") || `${item.risk.label}タグの定期確認`,
+      score: item.risk.weight * 40 + item.wrong * 8 + item.questionCount
+    };
+  });
+  const groupItems = groupStats.filter((item) => item.questionCount).map((item) => ({
+    type: "group",
+    name: item.group,
+    stats: item,
+    questionCount: item.questionCount,
+    risk: item.risk,
+    reason: item.risk.label === "未実施" ? "横断問題数があり未実施" : `グループ内の誤答 ${item.wrong}件`,
+    score: item.risk.weight * 35 + item.wrong * 7 + item.questionCount
+  }));
+  return [...tagItems, ...groupItems].sort((a, b) => b.score - a.score || b.questionCount - a.questionCount).slice(0, 10);
+}
+
+function renderWeaknessDrillSection() {
+  const stats = buildWeaknessTagStats();
+  const groups = buildWeaknessGroupStats();
+  const recommended = getRecommendedWeaknessDrills().slice(0, 4);
+  const cards = stats.filter((item) => item.questionCount).slice(0, 30);
+  return `
+    <section class="weakness-drill-section">
+      <div class="panel-heading">
+        <h3>弱点別ドリル v2.4</h3>
+      </div>
+      <div class="analysis-card-grid two-col">
+        <article class="analysis-card">
+          <h4>おすすめ弱点ドリル</h4>
+          ${recommended.length ? recommended.map((item) => renderRecommendedWeaknessCard(item)).join("") : `<p class="muted">ドリル結果がたまるとおすすめを自動表示します。</p>`}
+        </article>
+        <article class="analysis-card">
+          <h4>弱点グループ</h4>
+          ${groups.map((item) => renderWeaknessGroupCard(item)).join("")}
+        </article>
+      </div>
+      <h4 class="section-mini-title">弱点タグ一覧</h4>
+      <div class="weakness-tag-grid">
+        ${cards.map(renderWeaknessTagCard).join("")}
+      </div>
+    </section>
+  `;
+}
+
+function renderRecommendedWeaknessCard(item) {
+  return `
+    <div class="weakness-mini-card">
+      <strong>${escapeHtml(item.name)}</strong>
+      <span class="badge ${item.risk.className}">${escapeHtml(item.risk.label)}</span>
+      <p>${escapeHtml(item.reason)}</p>
+      <dl class="review-facts compact">
+        <div><dt>対応問題数</dt><dd>${item.questionCount}</dd></div>
+        <div><dt>直近正答率</dt><dd>${item.stats.total ? `${item.stats.recentRate ?? item.stats.rate}%` : "未実施"}</dd></div>
+      </dl>
+      <div class="card-actions">
+        <button class="primary-button" type="button" data-start-weakness-drill="${escapeAttribute(item.name)}" data-weakness-type="${escapeAttribute(item.type)}" data-weakness-count="${item.questionCount >= 10 ? "10" : "5"}">開始</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderWeaknessGroupCard(item) {
+  return `
+    <div class="weakness-mini-card">
+      <strong>${escapeHtml(item.group)}</strong>
+      <span class="badge ${item.risk.className}">${escapeHtml(item.risk.label)}</span>
+      <dl class="review-facts compact">
+        <div><dt>対応問題数</dt><dd>${item.questionCount}</dd></div>
+        <div><dt>正答率</dt><dd>${item.total ? `${item.rate}%` : "未実施"}</dd></div>
+        <div><dt>誤答数</dt><dd>${item.wrong}</dd></div>
+      </dl>
+      <div class="card-actions">
+        <button class="primary-button" type="button" data-start-weakness-drill="${escapeAttribute(item.group)}" data-weakness-type="group" data-weakness-count="5">5問</button>
+        <button class="ghost-button" type="button" data-start-weakness-drill="${escapeAttribute(item.group)}" data-weakness-type="group" data-weakness-count="10">10問</button>
+        <button class="ghost-button" type="button" data-start-weakness-drill="${escapeAttribute(item.group)}" data-weakness-type="group" data-weakness-count="all">全問</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderWeaknessTagCard(item) {
+  return `
+    <article class="weakness-tag-card">
+      <div class="card-meta">
+        <span class="badge ${item.risk.className}">${escapeHtml(item.risk.label)}</span>
+        <span class="badge">横断</span>
+      </div>
+      <h4>${escapeHtml(item.tag)}</h4>
+      <dl class="review-facts compact">
+        <div><dt>対応問題数</dt><dd>${item.questionCount}</dd></div>
+        <div><dt>直近正答率</dt><dd>${item.total ? `${item.recentRate ?? item.rate}%` : "未実施"}</dd></div>
+        <div><dt>誤答数</dt><dd>${item.wrong}</dd></div>
+        <div><dt>最終実施日</dt><dd>${escapeHtml(item.latest ? formatDateTime(item.latest) : "未実施")}</dd></div>
+      </dl>
+      <div class="card-actions">
+        <button class="primary-button" type="button" data-start-weakness-drill="${escapeAttribute(item.tag)}" data-weakness-type="tag" data-weakness-count="5">5問</button>
+        <button class="ghost-button" type="button" data-start-weakness-drill="${escapeAttribute(item.tag)}" data-weakness-type="tag" data-weakness-count="10">10問</button>
+        <button class="ghost-button" type="button" data-start-weakness-drill="${escapeAttribute(item.tag)}" data-weakness-type="tag" data-weakness-count="all">全問</button>
+      </div>
+    </article>
+  `;
 }
 
 function ensureDrillSession() {
@@ -4174,7 +4501,28 @@ function setDrillMode(mode) {
   state.drill.sessionQuestionIds = [];
   state.drill.answers = [];
   state.drill.startedAt = "";
+  if (!isWeaknessDrillMode(mode)) {
+    state.drill.targetWeaknessTag = "";
+    state.drill.targetWeaknessGroup = "";
+  }
   renderDrillView();
+}
+
+function startWeaknessDrill(targetName, type = "tag", count = "5") {
+  const isGroup = type === "group" || Boolean(getWeaknessGroupByName(targetName));
+  const label = count === "all" ? "全問" : `${count}問`;
+  state.drill.mode = `弱点別ドリル ${label}`;
+  state.drill.targetWeaknessTag = isGroup ? "" : targetName;
+  state.drill.targetWeaknessGroup = isGroup ? targetName : "";
+  state.drill.currentQuestionId = "";
+  state.drill.selectedAnswer = "";
+  state.drill.graded = false;
+  state.drill.sessionQuestionIds = [];
+  state.drill.answers = [];
+  state.drill.startedAt = "";
+  switchView("learning");
+  renderDrillView();
+  document.querySelector("#drillArea")?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function gradeCurrentDrill() {
@@ -4192,6 +4540,8 @@ function gradeCurrentDrill() {
       questionId: question.id,
       userAnswer: selected,
       correct: selected === question.answer,
+      subject: question.subject,
+      topic: question.topic,
       weaknessTag: question.weaknessTag
     };
     state.drill.answers = state.drill.answers.filter((item) => item.questionId !== question.id);
@@ -4227,8 +4577,10 @@ function finishCurrentDrill() {
   const subjects = [...new Set(questions.map((question) => question.subject).filter(Boolean))];
   const result = normalizeDrillResult({
     id: makeDrillResultId(),
-    subject: subjects.length === 1 ? subjects[0] : "共通",
+    subject: isWeaknessDrillMode(state.drill.mode) ? "横断" : subjects.length === 1 ? subjects[0] : "共通",
     mode: state.drill.mode,
+    targetWeaknessTag: state.drill.targetWeaknessTag,
+    targetWeaknessGroup: state.drill.targetWeaknessGroup,
     startedAt: state.drill.startedAt || new Date().toISOString(),
     completedAt: new Date().toISOString(),
     totalQuestions: questions.length,
@@ -4245,6 +4597,8 @@ function finishCurrentDrill() {
   state.drill.sessionQuestionIds = [];
   state.drill.answers = [];
   state.drill.startedAt = "";
+  state.drill.targetWeaknessTag = "";
+  state.drill.targetWeaknessGroup = "";
   saveUnits();
   render();
   showToast(`ドリル結果を保存しました。判定${result.resultLevel}`);
@@ -5159,9 +5513,69 @@ function renderDrillBankAnalysis() {
     `;
   };
   return `
+    ${renderWeaknessTagAnalysis()}
     ${renderSubjectBank("通関業法", "通関業法10問", "通関業法ひっかけ")}
     ${renderSubjectBank("関税法等", "関税法等10問", "課税価格ドリル")}
     ${renderSubjectBank("通関実務", "通関実務10問", "手順ドリル")}
+  `;
+}
+
+function renderWeaknessTagAnalysis() {
+  const tagStats = buildWeaknessTagStats().filter((item) => item.questionCount || item.total).slice(0, 18);
+  const groupStats = buildWeaknessGroupStats();
+  const improving = tagStats.filter((item) => {
+    const answers = [...item.recentAnswers].sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+    if (answers.length < 6) return false;
+    const oldRows = answers.slice(0, -3);
+    const recentRows = answers.slice(-3);
+    const oldRate = oldRows.filter((answer) => answer.correct).length / oldRows.length;
+    const recentRate = recentRows.filter((answer) => answer.correct).length / recentRows.length;
+    return recentRate > oldRate;
+  }).slice(0, 5);
+  const worsening = tagStats.filter((item) => {
+    const recent = [...item.recentAnswers].sort((a, b) => (b.date || "").localeCompare(a.date || "")).slice(0, 3);
+    return recent.length >= 3 && Math.round((recent.filter((answer) => answer.correct).length / recent.length) * 100) < 50;
+  }).slice(0, 5);
+  const priority = tagStats.filter((item) => item.risk.label === "最優先").slice(0, 6);
+  const danger = tagStats.filter((item) => item.risk.label === "危険").slice(0, 6);
+  return `
+    <section class="panel analysis-section">
+      <div class="panel-heading"><h3>弱点別分析</h3></div>
+      <div class="analysis-card-grid two-col">
+        <article class="analysis-card">
+          <h4>弱点タグ別正答率</h4>
+          <dl class="analysis-facts">
+            ${tagStats.slice(0, 12).map((item) => `
+              <div><dt>${escapeHtml(item.tag)}</dt><dd>${item.total ? `${item.rate}% ${item.correct}/${item.total} 誤答${item.wrong} / ${item.risk.label}` : `未実施 / 対応${item.questionCount}問`}</dd></div>
+            `).join("")}
+          </dl>
+        </article>
+        <article class="analysis-card">
+          <h4>弱点グループ別正答率</h4>
+          <dl class="analysis-facts">
+            ${groupStats.map((item) => `
+              <div><dt>${escapeHtml(item.group)}</dt><dd>${item.total ? `${item.rate}% ${item.correct}/${item.total} 誤答${item.wrong} / ${item.risk.label}` : `未実施 / 対応${item.questionCount}問`}</dd></div>
+            `).join("")}
+          </dl>
+        </article>
+        <article class="analysis-card">
+          <h4>優先弱点</h4>
+          <dl class="analysis-facts">
+            <div><dt>最優先弱点タグ</dt><dd>${escapeHtml(priority.map((item) => item.tag).join(" / ") || "なし")}</dd></div>
+            <div><dt>危険弱点タグ</dt><dd>${escapeHtml(danger.map((item) => item.tag).join(" / ") || "なし")}</dd></div>
+            <div><dt>出題数上位</dt><dd>${escapeHtml(tagStats.slice(0, 8).map((item) => `${item.tag}:${item.total}`).join(" / ") || "データ不足")}</dd></div>
+            <div><dt>誤答数上位</dt><dd>${escapeHtml([...tagStats].sort((a, b) => b.wrong - a.wrong).slice(0, 8).map((item) => `${item.tag}:${item.wrong}`).join(" / ") || "データ不足")}</dd></div>
+          </dl>
+        </article>
+        <article class="analysis-card">
+          <h4>傾向</h4>
+          <dl class="analysis-facts">
+            <div><dt>改善傾向</dt><dd>${escapeHtml(improving.map((item) => item.tag).join(" / ") || "データ不足")}</dd></div>
+            <div><dt>悪化・要注意</dt><dd>${escapeHtml(worsening.map((item) => item.tag).join(" / ") || "データ不足")}</dd></div>
+          </dl>
+        </article>
+      </div>
+    </section>
   `;
 }
 
@@ -6944,7 +7358,7 @@ function renderAiSuggestionTargetSelect() {
   const label = document.querySelector("#aiSuggestionTargetSelectLabel");
   if (!select || !label) return;
   const options = getAiSuggestionTargetOptions(state.aiSuggestionForm.targetType);
-  const needsSelect = !["今日のメニュー", "通関業法カリキュラム", "通関業法ドリル結果", "関税法等カリキュラム", "関税法等ドリル結果", "通関実務カリキュラム", "通関実務ドリル結果", "自由入力"].includes(state.aiSuggestionForm.targetType);
+  const needsSelect = !["今日のメニュー", "弱点別ドリル結果", "通関業法カリキュラム", "通関業法ドリル結果", "関税法等カリキュラム", "関税法等ドリル結果", "通関実務カリキュラム", "通関実務ドリル結果", "自由入力"].includes(state.aiSuggestionForm.targetType);
   label.classList.toggle("is-hidden", !needsSelect);
   if (!needsSelect) {
     select.innerHTML = `<option value="">自動選択</option>`;
@@ -7170,6 +7584,8 @@ function renderAiTargetSelect() {
     ? "最新の総合模試結果、科目別正答率、誤答、弱点タグを使います。"
     : state.aiForm.targetType === "横断弱点"
     ? "模試、C判定レッスン、演習・過去問・実務ログをまたぐ弱点タグを使います。"
+    : state.aiForm.targetType === "弱点別ドリル結果"
+    ? "弱点タグ別・弱点グループ別ドリルの結果、正答率、誤答タグ、危険度を使います。"
     : "単元・演習ログ・過去問ログ・実務ログ・今日のメニューの集計値を使います。";
   if (!needsSelect) {
     select.innerHTML = `<option value="">自動選択</option>`;
@@ -7406,6 +7822,9 @@ function buildAiTutorTargetData() {
     const tag = state.aiTutorForm.targetId || buildWeaknessRanking()[0]?.tag || "";
     return { id: tag, title: tag || "弱点タグ", body: buildAiTutorWeaknessTagData(tag) };
   }
+  if (type === "弱点別ドリル結果") {
+    return { id: "weakness-drill", title: "弱点別ドリル結果", body: buildWeaknessDrillPromptSummary() };
+  }
   return { id: "free", title: "自由質問", body: "自由質問です。通関士試験の学習支援として、質問内容を本試験対策に結びつけて回答してください。" };
 }
 
@@ -7430,6 +7849,7 @@ function buildAiSuggestionTargetData() {
     const tag = state.aiSuggestionForm.targetId || buildWeaknessRanking()[0]?.tag || "";
     return { id: tag, title: tag || "弱点タグ", body: buildAiTutorWeaknessTagData(tag) };
   }
+  if (type === "弱点別ドリル結果") return { id: "weakness-drill", title: type, body: buildWeaknessDrillPromptSummary() };
   if (type === "通関業法カリキュラム") return { id: "course-tsukangyoho-basic", title: type, body: buildTsukangyohoCurriculumPromptData() };
   if (type === "通関業法ドリル結果") return { id: "drill-tsukangyoho", title: type, body: buildDrillPromptSummary() };
   if (type === "関税法等カリキュラム") return { id: "course-kanzeihou-intro", title: type, body: buildKanzeihouCurriculumPromptData() };
@@ -7595,6 +8015,7 @@ function buildAiTutorTodayData() {
 }
 
 function buildAiTutorWeaknessTagData(tag) {
+  const stats = buildWeaknessTagStats().find((item) => item.tag === tag);
   const relatedLessons = CURRICULUM_LESSONS.filter((lesson) => [
     lesson.title,
     lesson.focus,
@@ -7607,6 +8028,7 @@ function buildAiTutorWeaknessTagData(tag) {
     .map((answer) => `${result.title} / ${answer.subject} / ${answer.topic} / 自分:${answer.userAnswer || "未回答"}`));
   return keyValueLines([
     ["選択した弱点タグ", tag || "未選択"],
+    ["弱点別ドリル正答率", stats ? (stats.total ? `${stats.rate}%（${stats.correct}/${stats.total}）/ 危険度:${stats.risk.label}` : `未実施 / 対応問題${stats.questionCount}問`) : "データなし"],
     ["関連レッスン", relatedLessons.map((lesson) => `${lesson.subject} / ${lesson.title}`).join("\n") || "なし"],
     ["関連模試ミス", mockMisses.slice(0, 8).join("\n") || "なし"],
     ["関連演習ログ", state.practiceLogs.filter((log) => log.weaknessTags.includes(tag)).slice(0, 6).map((log) => `${log.studiedAt} / ${log.unitTitle} / ${log.result} / ${log.mistakeReason}`).join("\n") || "なし"],
@@ -7742,6 +8164,8 @@ function buildAiPromptText(promptType, target, additionalConditions) {
     ? ["通関実務レッスン進捗の評価", "A/B/C判定の偏り", "間違えた確認問題から見える弱点", "弱点タグの優先順位", "ミニ模試結果の評価", "復習対象レッスンの優先順位", "品目分類、課税価格、申告書、税額計算、時間配分の苦手状況", "30分でできる通関実務復習メニュー"]
     : state.aiForm.targetType === "実務ログ"
     ? ["申告書作成上のミス原因", "計算過程のどこで崩れたか", "品目分類・資料読み取りの弱点", "NACCS入力項目の理解不足", "時間配分の問題", "次に解くべき実務問題タイプ", "本試験で失点しやすいポイント", "30分でできる実務復習メニュー"]
+    : state.aiForm.targetType === "弱点別ドリル結果"
+    ? ["弱点タグ別正答率", "弱点グループ別正答率", "最優先で潰すタグ", "科目横断で混同している論点", "誤答が多いタグの原因", "次に解くべき5問・10問ドリル", "30分でできる復習順", "本試験でのひっかけ対策"]
     : (AI_ANALYSIS_POINTS[promptType] || AI_ANALYSIS_POINTS["総合学習相談"]);
   const output = AI_OUTPUT_FORMATS[promptType] || AI_OUTPUT_FORMATS.default;
   return [
@@ -7799,6 +8223,9 @@ function buildAiTargetData() {
   }
   if (state.aiForm.targetType === "横断弱点") {
     return { id: "cross-weakness", title: "横断弱点", body: buildCrossWeaknessPromptData() };
+  }
+  if (state.aiForm.targetType === "弱点別ドリル結果") {
+    return { id: "weakness-drill", title: "弱点別ドリル結果", body: buildWeaknessDrillPromptSummary() };
   }
   if (state.aiForm.targetType === "復習対象") {
     return { id: "", title: "復習対象", body: buildReviewTargetsPromptData() };
@@ -8210,6 +8637,27 @@ function buildDrillPromptSummary() {
   ]);
 }
 
+function buildWeaknessDrillPromptSummary() {
+  const results = state.drillResults.filter((result) => result.mode.includes("弱点別ドリル") || result.targetWeaknessTag || result.targetWeaknessGroup);
+  const latest = results[0];
+  const tagStats = buildWeaknessTagStats().filter((item) => item.total || item.questionCount).slice(0, 12);
+  const groupStats = buildWeaknessGroupStats();
+  const recommended = getRecommendedWeaknessDrills().slice(0, 6);
+  const latestWrong = latest ? latest.answers.filter((answer) => !answer.correct).map((answer) => {
+    const question = QUESTION_BANK.find((item) => item.id === answer.questionId);
+    return question ? `${question.subject} / ${question.topic} / ${question.weaknessTag} / 自分:${answer.userAnswer} / 正答:${question.answer}` : "";
+  }).filter(Boolean).join("\n") : "";
+  return keyValueLines([
+    ["弱点別ドリル実施回数", results.length],
+    ["直近の弱点別ドリル", latest ? `${latest.targetWeaknessGroup || latest.targetWeaknessTag || latest.mode} / ${latest.scoreRate}% / ${latest.resultLevel}` : "未実施"],
+    ["おすすめ弱点ドリル", recommended.map((item) => `${item.name}:${item.reason}`).join(" / ") || "なし"],
+    ["弱点タグ別正答率", tagStats.map((item) => `${item.tag}:${item.total ? `${item.rate}%(${item.correct}/${item.total})` : "未実施"} 危険度${item.risk.label}`).join(" / ") || "データ不足"],
+    ["弱点グループ別正答率", groupStats.map((item) => `${item.group}:${item.total ? `${item.rate}%(${item.correct}/${item.total})` : "未実施"} 危険度${item.risk.label}`).join(" / ")],
+    ["直近の誤答", latestWrong || "なし"],
+    ["相談したい観点例", "弱点別ドリルの結果をもとに復習順を提案してください / 課税価格タグの誤答が多いので加算要素と不算入要素を整理してください / 罰則・処分グループを横断整理してください / 品目分類・資料読取グループの弱点を分析してください"]
+  ]);
+}
+
 function getTopWeaknessTags() {
   const counts = {};
   state.units.forEach((unit) => unit.ai.weaknessTags.forEach((tag) => counts[tag] = (counts[tag] || 0) + 1));
@@ -8373,7 +8821,7 @@ function resolveAiSubject(target) {
 }
 
 async function postAiApiRequest(payload) {
-  throw new Error("v2.3ではアプリ内通信を行いません。相談文をコピーして外部ChatGPTに貼り付けてください。");
+  throw new Error("v2.4ではアプリ内通信を行いません。相談文をコピーして外部ChatGPTに貼り付けてください。");
 }
 
 function buildAiConnectionHint(prefix) {
@@ -8381,7 +8829,7 @@ function buildAiConnectionHint(prefix) {
   return [
     prefix,
     "外部API設定は使いません。",
-    "v2.3では外部通信を行わないため、相談文をコピーして外部ChatGPTに貼り付けてください。"
+    "v2.4では外部通信を行わないため、相談文をコピーして外部ChatGPTに貼り付けてください。"
   ].join(" ");
 }
 
@@ -8399,9 +8847,9 @@ function inferAiHealthUrl(endpointUrl) {
 
 async function checkAiWorkerHealth() {
   const result = document.querySelector("#aiConnectionTestResult");
-  state.aiSettings.lastStatus = "v2.3で廃止";
+  state.aiSettings.lastStatus = "v2.4でも廃止";
   state.aiSettings.lastError = "";
-  if (result) result.textContent = "v2.3ではアプリ内通信を行いません。";
+  if (result) result.textContent = "v2.4ではアプリ内通信を行いません。";
   saveUnits();
   renderSettings();
 }
@@ -8416,7 +8864,7 @@ async function sendCurrentAiPromptToApi() {
     return;
   }
   state.aiForm.apiStatus = "コピー用";
-  state.aiForm.apiError = "v2.3ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
+  state.aiForm.apiError = "v2.4ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
   renderAiResponse();
   await copyAiPrompt();
 }
@@ -8426,7 +8874,7 @@ async function askAiTutor() {
   const { target, promptText } = generateAiTutorPrompt();
   if (!promptText) return;
   state.aiTutorForm.apiStatus = "コピー用";
-  state.aiTutorForm.apiError = "v2.3ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
+  state.aiTutorForm.apiError = "v2.4ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
   saveAiTutorAnalysis({ target, sentViaApi: false });
   renderAiTutorView();
   showToast("相談文を生成しました。");
@@ -8457,7 +8905,7 @@ async function runAiSuggestion() {
   const { target, promptText } = generateAiSuggestionPrompt();
   if (!promptText) return;
   state.aiSuggestionForm.apiStatus = "コピー用";
-  state.aiSuggestionForm.apiError = "v2.3ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
+  state.aiSuggestionForm.apiError = "v2.4ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
   saveAiSuggestionAnalysis({ target, sentViaApi: false });
   renderAiSuggestionView();
   showToast("相談文を生成しました。");
@@ -8751,9 +9199,9 @@ function saveCurrentAiResponse() {
 async function testAiConnection() {
   const result = document.querySelector("#aiConnectionTestResult");
   state.aiSettings.lastTestedAt = new Date().toISOString();
-  state.aiSettings.lastStatus = "v2.3で廃止";
+  state.aiSettings.lastStatus = "v2.4でも廃止";
   state.aiSettings.lastError = "";
-  if (result) result.textContent = "v2.3ではアプリ内通信を行いません。";
+  if (result) result.textContent = "v2.4ではアプリ内通信を行いません。";
   saveUnits();
   renderSettings();
 }
@@ -9107,6 +9555,7 @@ function renderReviewList() {
     }).join("")
     : `<div class="empty-state"><p class="muted">復習対象レッスンはありません。</p></div>`;
   document.querySelector("#reviewLessonCards").insertAdjacentHTML("beforeend", renderDrillReviewCards());
+  document.querySelector("#reviewLessonCards").insertAdjacentHTML("beforeend", renderWeaknessReviewCards());
 }
 
 function renderDrillReviewCards() {
@@ -9144,6 +9593,35 @@ function renderDrillReviewCards() {
           <div class="card-actions">
             <button class="primary-button" type="button" data-start-drill-mode="${escapeAttribute(getReviewDrillModeForQuestion(question))}">解き直す</button>
             <button class="ghost-button" type="button" data-open-lesson="${escapeAttribute(question.lessonId)}">関連レッスン</button>
+          </div>
+        </article>
+      `).join("")}
+    </section>
+  `;
+}
+
+function renderWeaknessReviewCards() {
+  const targets = getRecommendedWeaknessDrills()
+    .filter((item) => ["最優先", "危険", "注意", "未実施"].includes(item.risk.label))
+    .slice(0, 8);
+  if (!targets.length) return "";
+  return `
+    <section class="panel">
+      <div class="panel-heading"><h3>弱点別復習</h3></div>
+      ${targets.map((item) => `
+        <article class="lesson-card">
+          <div>
+            <p class="eyebrow">${item.type === "group" ? "弱点グループ" : "弱点タグ"}</p>
+            <h4>${escapeHtml(item.name)}</h4>
+            <dl class="review-facts compact">
+              <div><dt>危険度</dt><dd><span class="badge ${item.risk.className}">${escapeHtml(item.risk.label)}</span></dd></div>
+              <div><dt>正答率</dt><dd>${item.stats.total ? `${item.stats.rate}%` : "未実施"}</dd></div>
+              <div><dt>誤答数</dt><dd>${item.stats.wrong}</dd></div>
+              <div><dt>おすすめ理由</dt><dd>${escapeHtml(item.reason)}</dd></div>
+            </dl>
+          </div>
+          <div class="card-actions">
+            <button class="primary-button" type="button" data-start-weakness-drill="${escapeAttribute(item.name)}" data-weakness-type="${escapeAttribute(item.type)}" data-weakness-count="${item.questionCount >= 10 ? "10" : "5"}">弱点別ドリル開始</button>
           </div>
         </article>
       `).join("")}
@@ -10340,6 +10818,15 @@ function attachEvents() {
       switchView("learning");
       setDrillMode(startDrillButton.dataset.startDrillMode);
       document.querySelector("#drillArea")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    const startWeaknessDrillButton = event.target.closest("[data-start-weakness-drill]");
+    if (startWeaknessDrillButton) {
+      startWeaknessDrill(
+        startWeaknessDrillButton.dataset.startWeaknessDrill,
+        startWeaknessDrillButton.dataset.weaknessType || "tag",
+        startWeaknessDrillButton.dataset.weaknessCount || "5"
+      );
       return;
     }
     if (event.target.closest("[data-grade-drill]")) {
