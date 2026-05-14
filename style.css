@@ -580,6 +580,10 @@ button:focus-visible {
   gap: 10px;
 }
 
+.mock-question-nav {
+  flex-wrap: wrap;
+}
+
 .mock-progress-head h3 {
   margin: 0;
   font-size: 1.6rem;
@@ -605,7 +609,12 @@ button:focus-visible {
 }
 
 .mock-question-nav > button {
-  flex: 1 1 0;
+  flex: 1 1 130px;
+}
+
+.mock-explanation-card summary {
+  cursor: pointer;
+  font-weight: 850;
 }
 
 .mock-jump-list {
