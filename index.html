@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="TSUKAN YOBIKO v2.6 - 教材データ外部JS化・保守性改善版">
+    <meta name="description" content="TSUKAN YOBIKO v2.7 - スマホ学習UI最終整理版">
     <meta name="theme-color" content="#1f5f5b">
     <title>TSUKAN YOBIKO</title>
     <link rel="stylesheet" href="style.css">
@@ -15,7 +15,7 @@
           <p class="eyebrow">通関士試験 個人予備校</p>
           <h1>TSUKAN YOBIKO</h1>
         </div>
-        <span class="version-pill">v2.6</span>
+        <span class="version-pill">v2.7</span>
       </header>
 
       <main class="app-main">
@@ -32,54 +32,35 @@
               <button class="primary-button" type="button" data-open-today>学習を始める</button>
             </div>
           </div>
-          <div id="dashboardStats" class="stats-grid"></div>
-          <section class="panel learning-home-panel">
-            <div class="panel-heading">
-              <h3>次に学ぶレッスン</h3>
-            </div>
-            <div id="homeCurriculumSummary" class="compact-list"></div>
-          </section>
           <section class="panel today-home-panel">
             <div class="panel-heading">
-              <h3>今日の学習メニュー</h3>
+              <h3>今日の学習</h3>
             </div>
             <div id="homeTodaySummary" class="compact-list"></div>
           </section>
-          <section class="panel">
+          <section class="panel learning-home-panel">
             <div class="panel-heading">
-              <h3>最新の模試結果</h3>
+              <h3>次に読むレッスン</h3>
             </div>
-            <div id="lastUpdatedUnit" class="empty-state"></div>
+            <div id="homeCurriculumSummary" class="compact-list"></div>
           </section>
           <section class="panel">
             <div class="panel-heading">
-              <h3>復習が必要なレッスン</h3>
-            </div>
-            <div id="recommendedReviews" class="compact-list"></div>
-          </section>
-          <section class="panel">
-            <div class="panel-heading">
-              <h3>模試へ進む</h3>
-            </div>
-            <div id="homePracticeSummary" class="compact-list"></div>
-          </section>
-          <section class="panel">
-            <div class="panel-heading">
-              <h3>進捗</h3>
-            </div>
-            <div id="homePastExamSummary" class="compact-list"></div>
-          </section>
-          <section class="panel">
-            <div class="panel-heading">
-              <h3>弱点別ドリル</h3>
+              <h3>すぐ解くドリル</h3>
             </div>
             <div id="homePracticalSummary" class="compact-list"></div>
           </section>
           <section class="panel">
             <div class="panel-heading">
-              <h3>外部ChatGPT相談文作成</h3>
+              <h3>復習が必要な項目</h3>
             </div>
-            <div id="homeAiHistory" class="compact-list"></div>
+            <div id="recommendedReviews" class="compact-list"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-heading">
+              <h3>最新模試結果</h3>
+            </div>
+            <div id="lastUpdatedUnit" class="empty-state"></div>
           </section>
           <section class="panel">
             <div class="panel-heading">
@@ -87,6 +68,24 @@
             </div>
             <div id="homeRiskSummary" class="compact-list"></div>
           </section>
+          <details class="panel details-panel home-secondary-panel">
+            <summary>学習進捗・模試・分析・記録管理</summary>
+            <div class="details-body home-secondary-grid">
+              <section>
+                <h3>学習進捗</h3>
+                <div id="dashboardStats" class="stats-grid"></div>
+                <div id="homePastExamSummary" class="compact-list"></div>
+              </section>
+              <section>
+                <h3>模試へ進む</h3>
+                <div id="homePracticeSummary" class="compact-list"></div>
+              </section>
+              <section>
+                <h3>外部ChatGPT相談文作成</h3>
+                <div id="homeAiHistory" class="compact-list"></div>
+              </section>
+            </div>
+          </details>
         </section>
 
         <section id="view-learning" class="view" aria-labelledby="learning-title">
@@ -111,14 +110,14 @@
                 <div class="analysis-cta">
                   <div>
                     <p class="eyebrow">Learning Hub</p>
-                    <h3>模試・横断復習・相談文作成</h3>
+                    <h3>模試・横断復習・外部ChatGPT相談文作成</h3>
                     <p class="muted">レッスンの続き、総合模試、弱点集中、外部ChatGPT用の相談文作成へ進めます。</p>
                   </div>
                   <div class="card-actions">
                     <button class="primary-button" type="button" data-open-mock>模試</button>
                     <button class="ghost-button" type="button" data-view-shortcut="review">横断復習</button>
                     <button class="ghost-button" type="button" data-start-mock="weakness">弱点集中模試</button>
-                    <button class="ghost-button" type="button" data-view-shortcut="ai">相談文を作る</button>
+                    <button class="ghost-button" type="button" data-view-shortcut="ai">外部ChatGPT相談文を作る</button>
                   </div>
                 </div>
               </section>
@@ -198,6 +197,21 @@
           <article id="lessonDetailArea" class="lesson-detail-area is-hidden" aria-live="polite"></article>
         </section>
 
+        <section id="view-drill" class="view" aria-labelledby="drill-title">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Drill</p>
+              <h2 id="drill-title">ドリル</h2>
+            </div>
+          </div>
+          <section class="panel drill-panel">
+            <div class="panel-heading">
+              <h3>ドリル入口</h3>
+            </div>
+            <div id="drillAreaStandalone"></div>
+          </section>
+        </section>
+
         <section id="view-records" class="view" aria-labelledby="records-title">
           <div class="section-heading">
             <div>
@@ -244,14 +258,14 @@
 
               <section class="panel">
                 <div class="panel-heading">
-                  <h3>今日のメニュー一覧</h3>
+                  <h3>今日のおすすめメニュー</h3>
                 </div>
                 <div id="todayRecommendedMenu" class="today-card-list"></div>
               </section>
 
               <section class="panel">
                 <div class="panel-heading">
-                  <h3>最優先復習メニュー</h3>
+                  <h3>今日の復習候補</h3>
                 </div>
                 <div id="todayPriorityMenu" class="today-card-list"></div>
               </section>
@@ -260,19 +274,19 @@
             <aside class="today-side">
               <section class="panel">
                 <div class="panel-heading">
-                  <h3>未完了項目・復習候補</h3>
+                  <h3>今日のドリル候補・模試候補</h3>
                 </div>
                 <div class="today-log-sections">
                   <section>
-                    <h4>演習メニュー</h4>
+                    <h4>今日のドリル候補</h4>
                     <div id="todayPracticeMenu" class="mini-list"></div>
                   </section>
                   <section>
-                    <h4>過去問メニュー</h4>
+                    <h4>今日の模試候補</h4>
                     <div id="todayPastExamMenu" class="mini-list"></div>
                   </section>
                   <section>
-                    <h4>実務メニュー</h4>
+                    <h4>今日の復習候補</h4>
                     <div id="todayPracticalMenu" class="mini-list"></div>
                   </section>
                 </div>
@@ -301,7 +315,7 @@
                     <h3>今日のメニュー相談文</h3>
                   </div>
                   <div class="card-actions">
-                    <button id="todayAiConsultButton" class="primary-button" type="button">相談文を作る</button>
+                    <button id="todayAiConsultButton" class="primary-button" type="button">外部ChatGPT相談文を作る</button>
                     <button class="ghost-button" type="button" data-ai-suggest-today>今日の学習相談文を作る</button>
                   </div>
                 </div>
@@ -722,12 +736,12 @@
 
           <section class="panel analysis-hero">
             <div class="panel-heading">
-              <h3>総合危険度サマリー</h3>
+              <h3>上部サマリー</h3>
             </div>
             <div id="analysisOverallSummary" class="analysis-section-body"></div>
           </section>
 
-          <details class="panel details-panel" open>
+          <details class="panel details-panel">
             <summary>科目別分析</summary>
             <div id="analysisSubjectCards" class="analysis-section-body"></div>
           </details>
@@ -781,9 +795,9 @@
             <div class="analysis-cta">
               <div>
                 <p class="eyebrow">ChatGPT Prompt</p>
-                <h3>分析結果から相談文を作る</h3>
+                <h3>分析結果から外部ChatGPT相談文を作る</h3>
               </div>
-              <button id="analysisAiConsultButton" class="primary-button" type="button">相談文を作る</button>
+              <button id="analysisAiConsultButton" class="primary-button" type="button">外部ChatGPT相談文を作る</button>
             </div>
           </section>
         </section>
@@ -795,6 +809,7 @@
               <h2 id="review-title">復習</h2>
             </div>
           </div>
+          <div id="reviewSummary" class="stats-grid"></div>
           <div class="filters panel review-filters">
             <label>
               科目
@@ -853,8 +868,8 @@
               </div>
               <dl class="info-list">
                 <div><dt>アプリ名</dt><dd>TSUKAN YOBIKO</dd></div>
-                <div><dt>現在のバージョン</dt><dd>v2.6</dd></div>
-                <div><dt>状態</dt><dd>教材データ外部JS化・保守性改善版</dd></div>
+                <div><dt>現在のバージョン</dt><dd>v2.7</dd></div>
+                <div><dt>状態</dt><dd>スマホ学習UI最終整理版</dd></div>
                 <div><dt>公開前提</dt><dd>GitHub Pagesで公開して使う静的アプリです。</dd></div>
                 <div><dt>保存方式</dt><dd id="storageStatus">確認中</dd></div>
               </dl>
@@ -862,14 +877,12 @@
 
             <section class="panel">
               <div class="panel-heading">
-                <h3>教材拡充目標</h3>
+                <h3>今後の予定</h3>
               </div>
               <ul class="note-list">
-                <li>講義レッスン：100本以上</li>
-                <li>確認問題：600問以上</li>
-                <li>ひっかけ問題：200問以上</li>
-                <li>通関実務ミニ演習：100問以上</li>
-                <li>総合模試：5セット以上</li>
+                <li>v2.8：バックアップ・復元・データ安全性強化</li>
+                <li>v2.9：過去問マッピング機能</li>
+                <li>v3.0：ローカル予備校版完成</li>
               </ul>
             </section>
 
@@ -882,7 +895,7 @@
 
             <section class="panel">
               <div class="panel-heading">
-                <h3>教材データ状態</h3>
+                <h3>教材データ読み込み状態・整合性チェック</h3>
               </div>
               <dl id="dataStatusDetails" class="info-list"></dl>
               <div class="settings-actions">
@@ -893,7 +906,7 @@
 
             <section class="panel">
               <div class="panel-heading">
-                <h3>JSONバックアップ</h3>
+                <h3>JSONバックアップ・復元</h3>
               </div>
               <div class="settings-actions">
                 <button id="exportButton" class="primary-button" type="button">バックアップを書き出す</button>
@@ -918,9 +931,9 @@
                 <h3>注意事項</h3>
               </div>
               <ul class="note-list">
-                <li>TSUKAN YOBIKOはローカル教材中心の学習アプリです。</li>
+                <li>TSUKAN YOBIKOはローカル教材アプリです。</li>
                 <li>アプリ上でAI API通信は行いません。</li>
-                <li>不明点は外部のChatGPTに質問してください。</li>
+                <li>外部通信は行いません。</li>
                 <li>学習データはこのブラウザのlocalStorageに保存されます。</li>
                 <li>定期的にJSONバックアップを取ってください。</li>
               </ul>
@@ -933,8 +946,8 @@
         <button class="nav-button is-active" type="button" data-view="home">ホーム</button>
         <button class="nav-button" type="button" data-view="today">今日</button>
         <button class="nav-button" type="button" data-view="learning">学習</button>
+        <button class="nav-button" type="button" data-view="drill">ドリル</button>
         <button class="nav-button" type="button" data-view="review">復習</button>
-        <button class="nav-button" type="button" data-view="analysis">分析</button>
         <button class="nav-button" type="button" data-view="settings">設定</button>
       </nav>
     </div>

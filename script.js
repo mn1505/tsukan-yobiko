@@ -1,4 +1,4 @@
-const APP_VERSION = "v2.6";
+const APP_VERSION = "v2.7";
 const AI_API_TIMEOUT_MS = 30000;
 const AI_HEALTH_TIMEOUT_MS = 10000;
 const STORAGE_KEYS = {
@@ -836,7 +836,7 @@ function normalizeAiSettings(item) {
     enabled: false,
     endpointUrl: "",
     lastTestedAt: String(item?.lastTestedAt || ""),
-    lastStatus: "v2.6でも廃止",
+    lastStatus: "v2.7でも廃止",
     lastError: ""
   };
 }
@@ -985,7 +985,7 @@ function sanitizeAiSettings(settings) {
     enabled: false,
     endpointUrl: "",
     lastTestedAt: "",
-    lastStatus: "v2.6でも廃止",
+    lastStatus: "v2.7でも廃止",
     lastError: ""
   };
 }
@@ -1505,7 +1505,7 @@ function generateTodayMenu(duration = "30分") {
     title: "今日のメニューをAIに相談",
     description: "未完了項目と弱点タグを含めて、30分・1時間メニューを相談する。",
     reason: "じっくり学習では方針確認まで行う",
-    priority: "中",
+    priority: "通常",
     estimatedMinutes: 10
   })] : [];
   const recommended = uniqueTodayItems([
@@ -1917,7 +1917,7 @@ function buildTodayMockItems(duration) {
       title: duration === "15分" ? "ひっかけ弱点タグ5問" : "ひっかけ総点検模試",
       description: "選択肢読解・主体・手続区分・罰則の横断確認",
       reason: trapLatest ? "ひっかけ問題の正答率が低い" : "ひっかけ総点検が未実施",
-      priority: "中",
+      priority: "通常",
       priorityScore: 68,
       estimatedMinutes: duration === "15分" ? 15 : 30,
       mockMode: duration === "15分" ? "weakness" : "trap20"
@@ -1950,7 +1950,7 @@ function makeTodayMenuItem(item) {
     title: "",
     description: "",
     reason: "",
-    priority: "中",
+    priority: "通常",
     priorityScore: 0,
     estimatedMinutes: 10,
     relatedUnitId: "",
@@ -2420,6 +2420,7 @@ function render() {
   renderDashboard();
   renderTodayView();
   renderLearningView();
+  renderDrillView();
   renderFilters();
   renderUnitList();
   renderPracticeView();
@@ -2528,14 +2529,6 @@ function renderDashboard() {
     .filter((log) => log.result === "×")
     .sort(comparePracticalLogs)
     .slice(0, 3);
-  document.querySelector("#homePastExamSummary").innerHTML = `
-    <dl class="summary-list">
-      <div><dt>過去問ログ</dt><dd>${pastStats.total}件</dd></div>
-      <div><dt>過去問正答率</dt><dd>${pastStats.accuracy}</dd></div>
-      <div><dt>最近</dt><dd>${escapeHtml(recentPastDate || "未記録")}</dd></div>
-      <div><dt>再演習</dt><dd>${pastStats.retry}件</dd></div>
-    </dl>
-  `;
   const practicalHost = document.querySelector("#homePracticalSummary");
   if (practicalHost) {
     practicalHost.innerHTML = `
@@ -2546,14 +2539,14 @@ function renderDashboard() {
         <div><dt>通関実務</dt><dd>${QUESTION_BANK.filter((question) => question.subject === "通関実務").length}問</dd></div>
       </dl>
       <div class="action-card-list">
-        <button class="record-link" type="button" data-view-shortcut="learning" data-drill-home="通関業法ドリル"><strong>通関業法ドリル</strong><span>義務・許可・罰則</span></button>
-        <button class="record-link" type="button" data-view-shortcut="learning" data-drill-home="関税法等10問"><strong>関税法等ドリル</strong><span>保税・納税・課税価格</span></button>
-        <button class="record-link" type="button" data-view-shortcut="learning" data-drill-home="通関実務ドリル"><strong>通関実務ドリル</strong><span>分類・価格・計算</span></button>
+        <button class="record-link" type="button" data-view-shortcut="drill" data-drill-home="通関業法10問"><strong>通関業法ドリル</strong><span>義務・許可・罰則</span></button>
+        <button class="record-link" type="button" data-view-shortcut="drill" data-drill-home="関税法等10問"><strong>関税法等ドリル</strong><span>保税・納税・課税価格</span></button>
+        <button class="record-link" type="button" data-view-shortcut="drill" data-drill-home="通関実務10問"><strong>通関実務ドリル</strong><span>分類・価格・計算</span></button>
       </div>
     `;
   }
 
-  const aiTutorItems = state.aiAnalyses.filter((item) => item.promptType === "AI講師");
+  const aiTutorItems = state.aiAnalyses.filter((item) => item.promptType === "AI講師" || item.promptType === "外部ChatGPT相談");
   const aiSuggestions = state.aiAnalyses.filter((item) => item.promptType === "AI添削・弱点提案");
   const recentTutor = [...aiTutorItems].sort(compareAiAnalyses)[0];
   const latestSuggestion = [...aiSuggestions].sort(compareAiAnalyses)[0];
@@ -2706,9 +2699,9 @@ function renderTodayView() {
   document.querySelector("#todayPriorityMenu").innerHTML = menu.priorityItems.length
     ? menu.priorityItems.slice(0, 8).map((item) => todayMenuCard(item, true)).join("")
     : `<div class="empty-state"><p class="muted">最優先復習はありません。</p></div>`;
-  document.querySelector("#todayPracticeMenu").innerHTML = renderTodayMiniItems(menu.practiceItems);
-  document.querySelector("#todayPastExamMenu").innerHTML = renderTodayMiniItems(menu.pastExamItems);
-  document.querySelector("#todayPracticalMenu").innerHTML = renderTodayMiniItems(menu.practicalItems);
+  document.querySelector("#todayPracticeMenu").innerHTML = renderTodayMiniItems([...menu.drillItems, ...menu.weaknessItems].slice(0, 6));
+  document.querySelector("#todayPastExamMenu").innerHTML = renderTodayMiniItems(menu.mockItems.slice(0, 6));
+  document.querySelector("#todayPracticalMenu").innerHTML = renderTodayMiniItems([...menu.crossReviewItems, ...menu.practiceItems, ...menu.pastExamItems, ...menu.practicalItems].slice(0, 6));
   document.querySelector("#todayCompletion").innerHTML = `
     <div class="today-progress">
       <strong>${completion.completed} / ${completion.total} 完了</strong>
@@ -2716,7 +2709,7 @@ function renderTodayView() {
     </div>
     <p class="muted">チェックした項目は今日のstudyPlanに保存されます。</p>
     <div class="form-actions">
-      <button class="primary-button" type="button" data-ai-today-consult>今日の相談文を作る</button>
+      <button class="primary-button" type="button" data-ai-today-consult>外部ChatGPT相談文を作る</button>
       <button class="ghost-button" type="button" data-ai-today-review>30分メニュー相談文</button>
       <button class="ghost-button" type="button" data-ai-today-priority>優先順位相談文</button>
     </div>
@@ -2731,7 +2724,7 @@ function todayMenuCard(item, compact = false) {
       <label class="today-check">
         <input type="checkbox" data-today-complete="${escapeAttribute(item.id)}" ${checked}>
         <span>
-          <span class="badge ${priorityClass(item.priority)}">${escapeHtml(item.priority)}</span>
+          <span class="badge ${priorityClass(item.priority)}">${escapeHtml(normalizePriorityLabel(item.priority))}</span>
           <strong>${escapeHtml(item.title)}</strong>
         </span>
       </label>
@@ -2739,7 +2732,7 @@ function todayMenuCard(item, compact = false) {
       <dl class="review-facts">
         <div><dt>種別</dt><dd>${escapeHtml(item.type)}</dd></div>
         <div><dt>理由</dt><dd>${escapeHtml(item.reason || "今日の候補")}</dd></div>
-        <div><dt>危険度</dt><dd>${escapeHtml(item.priority)}</dd></div>
+        <div><dt>優先度</dt><dd>${escapeHtml(normalizePriorityLabel(item.priority))}</dd></div>
         <div><dt>推定時間</dt><dd>${item.estimatedMinutes}分</dd></div>
       </dl>
       <div class="card-actions">
@@ -2752,7 +2745,7 @@ function todayMenuCard(item, compact = false) {
         ${item.type === "通関実務ドリル" ? `<button class="primary-button" type="button" data-start-drill-mode="${escapeAttribute(getTodayJitsumuDrillMode(item))}">開始</button>` : ""}
         ${item.type === "弱点別ドリル" ? `<button class="primary-button" type="button" data-start-weakness-drill="${escapeAttribute(extractTodayWeaknessTarget(item.title))}" data-weakness-count="${item.title.includes("10問") ? "10" : "5"}">開始</button>` : ""}
         ${item.relatedMockResultId ? `<button class="ghost-button" type="button" data-show-mock-result="${escapeAttribute(item.relatedMockResultId)}">模試詳細</button>` : ""}
-        <button class="ghost-button" type="button" data-ai-today-consult>相談文を作る</button>
+        <button class="ghost-button" type="button" data-ai-today-consult>外部ChatGPT相談文を作る</button>
       </div>
     </article>
   `;
@@ -2783,9 +2776,16 @@ function renderTodayMiniItems(items) {
   `).join("") : `<p class="muted">対象はありません。</p>`;
 }
 
+function normalizePriorityLabel(priority) {
+  if (priority === "中") return "通常";
+  if (priority === "低") return "余裕があれば";
+  return priority || "通常";
+}
+
 function priorityClass(priority) {
-  if (priority === "最優先" || priority === "高") return "priority";
-  if (priority === "中") return "normal";
+  const label = normalizePriorityLabel(priority);
+  if (label === "最優先" || label === "高") return "priority";
+  if (label === "通常") return "normal";
   return "ok";
 }
 
@@ -2867,8 +2867,8 @@ function renderLearningView() {
 }
 
 function renderDrillView() {
-  const host = document.querySelector("#drillArea");
-  if (!host) return;
+  const hosts = ["#drillArea", "#drillAreaStandalone"].map((selector) => document.querySelector(selector)).filter(Boolean);
+  if (!hosts.length) return;
   const modes = [
     "通関業法10問", "通関業法ランダム", "通関業法順番", "通関業法ひっかけ",
     "関税法等10問", "関税法等20問", "関税法等ランダム", "関税法等順番", "関税法等ひっかけ",
@@ -2887,18 +2887,106 @@ function renderDrillView() {
     state.drill.selectedAnswer = "";
     state.drill.graded = false;
   }
-  host.innerHTML = `
+  const featuredModes = [
+    { title: "通関業法ドリル", subject: "通関業法", mode: "通関業法10問", reason: "義務・許可・罰則を短時間で確認" },
+    { title: "関税法等ドリル", subject: "関税法等", mode: "関税法等10問", reason: "保税・納税・課税価格を横断確認" },
+    { title: "通関実務ドリル", subject: "通関実務", mode: "通関実務10問", reason: "分類・課税価格・税額計算を確認" },
+    { title: "弱点別ドリル", subject: "横断", mode: "弱点タグ別ドリル", reason: "誤答タグとC判定に合わせて復習" },
+    { title: "手順ドリル", subject: "通関実務", mode: "手順ドリル", reason: "申告書・資料読取の処理順を固定" },
+    { title: "計算過程ドリル", subject: "通関実務", mode: "計算過程ドリル", reason: "課税価格、関税額、消費税の考え方を確認" },
+    { title: "資料読取ドリル", subject: "通関実務", mode: "資料読取ドリル", reason: "インボイス・条件・レート表の読み落とし対策" },
+    { title: "ひっかけ総点検", subject: "横断", mode: "通関業法ひっかけ", reason: "主体・期限・手続区分の読み違い対策" }
+  ];
+  const content = `
+    <div class="drill-entry-grid">
+      ${featuredModes.map((item) => {
+        const questions = getDrillQuestions(item.mode);
+        const recent = getLatestDrillResultForMode(item.mode, item.subject);
+        return `
+          <article class="drill-entry-card">
+            <p class="eyebrow">${escapeHtml(item.subject)}</p>
+            <h3>${escapeHtml(item.title)}</h3>
+            <dl class="review-facts compact">
+              <div><dt>問題数</dt><dd>${questions.length}問</dd></div>
+              <div><dt>直近結果</dt><dd>${escapeHtml(recent ? `${recent.scoreRate}% / ${recent.resultLevel}` : "まだドリル結果がありません")}</dd></div>
+              <div><dt>おすすめ理由</dt><dd>${escapeHtml(item.reason)}</dd></div>
+            </dl>
+            <button class="primary-button" type="button" data-start-drill-mode="${escapeAttribute(item.mode)}">開始</button>
+          </article>
+        `;
+      }).join("")}
+      <article class="drill-entry-card">
+        <p class="eyebrow">Mock Exam</p>
+        <h3>模試へ進む</h3>
+        <p class="muted">15問、30問、弱点集中、ひっかけ総点検へ進みます。</p>
+        <button class="primary-button" type="button" data-open-mock>模試へ進む</button>
+      </article>
+    </div>
+    ${renderLatestDrillResult()}
     ${renderWeaknessDrillSection()}
     ${renderLatestWeaknessDrillResult()}
-    <div class="drill-controls">
-      ${modes.map((mode) => `<button class="duration-button ${state.drill.mode === mode ? "is-active" : ""}" type="button" data-drill-mode="${escapeAttribute(mode)}">${escapeHtml(mode)}</button>`).join("")}
-    </div>
+    <details class="details-panel drill-all-modes">
+      <summary>すべてのドリルモード</summary>
+      <div class="drill-controls details-body">
+        ${modes.map((mode) => `<button class="duration-button ${state.drill.mode === mode ? "is-active" : ""}" type="button" data-drill-mode="${escapeAttribute(mode)}">${escapeHtml(mode)}</button>`).join("")}
+      </div>
+    </details>
     <div class="card-meta">
       <span class="badge">回答 ${state.drill.answers.length}/${questions.length}</span>
       <span class="badge">保存済み ${state.drillResults.length}回</span>
       ${isWeaknessDrillMode(state.drill.mode) ? `<span class="badge priority">${escapeHtml(state.drill.targetWeaknessGroup || state.drill.targetWeaknessTag || "弱点別")}</span>` : ""}
     </div>
     ${current ? renderDrillQuestion(current, questions) : `<div class="empty-state"><p class="muted">この条件のドリル問題はまだありません。</p></div>`}
+  `;
+  hosts.forEach((host) => {
+    const isStandalone = host.id === "drillAreaStandalone";
+    const shouldRenderFull = (state.activeView === "drill" && isStandalone) || (state.activeView !== "drill" && !isStandalone);
+    host.innerHTML = shouldRenderFull ? content : "";
+  });
+}
+
+function getLatestDrillResultForMode(mode, subject = "") {
+  return [...state.drillResults]
+    .filter((result) => result.mode === mode || (subject && result.subject === subject) || (mode.includes("弱点") && (result.mode.includes("弱点") || result.targetWeaknessTag || result.targetWeaknessGroup)))
+    .sort((a, b) => (b.completedAt || "").localeCompare(a.completedAt || ""))[0];
+}
+
+function renderLatestDrillResult() {
+  const result = [...state.drillResults].sort((a, b) => (b.completedAt || "").localeCompare(a.completedAt || ""))[0];
+  if (!result) return `<div class="empty-state"><p class="muted">まだドリル結果がありません。</p></div>`;
+  const wrongAnswers = (result.answers || []).filter((answer) => !answer.correct);
+  const subjectRows = Object.entries(buildMockSubjectSummary(result.answers || [])).filter(([, item]) => item.total);
+  return `
+    <article class="drill-result-card">
+      <div class="mock-score-hero">
+        <div><span>正解数</span><strong>${result.correctCount}/${result.totalQuestions}</strong></div>
+        <div><span>正答率</span><strong>${result.scoreRate}%</strong></div>
+        <div><span>判定</span><strong>${escapeHtml(result.resultLevel)}</strong></div>
+      </div>
+      <dl class="summary-list">
+        <div><dt>ドリル</dt><dd>${escapeHtml(result.mode)}</dd></div>
+        <div><dt>実施日</dt><dd>${escapeHtml(formatDateTime(result.completedAt))}</dd></div>
+        <div><dt>弱点タグ別誤答</dt><dd>${escapeHtml(result.weaknessTags.join(" / ") || "誤答なし")}</dd></div>
+        <div><dt>次にやるべきこと</dt><dd>${escapeHtml(result.resultLevel === "C" ? "間違えた問題と弱点別ドリルを優先してください。" : result.resultLevel === "B" ? "誤答タグを5問だけ解き直してください。" : "A判定です。別科目へ進めます。")}</dd></div>
+      </dl>
+      ${subjectRows.length ? `<div class="analysis-card-grid three-col">${subjectRows.map(([subject, item]) => `<article class="analysis-card"><h4>${escapeHtml(subject)}</h4><p>${item.correct}/${item.total} / ${item.rate}%</p></article>`).join("")}</div>` : ""}
+      <details class="details-panel">
+        <summary>間違えた問題</summary>
+        <div class="details-body">
+          ${wrongAnswers.length ? wrongAnswers.map((answer) => {
+            const question = QUESTION_BANK.find((item) => item.id === answer.questionId);
+            return question ? `<article class="mock-explanation-card"><h5>${escapeHtml(question.question)}</h5><p>${escapeHtml(question.explanation)}</p><p class="trap-note">${escapeHtml(question.trapExplanation)}</p></article>` : "";
+          }).join("") : `<p class="muted">間違えた問題はありません。</p>`}
+        </div>
+      </details>
+      <div class="card-actions">
+        <button class="primary-button" type="button" data-start-drill-mode="${escapeAttribute(result.mode)}">もう一度</button>
+        <button class="ghost-button" type="button" data-view-shortcut="review">間違えた問題を復習</button>
+        <button class="ghost-button" type="button" data-view-shortcut="drill" data-drill-home="弱点タグ別ドリル">弱点別ドリルへ</button>
+        <button class="ghost-button" type="button" data-ai-quick="tags">外部ChatGPT相談文を作る</button>
+        <button class="ghost-button" type="button" data-view-shortcut="home">ホームへ戻る</button>
+      </div>
+    </article>
   `;
 }
 
@@ -2919,7 +3007,7 @@ function renderLatestWeaknessDrillResult() {
       <div class="card-actions">
         <button class="primary-button" type="button" data-start-weakness-drill="${escapeAttribute(result.targetWeaknessGroup || result.targetWeaknessTag || "")}" data-weakness-type="${result.targetWeaknessGroup ? "group" : "tag"}" data-weakness-count="${result.totalQuestions >= 10 ? "10" : "5"}">もう一度</button>
         <button class="ghost-button" type="button" data-view-shortcut="review">復習へ</button>
-        <button class="ghost-button" type="button" data-view-shortcut="learning">別の弱点へ</button>
+        <button class="ghost-button" type="button" data-view-shortcut="drill">別の弱点へ</button>
       </div>
     </article>
   `;
@@ -3387,9 +3475,9 @@ function startWeaknessDrill(targetName, type = "tag", count = "5") {
   state.drill.sessionQuestionIds = [];
   state.drill.answers = [];
   state.drill.startedAt = "";
-  switchView("learning");
+  switchView("drill");
   renderDrillView();
-  document.querySelector("#drillArea")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  document.querySelector("#drillAreaStandalone")?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function gradeCurrentDrill() {
@@ -3540,12 +3628,13 @@ function renderCourseCard(course) {
         <div><dt>レッスン数</dt><dd>${lessons.length}</dd></div>
         <div><dt>完了数</dt><dd>${completed}</dd></div>
         <div><dt>進捗率</dt><dd>${rate}%</dd></div>
-        <div><dt>A/B/C</dt><dd>${counts.A || 0}/${counts.B || 0}/${counts.C || 0}</dd></div>
+        <div><dt>A/B/C/未判定</dt><dd>${counts.A || 0}/${counts.B || 0}/${counts.C || 0}/${counts["未判定"] || 0}</dd></div>
         <div><dt>復習対象</dt><dd>${reviewCount}</dd></div>
       </dl>
       <div class="progress-bar"><span style="width:${rate}%"></span></div>
       <div class="card-actions">
         ${nextLesson ? `<button class="primary-button" type="button" data-open-lesson="${escapeAttribute(nextLesson.id)}">${completed ? "続きから" : "開始"}</button>` : ""}
+        <button class="ghost-button" type="button" data-course-filter="${escapeAttribute(course.id)}">一覧を見る</button>
       </div>
     </article>
   `;
@@ -3607,7 +3696,7 @@ function renderLessonDetail() {
               <div><dt>理解度</dt><dd>${escapeHtml(progress.understanding)}</dd></div>
               <div><dt>正答</dt><dd>${correct}/${lesson.questions.length}</dd></div>
             </dl>
-            <button class="ghost-button" type="button" data-ai-lesson="${escapeAttribute(lesson.id)}">このレッスンの相談文を作る</button>
+            <button class="ghost-button" type="button" data-ai-lesson="${escapeAttribute(lesson.id)}">外部ChatGPT相談文を作る</button>
           </div>
         </section>
       </aside>
@@ -3623,7 +3712,7 @@ function renderLessonDetail() {
           ${lesson.lecture.split("\n").filter(Boolean).map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join("")}
           ${renderLessonOverrides(lesson.id)}
           <div class="ai-tutor-inline-actions">
-            <button class="primary-button" type="button" data-ai-lesson="${escapeAttribute(lesson.id)}">このレッスンの相談文を作る</button>
+            <button class="primary-button" type="button" data-ai-lesson="${escapeAttribute(lesson.id)}">外部ChatGPT相談文を作る</button>
             <button class="ghost-button" type="button" data-ai-lesson-trap="${escapeAttribute(lesson.id)}">ひっかけ相談文を作る</button>
           </div>
         </section>
@@ -3757,8 +3846,8 @@ function renderLessonQuestion(lesson, question, index) {
           <p class="trap-note"><strong>ミス防止解説：</strong>${escapeHtml(question.trapExplanation)}</p>
           ${!result.correct ? `
             <div class="card-actions ai-tutor-inline-actions">
-              <button class="ghost-button" type="button" data-ai-wrong-question="${escapeAttribute(lesson.id)}:${escapeAttribute(question.id)}">誤答相談文を作る</button>
-              <button class="primary-button" type="button" data-ai-suggest-wrong-question="${escapeAttribute(lesson.id)}:${escapeAttribute(question.id)}">AIに弱点を判定してもらう</button>
+              <button class="ghost-button" type="button" data-ai-wrong-question="${escapeAttribute(lesson.id)}:${escapeAttribute(question.id)}">外部ChatGPT相談文を作る</button>
+              <button class="primary-button" type="button" data-ai-suggest-wrong-question="${escapeAttribute(lesson.id)}:${escapeAttribute(question.id)}">弱点判定用の相談文を作る</button>
               <button class="ghost-button" type="button" data-ai-similar-question="${escapeAttribute(lesson.id)}:${escapeAttribute(question.id)}">同じ論点の類似問題を作る</button>
               <button class="ghost-button" type="button" data-ai-trap-question="${escapeAttribute(lesson.id)}:${escapeAttribute(question.id)}">本試験でのひっかけを確認する</button>
             </div>
@@ -3795,8 +3884,8 @@ function renderFilters() {
   fillSelect("#weaknessFilter", ["すべて", "弱点タグあり", "弱点タグなし"], state.filters.weakness);
   document.querySelector("#searchInput").value = state.filters.search;
   document.querySelector("#redoOnlyFilter").checked = state.filters.redoOnly;
-  fillSelect("#reviewSubjectFilter", subjects, state.reviewFilters.subject);
-  fillSelect("#reviewStatusFilter", ["すべて", "最優先復習", "通常復習", "復習不要"], state.reviewFilters.review);
+  fillSelect("#reviewSubjectFilter", ["すべて", "通関業法", "関税法等", "通関実務"], state.reviewFilters.subject);
+  fillSelect("#reviewStatusFilter", ["すべて", "レッスン", "ドリル", "模試", "弱点", "C判定", "最優先復習", "通常復習", "復習不要"], state.reviewFilters.review);
   fillSelect("#reviewImportanceFilter", ["すべて", ...IMPORTANCE], state.reviewFilters.importance);
   fillSelect("#reviewWeaknessFilter", ["すべて", "弱点タグあり", "弱点タグなし"], state.reviewFilters.weakness);
   document.querySelector("#reviewRedoOnlyFilter").checked = state.reviewFilters.redoOnly;
@@ -5205,32 +5294,21 @@ function buildAiUsage() {
 
 function renderAnalysisOverall(analysis) {
   const summary = analysis.summary;
+  const curriculumStats = getCurriculumStats();
+  const drillAverage = state.drillResults.length ? `${Math.round(state.drillResults.reduce((sum, result) => sum + result.scoreRate, 0) / state.drillResults.length)}%` : "データ不足";
+  const mockAverage = state.mockExamResults.length ? `${Math.round(state.mockExamResults.reduce((sum, result) => sum + result.scoreRate, 0) / state.mockExamResults.length)}%` : "データ不足";
+  const topWeakness = buildWeaknessTagStats().filter((item) => item.total || item.wrong).slice(0, 3).map((item) => item.tag).join(" / ") || "データ不足";
   const todayMenu = state.todayMenu || generateTodayMenu(getTodayPlan().selectedDuration);
   const todayUnitIds = new Set(todayMenu.allItems.map((item) => item.relatedUnitId).filter(Boolean));
   const todayTags = getTodayMenuWeaknessTags(todayMenu);
   const todayLogCount = todayMenu.pastExamItems.length + todayMenu.practicalItems.length;
   const rows = [
-    ["総単元数", summary.totalUnits],
-    ["A判定数", summary.levelCounts.A || 0],
-    ["B判定数", summary.levelCounts.B || 0],
-    ["C判定数", summary.levelCounts.C || 0],
-    ["未判定数", summary.levelCounts["未判定"] || 0],
-    ["要復習数", summary.reviewCount],
-    ["最優先復習数", summary.priorityReviewCount],
-    ["通常復習数", summary.normalReviewCount],
-    ["総演習数", summary.practiceStats.total],
-    ["演習正答率", dataAwareAccuracy(summary.practiceStats)],
-    ["総過去問ログ数", summary.pastStats.total],
-    ["過去問正答率", dataAwareAccuracy(summary.pastStats)],
-    ["総実務ログ数", summary.practicalStats.total],
-    ["実務正答率", dataAwareAccuracy(summary.practicalStats)],
-    ["総合模試回数", summary.mockExamCount],
-    ["最新模試正答率", summary.latestMockRate === null ? "未実施" : `${summary.latestMockRate}%`],
-    ["再演習対象数", summary.retryCount],
-    ["弱点タグ総数", summary.weaknessTotal],
-    ["過去AIメモ・相談文数", summary.aiCount],
-    ["今日メニュー反映危険単元数", todayUnitIds.size],
-    ["今日メニュー内の過去問・実務ログ数", todayLogCount]
+    ["総合進捗", `${curriculumStats.rate}%`],
+    ["総問題数", QUESTION_BANK.length + MOCK_EXAM_QUESTIONS.length + CURRICULUM_LESSONS.flatMap((lesson) => lesson.questions || []).length],
+    ["ドリル平均正答率", drillAverage],
+    ["模試平均正答率", mockAverage],
+    ["復習対象数", curriculumStats.reviewCount + summary.reviewCount],
+    ["弱点トップ3", topWeakness]
   ];
   return `
     <div class="risk-summary-card risk-${summary.risk.className}">
@@ -5239,7 +5317,7 @@ function renderAnalysisOverall(analysis) {
         <strong>${escapeHtml(summary.risk.label)}</strong>
         ${summary.risk.dataShortage ? `<span class="data-note">データ不足</span>` : ""}
       </div>
-      <button class="ghost-button" type="button" data-analysis-ai-consult>相談文を作る</button>
+      <button class="ghost-button" type="button" data-analysis-ai-consult>外部ChatGPT相談文を作る</button>
     </div>
     <div class="analysis-stat-grid">
       ${rows.map(([label, value]) => `
@@ -5333,7 +5411,7 @@ function renderWeaknessRanking(items) {
               <div><dt>関連実務ログ数</dt><dd>${item.practicalLogCount}</dd></div>
             </dl>
             <div class="card-actions">
-              <button class="ghost-button" type="button" data-ai-weakness-tag="${escapeAttribute(item.tag)}">この弱点の相談文を作る</button>
+              <button class="ghost-button" type="button" data-ai-weakness-tag="${escapeAttribute(item.tag)}">外部ChatGPT相談文を作る</button>
             </div>
           </div>
         </article>
@@ -6125,7 +6203,7 @@ function renderMockResultArea(resultId = state.mockExam.lastResultId) {
       <p>${escapeHtml(getMockNextAction(result))}</p>
       <div class="card-actions">
         <button class="primary-button" type="button" data-review-mock-wrong="${escapeAttribute(result.id)}">間違えた問題を復習</button>
-        <button class="ghost-button" type="button" data-view-shortcut="learning" data-drill-home="弱点別ドリル 5問">弱点別ドリルへ</button>
+        <button class="ghost-button" type="button" data-view-shortcut="drill" data-drill-home="弱点タグ別ドリル">弱点別ドリルへ</button>
         ${MOCK_EXAM_MODES[result.mode] ? `<button class="ghost-button" type="button" data-start-mock="${escapeAttribute(result.mode)}">もう一度受ける</button>` : ""}
         <button class="ghost-button" type="button" data-ai-mock-result="${escapeAttribute(result.id)}">外部ChatGPT相談文を作る</button>
         <button class="ghost-button" type="button" data-view-shortcut="home">ホームへ戻る</button>
@@ -6212,7 +6290,7 @@ function renderMockHistory() {
       <div class="card-actions">
         <button class="ghost-button" type="button" data-show-mock-result="${escapeAttribute(result.id)}">詳細</button>
         <button class="primary-button" type="button" data-review-mock-wrong="${escapeAttribute(result.id)}">誤答復習</button>
-        <button class="ghost-button" type="button" data-ai-mock-result="${escapeAttribute(result.id)}">相談文を作る</button>
+        <button class="ghost-button" type="button" data-ai-mock-result="${escapeAttribute(result.id)}">外部ChatGPT相談文を作る</button>
         <button class="danger-button" type="button" data-delete-mock-result="${escapeAttribute(result.id)}">削除</button>
       </div>
     </article>
@@ -6349,7 +6427,7 @@ function renderAiSuggestionResponse() {
     <div><dt>使用モデル</dt><dd>${escapeHtml(state.aiSuggestionForm.apiModel || "未取得")}</dd></div>
     <div><dt>token使用量</dt><dd>${escapeHtml(formatUsage(state.aiSuggestionForm.apiUsage))}</dd></div>
   `;
-  text.textContent = getAiSuggestionNaturalText(state.aiSuggestionForm.apiResponseText) || "AI提案はまだありません。API連携OFFの場合は、下の手動コピー用プロンプトを使ってください。";
+  text.textContent = getAiSuggestionNaturalText(state.aiSuggestionForm.apiResponseText) || "外部ChatGPT回答メモはまだありません。下の手動コピー用プロンプトを使ってください。";
   if (manual && document.activeElement !== manual && state.aiSuggestionForm.apiResponseText) manual.value = state.aiSuggestionForm.apiResponseText;
   const suggestion = state.aiSuggestionForm.suggestionObject;
   parsedHost.innerHTML = suggestion ? renderSuggestionObject(suggestion) : `<div class="empty-state"><p class="muted">構造化提案は抽出できませんでした。AI回答本文を確認してください。</p></div>`;
@@ -6487,7 +6565,7 @@ function renderAiTutorResponse() {
     <div><dt>使用モデル</dt><dd>${escapeHtml(state.aiTutorForm.apiModel || "未取得")}</dd></div>
     <div><dt>token使用量</dt><dd>${escapeHtml(formatUsage(state.aiTutorForm.apiUsage))}</dd></div>
   `;
-  text.textContent = state.aiTutorForm.apiResponseText || "AI講師の回答はまだありません。API連携OFFの場合は、下の手動コピー用プロンプトを使ってください。";
+  text.textContent = state.aiTutorForm.apiResponseText || "外部ChatGPTの回答メモはまだありません。下の手動コピー用プロンプトを使ってください。";
   error.textContent = state.aiTutorForm.apiError || "";
   document.querySelector("#askAiTutorButton")?.toggleAttribute("disabled", Boolean(state.aiTutorForm.sending));
 }
@@ -6598,7 +6676,7 @@ function renderAiTutorHistory() {
   const host = document.querySelector("#aiTutorHistoryList");
   if (!host) return;
   const items = state.aiAnalyses
-    .filter((item) => item.promptType === "AI講師")
+    .filter((item) => item.promptType === "AI講師" || item.promptType === "外部ChatGPT相談")
     .sort(compareAiAnalyses)
     .slice(0, 30);
   host.innerHTML = items.length
@@ -6612,7 +6690,7 @@ function renderAiTutorHistory() {
           <span class="badge">${escapeHtml(item.targetType || "対象なし")}</span>
           <span class="badge">${escapeHtml(item.questionType || "質問タイプなし")}</span>
           <span class="badge">${escapeHtml(item.explanationLevel || "説明レベルなし")}</span>
-          <span class="badge">${item.sentViaApi ? "API送信" : "手動"}</span>
+          <span class="badge">手動コピー</span>
           <span class="badge">${item.responseText ? "回答あり" : "回答なし"}</span>
           ${item.savedAsReviewMemo ? `<span class="badge ok">復習メモ</span>` : ""}
           ${item.markedAsWeaknessSuggestion ? `<span class="badge normal">弱点提案</span>` : ""}
@@ -6626,7 +6704,7 @@ function renderAiTutorHistory() {
         </div>
       </article>
     `).join("")
-    : `<div class="empty-state"><p class="muted">AI講師履歴はまだありません。</p></div>`;
+    : `<div class="empty-state"><p class="muted">外部ChatGPT相談文の履歴はまだありません。</p></div>`;
 }
 
 function renderAiSuggestionHistory() {
@@ -6840,7 +6918,7 @@ function buildAiSuggestionTodayData() {
 function buildAiSuggestionPromptText(target) {
   return [
     "【1. 役割】",
-    "あなたは通関士試験の学習データを添削するAI講師です。",
+    "あなたは通関士試験の学習相談に答える講師です。",
     "回答は学習補助です。法令・試験情報の最終判断はユーザーが公式情報で確認します。",
     "",
     "【2. 添削対象】",
@@ -6984,7 +7062,7 @@ function renderAiResponse() {
 function renderAiApiLogSummary() {
   const summary = getAiApiLogSummary();
   const html = `
-    <div><dt>直近のAPI送信日時</dt><dd>${escapeHtml(formatDateTime(summary.lastSentAt))}</dd></div>
+    <div><dt>直近の手動コピー日時</dt><dd>${escapeHtml(formatDateTime(summary.lastSentAt))}</dd></div>
     <div><dt>成功件数</dt><dd>${summary.successCount}件</dd></div>
     <div><dt>失敗件数</dt><dd>${summary.failureCount}件</dd></div>
     <div><dt>最後のエラー</dt><dd>${escapeHtml(summary.lastError || "なし")}</dd></div>
@@ -7746,7 +7824,7 @@ function buildAiTutorApiPayload(mode, promptText, target) {
     app: "TSUKAN_YOBIKO",
     version: APP_VERSION,
     mode,
-    promptType: "AI講師",
+    promptType: "外部ChatGPT相談",
     targetType: state.aiTutorForm.targetType,
     targetTitle: target?.title || "",
     prompt: promptText,
@@ -7766,7 +7844,7 @@ function resolveAiSubject(target) {
 }
 
 async function postAiApiRequest(payload) {
-  throw new Error("v2.6ではアプリ内通信を行いません。相談文をコピーして外部ChatGPTに貼り付けてください。");
+  throw new Error("v2.7ではアプリ内通信を行いません。相談文をコピーして外部ChatGPTに貼り付けてください。");
 }
 
 function buildAiConnectionHint(prefix) {
@@ -7774,7 +7852,7 @@ function buildAiConnectionHint(prefix) {
   return [
     prefix,
     "外部API設定は使いません。",
-    "v2.6では外部通信を行わないため、相談文をコピーして外部ChatGPTに貼り付けてください。"
+    "v2.7では外部通信を行わないため、相談文をコピーして外部ChatGPTに貼り付けてください。"
   ].join(" ");
 }
 
@@ -7792,9 +7870,9 @@ function inferAiHealthUrl(endpointUrl) {
 
 async function checkAiWorkerHealth() {
   const result = document.querySelector("#aiConnectionTestResult");
-  state.aiSettings.lastStatus = "v2.6でも廃止";
+  state.aiSettings.lastStatus = "v2.7でも廃止";
   state.aiSettings.lastError = "";
-  if (result) result.textContent = "v2.6ではアプリ内通信を行いません。";
+  if (result) result.textContent = "v2.7ではアプリ内通信を行いません。";
   saveUnits();
   renderSettings();
 }
@@ -7809,7 +7887,7 @@ async function sendCurrentAiPromptToApi() {
     return;
   }
   state.aiForm.apiStatus = "コピー用";
-  state.aiForm.apiError = "v2.6ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
+  state.aiForm.apiError = "v2.7ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
   renderAiResponse();
   await copyAiPrompt();
 }
@@ -7819,7 +7897,7 @@ async function askAiTutor() {
   const { target, promptText } = generateAiTutorPrompt();
   if (!promptText) return;
   state.aiTutorForm.apiStatus = "コピー用";
-  state.aiTutorForm.apiError = "v2.6ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
+  state.aiTutorForm.apiError = "v2.7ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
   saveAiTutorAnalysis({ target, sentViaApi: false });
   renderAiTutorView();
   showToast("相談文を生成しました。");
@@ -7850,7 +7928,7 @@ async function runAiSuggestion() {
   const { target, promptText } = generateAiSuggestionPrompt();
   if (!promptText) return;
   state.aiSuggestionForm.apiStatus = "コピー用";
-  state.aiSuggestionForm.apiError = "v2.6ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
+  state.aiSuggestionForm.apiError = "v2.7ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
   saveAiSuggestionAnalysis({ target, sentViaApi: false });
   renderAiSuggestionView();
   showToast("相談文を生成しました。");
@@ -8012,7 +8090,7 @@ function saveAiTutorAnalysis({ target = null, sentViaApi = state.aiTutorForm.sen
   const values = normalizeAiAnalysis({
     id: state.aiTutorForm.currentAnalysisId || makeAiAnalysisId(),
     createdAt: new Date().toISOString(),
-    promptType: "AI講師",
+    promptType: "外部ChatGPT相談",
     questionType: state.aiTutorForm.questionType,
     explanationLevel: state.aiTutorForm.explanationLevel,
     targetType: state.aiTutorForm.targetType,
@@ -8048,7 +8126,7 @@ function saveCurrentAiTutorResponse() {
   const item = saveAiTutorAnalysis();
   saveUnits();
   render();
-  showToast(item.responseText || item.error ? "AI講師の回答を保存しました。" : "AI講師プロンプトを履歴に保存しました。");
+  showToast(item.responseText || item.error ? "外部ChatGPT回答メモを保存しました。" : "外部ChatGPT相談文を履歴に保存しました。");
 }
 
 function setAiTutorFlag(flag) {
@@ -8058,7 +8136,7 @@ function setAiTutorFlag(flag) {
   item[flag] = true;
   saveUnits();
   render();
-  showToast("AI講師履歴に反映しました。");
+  showToast("外部ChatGPT相談文の履歴に反映しました。");
 }
 
 function showAiTutorAnalysis(analysisId) {
@@ -8128,7 +8206,7 @@ function upsertCurrentAiApiAnalysis(error) {
 
 function saveCurrentAiResponse() {
   if (state.aiForm.apiStatus === "未送信") {
-    showToast("API送信後の応答またはエラーだけを保存できます。");
+    showToast("コピー後の回答メモだけを保存できます。");
     return;
   }
   if (!state.aiForm.apiResponseText && !state.aiForm.apiError) {
@@ -8144,9 +8222,9 @@ function saveCurrentAiResponse() {
 async function testAiConnection() {
   const result = document.querySelector("#aiConnectionTestResult");
   state.aiSettings.lastTestedAt = new Date().toISOString();
-  state.aiSettings.lastStatus = "v2.6でも廃止";
+  state.aiSettings.lastStatus = "v2.7でも廃止";
   state.aiSettings.lastError = "";
-  if (result) result.textContent = "v2.6ではアプリ内通信を行いません。";
+  if (result) result.textContent = "v2.7ではアプリ内通信を行いません。";
   saveUnits();
   renderSettings();
 }
@@ -8423,7 +8501,7 @@ async function copyAiTutorPrompt() {
   const textarea = document.querySelector("#aiTutorPromptResult");
   const text = textarea.value || state.aiTutorForm.promptText;
   if (!text.trim()) {
-    showToast("コピーするAI講師プロンプトがありません。");
+    showToast("コピーする外部ChatGPT相談文がありません。");
     return;
   }
   try {
@@ -8432,7 +8510,7 @@ async function copyAiTutorPrompt() {
     saveAiTutorAnalysis({ sentViaApi: false });
     saveUnits();
     renderAiTutorHistory();
-    showToast("AI講師プロンプトをコピーしました。");
+    showToast("外部ChatGPT相談文をコピーしました。");
   } catch (error) {
     textarea.focus();
     textarea.select();
@@ -8469,6 +8547,20 @@ function truncateText(value, length) {
 
 function renderReviewList() {
   const units = filteredReviewUnits();
+  const cLessons = getReviewLessons().filter(({ progress }) => progress.understanding === "C").length;
+  const drillWrong = state.drillResults.reduce((sum, result) => sum + (result.answers || []).filter((answer) => !answer.correct).length, 0);
+  const mockWrong = state.mockExamResults.reduce((sum, result) => sum + (result.answers || []).filter((answer) => !answer.correct).length, 0);
+  const dangerousTags = buildWeaknessTagStats().filter((item) => ["最優先", "危険"].includes(item.risk.label)).slice(0, 3).map((item) => item.tag);
+  const summaryHost = document.querySelector("#reviewSummary");
+  if (summaryHost) {
+    summaryHost.innerHTML = [
+      ["最優先復習", units.filter((unit) => getReviewStatus(unit).label === "最優先復習").length],
+      ["C判定レッスン", cLessons],
+      ["ドリル誤答", drillWrong],
+      ["模試誤答", mockWrong],
+      ["危険な弱点タグ", dangerousTags.join(" / ") || "データ不足"]
+    ].map(([label, value]) => `<div class="stat-card"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`).join("");
+  }
   document.querySelector("#reviewResultCount").textContent = `表示中：${units.length} / ${state.units.length}単元`;
   document.querySelector("#reviewCards").innerHTML = units.length
     ? units.map((unit) => reviewCard(unit)).join("")
@@ -8638,9 +8730,13 @@ function filteredReviewUnits() {
     .filter((unit) => {
       const review = getReviewStatus(unit).label;
       const hasWeakness = getWeaknessCount(unit) > 0;
+      const reviewFilter = state.reviewFilters.review;
       return (
         (state.reviewFilters.subject === "すべて" || unit.subject === state.reviewFilters.subject) &&
-        (state.reviewFilters.review === "すべて" || review === state.reviewFilters.review) &&
+        (reviewFilter === "すべて" || review === reviewFilter ||
+          (reviewFilter === "C判定" && unit.level === "C") ||
+          (reviewFilter === "弱点" && hasWeakness) ||
+          (["レッスン", "ドリル", "模試"].includes(reviewFilter) && review !== "復習不要")) &&
         (state.reviewFilters.importance === "すべて" || unit.importance === state.reviewFilters.importance) &&
         (state.reviewFilters.weakness === "すべて" ||
           (state.reviewFilters.weakness === "弱点タグあり" && hasWeakness) ||
@@ -9007,6 +9103,9 @@ function switchView(view, closeUnitDetail = true) {
   }
   if (view !== "learning" && state.activeLessonId) {
     closeLessonDetail();
+  }
+  if (view === "drill") {
+    renderDrillView();
   }
 }
 
@@ -9839,9 +9938,9 @@ function attachEvents() {
     }
     const startDrillButton = event.target.closest("[data-start-drill-mode]");
     if (startDrillButton) {
-      switchView("learning");
+      switchView("drill");
       setDrillMode(startDrillButton.dataset.startDrillMode);
-      document.querySelector("#drillArea")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      document.querySelector("#drillAreaStandalone")?.scrollIntoView({ behavior: "smooth", block: "start" });
       return;
     }
     const startWeaknessDrillButton = event.target.closest("[data-start-weakness-drill]");
@@ -9851,6 +9950,13 @@ function attachEvents() {
         startWeaknessDrillButton.dataset.weaknessType || "tag",
         startWeaknessDrillButton.dataset.weaknessCount || "5"
       );
+      return;
+    }
+    const courseFilterButton = event.target.closest("[data-course-filter]");
+    if (courseFilterButton) {
+      state.lessonFilters.courseId = courseFilterButton.dataset.courseFilter;
+      renderLearningView();
+      document.querySelector("#lessonList")?.scrollIntoView({ behavior: "smooth", block: "start" });
       return;
     }
     if (event.target.closest("[data-grade-drill]")) {
