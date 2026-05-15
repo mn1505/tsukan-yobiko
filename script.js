@@ -1,4 +1,4 @@
-const APP_VERSION = "v2.5";
+const APP_VERSION = "v2.5.1";
 const AI_API_TIMEOUT_MS = 30000;
 const AI_HEALTH_TIMEOUT_MS = 10000;
 const STORAGE_KEYS = {
@@ -1575,6 +1575,10 @@ const state = {
     status: "すべて",
     understanding: "すべて",
     reviewOnly: false
+  },
+  lessonActionMessage: {
+    lessonId: "",
+    message: ""
   },
   practiceFilters: {
     search: "",
@@ -4956,6 +4960,7 @@ function renderLessonDetail() {
   const progress = getLessonProgress(lesson.id);
   const nextLesson = getNextLesson(lesson.id);
   const correct = lesson.questions.filter((question) => progress.questionResults.some((result) => result.questionId === question.id && result.correct)).length;
+  const actionMessage = state.lessonActionMessage?.lessonId === lesson.id ? state.lessonActionMessage.message : "";
   detail.innerHTML = `
     <div class="lesson-reader">
       <aside class="lesson-reader-side">
@@ -4970,12 +4975,7 @@ function renderLessonDetail() {
               <div><dt>理解度</dt><dd>${escapeHtml(progress.understanding)}</dd></div>
               <div><dt>正答</dt><dd>${correct}/${lesson.questions.length}</dd></div>
             </dl>
-            <div class="form-actions">
-              <button class="primary-button" type="button" data-complete-lesson="${escapeAttribute(lesson.id)}">レッスン完了</button>
-              <button class="ghost-button" type="button" data-review-lesson="${escapeAttribute(lesson.id)}">復習に回す</button>
-              <button class="ghost-button" type="button" data-ai-lesson="${escapeAttribute(lesson.id)}">このレッスンの相談文を作る</button>
-              ${nextLesson ? `<button class="ghost-button" type="button" data-open-lesson="${escapeAttribute(nextLesson.id)}">次のレッスンへ進む</button>` : ""}
-            </div>
+            <button class="ghost-button" type="button" data-ai-lesson="${escapeAttribute(lesson.id)}">このレッスンの相談文を作る</button>
           </div>
         </section>
       </aside>
@@ -5026,9 +5026,9 @@ function renderLessonDetail() {
           <div class="form-actions">
             <button class="primary-button" type="button" data-complete-lesson="${escapeAttribute(lesson.id)}">レッスン完了</button>
             <button class="ghost-button" type="button" data-review-lesson="${escapeAttribute(lesson.id)}">復習に回す</button>
-            <button class="ghost-button" type="button" data-ai-lesson="${escapeAttribute(lesson.id)}">レッスン完了前の相談文を作る</button>
             ${nextLesson ? `<button class="primary-button" type="button" data-open-lesson="${escapeAttribute(nextLesson.id)}">次のレッスンへ進む</button>` : ""}
           </div>
+          ${actionMessage ? `<p class="lesson-action-message" role="status">${escapeHtml(actionMessage)}</p>` : ""}
         </section>
       </div>
     </div>
@@ -9615,9 +9615,9 @@ function completeLesson(lessonId) {
   progress.completedAt = now;
   progress.lastStudiedAt = now;
   progress.reviewNeeded = ["B", "C"].includes(progress.understanding);
+  state.lessonActionMessage = { lessonId, message: "完了しました。保存済みです。" };
   saveUnits();
   render();
-  showToast("レッスンを完了しました。");
 }
 
 function markLessonForReview(lessonId) {
@@ -9625,9 +9625,9 @@ function markLessonForReview(lessonId) {
   progress.reviewNeeded = true;
   progress.status = "復習中";
   progress.lastStudiedAt = new Date().toISOString();
+  state.lessonActionMessage = { lessonId, message: "復習対象にしました。" };
   saveUnits();
   render();
-  showToast("復習対象にしました。");
 }
 
 function setLessonUnderstanding(lessonId, understanding) {
@@ -10336,6 +10336,7 @@ function openLesson(lessonId) {
   const lesson = getLessonById(lessonId);
   if (!lesson) return;
   state.activeLessonId = lessonId;
+  state.lessonActionMessage = { lessonId: "", message: "" };
   state.activeView = "learning";
   touchLessonProgress(lessonId);
   switchView("learning", false);
