@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="TSUKAN YOBIKO v2.5 - 総合模試セット追加版">
+    <meta name="description" content="TSUKAN YOBIKO v2.6 - 教材データ外部JS化・保守性改善版">
     <meta name="theme-color" content="#1f5f5b">
     <title>TSUKAN YOBIKO</title>
     <link rel="stylesheet" href="style.css">
@@ -15,7 +15,7 @@
           <p class="eyebrow">通関士試験 個人予備校</p>
           <h1>TSUKAN YOBIKO</h1>
         </div>
-        <span class="version-pill">v2.5</span>
+        <span class="version-pill">v2.6</span>
       </header>
 
       <main class="app-main">
@@ -853,8 +853,8 @@
               </div>
               <dl class="info-list">
                 <div><dt>アプリ名</dt><dd>TSUKAN YOBIKO</dd></div>
-                <div><dt>現在のバージョン</dt><dd>v2.5</dd></div>
-                <div><dt>状態</dt><dd>総合模試セット追加版</dd></div>
+                <div><dt>現在のバージョン</dt><dd>v2.6</dd></div>
+                <div><dt>状態</dt><dd>教材データ外部JS化・保守性改善版</dd></div>
                 <div><dt>公開前提</dt><dd>GitHub Pagesで公開して使う静的アプリです。</dd></div>
                 <div><dt>保存方式</dt><dd id="storageStatus">確認中</dd></div>
               </dl>
@@ -878,6 +878,17 @@
                 <h3>localStorage保存状況</h3>
               </div>
               <dl id="storageDetails" class="info-list"></dl>
+            </section>
+
+            <section class="panel">
+              <div class="panel-heading">
+                <h3>教材データ状態</h3>
+              </div>
+              <dl id="dataStatusDetails" class="info-list"></dl>
+              <div class="settings-actions">
+                <button id="validateDataButton" class="ghost-button" type="button">教材データチェック</button>
+                <p id="dataIntegrityResult" class="muted" role="status" aria-live="polite"></p>
+              </div>
             </section>
 
             <section class="panel">
@@ -929,6 +940,10 @@
     </div>
 
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="data/lessons.js"></script>
+    <script src="data/question-bank.js"></script>
+    <script src="data/mock-exams.js"></script>
+    <script src="data/weakness-groups.js"></script>
     <script src="script.js"></script>
   </body>
 </html>
