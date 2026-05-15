@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="TSUKAN YOBIKO v2.7 - スマホ学習UI最終整理版">
+    <meta name="description" content="TSUKAN YOBIKO v2.8 - バックアップ・復元・データ安全性強化版">
     <meta name="theme-color" content="#1f5f5b">
     <title>TSUKAN YOBIKO</title>
     <link rel="stylesheet" href="style.css">
@@ -15,7 +15,7 @@
           <p class="eyebrow">通関士試験 個人予備校</p>
           <h1>TSUKAN YOBIKO</h1>
         </div>
-        <span class="version-pill">v2.7</span>
+        <span class="version-pill">v2.8</span>
       </header>
 
       <main class="app-main">
@@ -868,36 +868,40 @@
               </div>
               <dl class="info-list">
                 <div><dt>アプリ名</dt><dd>TSUKAN YOBIKO</dd></div>
-                <div><dt>現在のバージョン</dt><dd>v2.7</dd></div>
-                <div><dt>状態</dt><dd>スマホ学習UI最終整理版</dd></div>
+                <div><dt>現在のバージョン</dt><dd>v2.8</dd></div>
+                <div><dt>状態</dt><dd>バックアップ・復元・データ安全性強化版</dd></div>
                 <div><dt>公開前提</dt><dd>GitHub Pagesで公開して使う静的アプリです。</dd></div>
                 <div><dt>保存方式</dt><dd id="storageStatus">確認中</dd></div>
               </dl>
+              <p id="storageWarning" class="form-message" role="status" aria-live="polite"></p>
             </section>
 
             <section class="panel">
               <div class="panel-heading">
-                <h3>今後の予定</h3>
+                <h3>保存データサマリー</h3>
               </div>
-              <ul class="note-list">
-                <li>v2.8：バックアップ・復元・データ安全性強化</li>
-                <li>v2.9：過去問マッピング機能</li>
-                <li>v3.0：ローカル予備校版完成</li>
-              </ul>
+              <dl id="storageSummaryDetails" class="info-list"></dl>
             </section>
 
             <section class="panel">
               <div class="panel-heading">
-                <h3>localStorage保存状況</h3>
+                <h3>localStorage使用状況</h3>
               </div>
               <dl id="storageDetails" class="info-list"></dl>
+              <p class="muted">保存容量は文字数から算出した概算です。ブラウザや端末変更、キャッシュ削除でlocalStorageのデータが失われる可能性があります。</p>
             </section>
 
             <section class="panel">
               <div class="panel-heading">
-                <h3>教材データ読み込み状態・整合性チェック</h3>
+                <h3>教材データ読み込み状態</h3>
               </div>
               <dl id="dataStatusDetails" class="info-list"></dl>
+            </section>
+
+            <section class="panel">
+              <div class="panel-heading">
+                <h3>データ整合性チェック</h3>
+              </div>
               <div class="settings-actions">
                 <button id="validateDataButton" class="ghost-button" type="button">教材データチェック</button>
                 <p id="dataIntegrityResult" class="muted" role="status" aria-live="polite"></p>
@@ -906,24 +910,75 @@
 
             <section class="panel">
               <div class="panel-heading">
-                <h3>JSONバックアップ・復元</h3>
+                <h3>JSONバックアップ</h3>
               </div>
+              <dl id="backupSummaryDetails" class="info-list"></dl>
               <div class="settings-actions">
                 <button id="exportButton" class="primary-button" type="button">バックアップを書き出す</button>
+                <p id="backupMessage" class="muted" role="status" aria-live="polite"></p>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-heading">
+                <h3>JSON復元</h3>
+              </div>
+              <div class="settings-actions">
                 <label class="file-picker">
                   JSONバックアップから復元
                   <input id="importInput" type="file" accept="application/json,.json">
                 </label>
+                <div id="restorePreview" class="restore-preview"></div>
+                <label class="check-card">
+                  <input id="restoreBackupChecked" type="checkbox">
+                  <span>現在のデータをバックアップ済みです</span>
+                </label>
+                <label class="check-card">
+                  <input id="restoreOverwriteChecked" type="checkbox">
+                  <span>復元により現在のデータが上書きされることを理解しました</span>
+                </label>
+                <button id="executeRestoreButton" class="danger-button" type="button" disabled>復元実行</button>
                 <p id="importMessage" class="muted" role="status" aria-live="polite"></p>
               </div>
             </section>
 
             <section class="panel">
               <div class="panel-heading">
-                <h3>初期データ</h3>
+                <h3>自動スナップショット</h3>
               </div>
-              <p class="muted">保存済みの学習記録を削除し、初期単元12件に戻します。</p>
-              <button id="resetButton" class="danger-button" type="button">初期データに戻す</button>
+              <dl id="snapshotSummary" class="info-list"></dl>
+              <div id="snapshotList" class="settings-actions"></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-heading">
+                <h3>直前復元スナップショット</h3>
+              </div>
+              <dl id="restoreSafetySnapshotSummary" class="info-list"></dl>
+              <div class="settings-actions">
+                <button id="showSafetySnapshotButton" class="ghost-button" type="button">直前スナップショットを確認</button>
+                <button id="restoreSafetySnapshotButton" class="danger-button" type="button">直前スナップショットから復元</button>
+                <p id="restoreSafetySnapshotMessage" class="muted" role="status" aria-live="polite"></p>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-heading">
+                <h3>初期化</h3>
+              </div>
+              <div class="settings-actions">
+                <p class="muted">初期化対象：学習進捗、ドリル結果、模試結果、学習計画、ログ、lessonOverrides、相談履歴。教材初期データ data/*.js は削除されません。</p>
+                <label class="check-card">
+                  <input id="resetConfirmCheck" type="checkbox">
+                  <span>全データが削除されることを理解しました</span>
+                </label>
+                <label class="field">
+                  <span>確認入力</span>
+                  <input id="resetConfirmText" type="text" placeholder="RESET または 初期化">
+                </label>
+                <button id="resetButton" class="danger-button" type="button">初期化する</button>
+                <p id="resetMessage" class="muted" role="status" aria-live="polite"></p>
+              </div>
             </section>
 
             <section class="panel">
@@ -936,6 +991,8 @@
                 <li>外部通信は行いません。</li>
                 <li>学習データはこのブラウザのlocalStorageに保存されます。</li>
                 <li>定期的にJSONバックアップを取ってください。</li>
+                <li>v2.9：過去問マッピング機能</li>
+                <li>v3.0：ローカル予備校版完成</li>
               </ul>
             </section>
           </div>

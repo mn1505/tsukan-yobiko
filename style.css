@@ -305,6 +305,14 @@ label,
   font-weight: 700;
 }
 
+.field {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
 input,
 select,
 textarea {
@@ -1528,6 +1536,34 @@ button:disabled {
   padding: 16px;
 }
 
+.restore-preview {
+  display: grid;
+  gap: 10px;
+}
+
+.inline-warning {
+  padding: 12px;
+  border: 1px solid rgba(192, 72, 58, 0.35);
+  border-radius: 8px;
+  background: #fff7f4;
+  color: var(--danger);
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+.snapshot-item {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfa;
+}
+
+.snapshot-item p {
+  margin: 0;
+}
+
 .file-picker {
   display: grid;
   gap: 8px;
@@ -2092,7 +2128,7 @@ button:disabled {
   }
 }
 
-/* v2.7 smartphone learning UI refinements */
+/* v2.8 smartphone learning UI refinements */
 html,
 body {
   overflow-x: hidden;

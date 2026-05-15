@@ -1,4 +1,6 @@
-const APP_VERSION = "v2.7";
+const APP_VERSION = "v2.8";
+const APP_NAME = "TSUKAN_YOBIKO";
+const BACKUP_SCHEMA_VERSION = 2;
 const AI_API_TIMEOUT_MS = 30000;
 const AI_HEALTH_TIMEOUT_MS = 10000;
 const STORAGE_KEYS = {
@@ -13,7 +15,13 @@ const STORAGE_KEYS = {
   studyPlans: "tsukanYobiko.studyPlans",
   curriculumProgress: "tsukanYobiko.curriculumProgress",
   mockExamResults: "tsukanYobiko.mockExamResults",
-  drillResults: "tsukanYobiko.drillResults"
+  drillResults: "tsukanYobiko.drillResults",
+  userSettings: "tsukanYobiko.userSettings",
+  pastExamMappings: "tsukanYobiko.pastExamMappings",
+  importedPastExamQuestions: "tsukanYobiko.importedPastExamQuestions",
+  lastBackupAt: "tsukanYobiko.lastBackupAt",
+  restoreSafetySnapshot: "tsukanYobiko.restoreSafetySnapshot",
+  autoSnapshots: "tsukanYobiko.autoSnapshots"
 };
 
 const LEVELS = ["未判定", "A", "B", "C"];
@@ -53,7 +61,10 @@ const AI_PROMPT_TYPES = [
   "到達判定",
   "単元理解チェック",
   "過去問分析",
-  "総合学習相談"
+  "総合学習相談",
+  "学習データ確認",
+  "復習優先度整理",
+  "バックアップJSON確認"
 ];
 const AI_TARGET_TYPES = ["単元", "レッスン", "通関業法カリキュラム", "通関業法ドリル結果", "関税法等カリキュラム", "関税法等ドリル結果", "通関実務カリキュラム", "通関実務ドリル結果", "弱点別ドリル結果", "演習ログ", "過去問ログ", "実務ログ", "復習対象", "総合模試結果", "最新模試結果", "横断弱点", "全体サマリー"];
 const STUDY_DURATIONS = ["15分", "30分", "1時間", "2時間", "じっくり"];
@@ -66,7 +77,10 @@ const AI_ANALYSIS_POINTS = {
   "到達判定": ["現在のA/B/C判定の妥当性", "本試験で正答できる可能性", "A判定に必要な追加条件", "B判定に留まる理由", "C判定なら最初に戻るべきポイント"],
   "単元理解チェック": ["制度趣旨を説明できているか", "全体像を理解できているか", "試験上の重要点を押さえているか", "引っかけに耐えられるか", "混同ポイントが整理できているか", "確認問題を3問作る"],
   "過去問分析": ["問題の論点", "出題者が確認したい知識", "正答に必要な判断手順", "自分のミス原因", "次に復習すべき単元", "類似問題への対応力", "本試験での危険度"],
-  "総合学習相談": ["現在の学習状況", "合格可能性を上げるうえでの優先課題", "科目別の危険度", "復習優先順位", "今週やるべきこと", "アプリへの記録方法の改善案"]
+  "総合学習相談": ["現在の学習状況", "合格可能性を上げるうえでの優先課題", "科目別の危険度", "復習優先順位", "今週やるべきこと", "アプリへの記録方法の改善案"],
+  "学習データ確認": ["TSUKAN YOBIKOの学習データ状況を確認してください", "進捗・ドリル・模試・ログに不自然な点がないか", "記録が不足している領域", "次に記録すべき情報"],
+  "復習優先度整理": ["ドリル結果と模試結果から、次に何を復習すべきか整理してください", "科目別の優先順位", "弱点タグ別の危険度", "今日から3日間の復習順"],
+  "バックアップJSON確認": ["バックアップJSONの内容を見て、不自然な点がないか確認してください", "件数の偏り", "欠損していそうなデータ", "復元前に注意すべき点"]
 };
 const AI_OUTPUT_FORMATS = {
   default: ["総評", "良い点", "問題点", "弱点タグ候補", "本試験での危険ポイント", "次に復習すべきこと", "A判定に上げる条件"],
@@ -152,6 +166,11 @@ const state = {
     lastError: ""
   },
   studyPlans: [],
+  userSettings: {},
+  pastExamMappings: [],
+  importedPastExamQuestions: [],
+  storageWarnings: [],
+  pendingRestore: null,
   curriculumProgress: [],
   drill: {
     mode: "通関業法ドリル",
@@ -582,11 +601,18 @@ function loadState() {
   state.aiSettings = normalizeAiSettings(readJson(STORAGE_KEYS.aiSettings));
   state.studyPlans = normalizeArray(readJson(STORAGE_KEYS.studyPlans)).map(normalizeStudyPlan);
   state.curriculumProgress = normalizeArray(readJson(STORAGE_KEYS.curriculumProgress)).map(normalizeCurriculumProgress);
+  state.userSettings = normalizePlainObject(readJson(STORAGE_KEYS.userSettings));
+  state.pastExamMappings = normalizeArray(readJson(STORAGE_KEYS.pastExamMappings));
+  state.importedPastExamQuestions = normalizeArray(readJson(STORAGE_KEYS.importedPastExamQuestions));
   localStorage.setItem(STORAGE_KEYS.version, APP_VERSION);
 }
 
 function normalizeArray(value) {
   return Array.isArray(value) ? value : [];
+}
+
+function normalizePlainObject(value) {
+  return value && typeof value === "object" && !Array.isArray(value) ? value : {};
 }
 
 function normalizeUnit(unit) {
@@ -836,7 +862,7 @@ function normalizeAiSettings(item) {
     enabled: false,
     endpointUrl: "",
     lastTestedAt: String(item?.lastTestedAt || ""),
-    lastStatus: "v2.7でも廃止",
+    lastStatus: "v2.8でも廃止",
     lastError: ""
   };
 }
@@ -955,14 +981,18 @@ function makeBlankUnit() {
   };
 }
 
-function readJson(key) {
+function safeJsonParse(raw, fallback, label = "JSON") {
   try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : null;
+    return raw ? JSON.parse(raw) : fallback;
   } catch (error) {
-    console.warn(`${key}を読み込めませんでした`, error);
-    return null;
+    console.warn(`${label}を読み込めませんでした`, error);
+    state.storageWarnings.push(`${label}を読み込めませんでした。`);
+    return fallback;
   }
+}
+
+function readJson(key, fallback = null) {
+  return safeJsonParse(localStorage.getItem(key), fallback, key);
 }
 
 function saveUnits() {
@@ -977,6 +1007,9 @@ function saveUnits() {
   localStorage.setItem(STORAGE_KEYS.aiSettings, JSON.stringify(sanitizeAiSettings(state.aiSettings)));
   localStorage.setItem(STORAGE_KEYS.studyPlans, JSON.stringify(state.studyPlans));
   localStorage.setItem(STORAGE_KEYS.curriculumProgress, JSON.stringify(state.curriculumProgress));
+  localStorage.setItem(STORAGE_KEYS.userSettings, JSON.stringify(state.userSettings));
+  localStorage.setItem(STORAGE_KEYS.pastExamMappings, JSON.stringify(state.pastExamMappings));
+  localStorage.setItem(STORAGE_KEYS.importedPastExamQuestions, JSON.stringify(state.importedPastExamQuestions));
   localStorage.setItem(STORAGE_KEYS.version, APP_VERSION);
 }
 
@@ -985,7 +1018,7 @@ function sanitizeAiSettings(settings) {
     enabled: false,
     endpointUrl: "",
     lastTestedAt: "",
-    lastStatus: "v2.7でも廃止",
+    lastStatus: "v2.8でも廃止",
     lastError: ""
   };
 }
@@ -2263,6 +2296,7 @@ function gradeMockExam() {
   state.mockExam.active = null;
   state.mockExam.lastResultId = active.mode === "mockWrongReview" ? "" : result.id;
   saveUnits();
+  createAutoSnapshot(active.mode === "mockWrongReview" ? "drill_saved" : "mock_exam_saved");
   render();
   showToast(active.mode === "mockWrongReview" ? "模試誤答復習をドリル結果に保存しました。" : "模試結果を保存しました。");
 }
@@ -3555,6 +3589,7 @@ function finishCurrentDrill() {
   state.drill.targetWeaknessTag = "";
   state.drill.targetWeaknessGroup = "";
   saveUnits();
+  createAutoSnapshot("drill_saved");
   render();
   showToast(`ドリル結果を保存しました。判定${result.resultLevel}`);
 }
@@ -7844,7 +7879,7 @@ function resolveAiSubject(target) {
 }
 
 async function postAiApiRequest(payload) {
-  throw new Error("v2.7ではアプリ内通信を行いません。相談文をコピーして外部ChatGPTに貼り付けてください。");
+  throw new Error("v2.8ではアプリ内通信を行いません。相談文をコピーして外部ChatGPTに貼り付けてください。");
 }
 
 function buildAiConnectionHint(prefix) {
@@ -7852,7 +7887,7 @@ function buildAiConnectionHint(prefix) {
   return [
     prefix,
     "外部API設定は使いません。",
-    "v2.7では外部通信を行わないため、相談文をコピーして外部ChatGPTに貼り付けてください。"
+    "v2.8では外部通信を行わないため、相談文をコピーして外部ChatGPTに貼り付けてください。"
   ].join(" ");
 }
 
@@ -7870,9 +7905,9 @@ function inferAiHealthUrl(endpointUrl) {
 
 async function checkAiWorkerHealth() {
   const result = document.querySelector("#aiConnectionTestResult");
-  state.aiSettings.lastStatus = "v2.7でも廃止";
+  state.aiSettings.lastStatus = "v2.8でも廃止";
   state.aiSettings.lastError = "";
-  if (result) result.textContent = "v2.7ではアプリ内通信を行いません。";
+  if (result) result.textContent = "v2.8ではアプリ内通信を行いません。";
   saveUnits();
   renderSettings();
 }
@@ -7887,7 +7922,7 @@ async function sendCurrentAiPromptToApi() {
     return;
   }
   state.aiForm.apiStatus = "コピー用";
-  state.aiForm.apiError = "v2.7ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
+  state.aiForm.apiError = "v2.8ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
   renderAiResponse();
   await copyAiPrompt();
 }
@@ -7897,7 +7932,7 @@ async function askAiTutor() {
   const { target, promptText } = generateAiTutorPrompt();
   if (!promptText) return;
   state.aiTutorForm.apiStatus = "コピー用";
-  state.aiTutorForm.apiError = "v2.7ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
+  state.aiTutorForm.apiError = "v2.8ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
   saveAiTutorAnalysis({ target, sentViaApi: false });
   renderAiTutorView();
   showToast("相談文を生成しました。");
@@ -7928,7 +7963,7 @@ async function runAiSuggestion() {
   const { target, promptText } = generateAiSuggestionPrompt();
   if (!promptText) return;
   state.aiSuggestionForm.apiStatus = "コピー用";
-  state.aiSuggestionForm.apiError = "v2.7ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
+  state.aiSuggestionForm.apiError = "v2.8ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
   saveAiSuggestionAnalysis({ target, sentViaApi: false });
   renderAiSuggestionView();
   showToast("相談文を生成しました。");
@@ -8222,9 +8257,9 @@ function saveCurrentAiResponse() {
 async function testAiConnection() {
   const result = document.querySelector("#aiConnectionTestResult");
   state.aiSettings.lastTestedAt = new Date().toISOString();
-  state.aiSettings.lastStatus = "v2.7でも廃止";
+  state.aiSettings.lastStatus = "v2.8でも廃止";
   state.aiSettings.lastError = "";
-  if (result) result.textContent = "v2.7ではアプリ内通信を行いません。";
+  if (result) result.textContent = "v2.8ではアプリ内通信を行いません。";
   saveUnits();
   renderSettings();
 }
@@ -8347,6 +8382,7 @@ function setLessonUnderstanding(lessonId, understanding) {
   progress.reviewNeeded = ["B", "C"].includes(understanding) || progress.reviewNeeded;
   progress.lastStudiedAt = new Date().toISOString();
   saveUnits();
+  createAutoSnapshot("lesson_progress_updated");
   renderLessonDetail();
   renderHomeCurriculumSummary();
 }
@@ -9370,11 +9406,17 @@ function deletePracticalLog(logId) {
 
 function renderSettings() {
   const saved = localStorage.getItem(STORAGE_KEYS.units);
-  const backupJson = JSON.stringify(makeBackupPayload());
-  const sizeKb = Math.max(1, Math.ceil(backupJson.length / 1024));
+  const summary = getBackupSummary(makeBackupData());
+  const storageUsage = getLocalStorageUsage();
   const last = getLastUpdatedUnit();
-  document.querySelector("#storageStatus").textContent = `${state.units.length}単元・${CURRICULUM_LESSONS.length}レッスン・模試${state.mockExamResults.length}件 / 約${sizeKb}KBをこのブラウザに保存`;
-  document.querySelector("#storageDetails").innerHTML = `
+  document.querySelector("#storageStatus").textContent = `${state.units.length}単元・${CURRICULUM_LESSONS.length}レッスン・模試${state.mockExamResults.length}件 / 約${storageUsage.sizeKb}KBをこのブラウザに保存`;
+  const warningHost = document.querySelector("#storageWarning");
+  if (warningHost) {
+    warningHost.textContent = state.storageWarnings.length
+      ? "一部の保存データを読み込めませんでした。バックアップから復元するか、設定画面で確認してください。"
+      : "";
+  }
+  document.querySelector("#storageSummaryDetails").innerHTML = `
     <div><dt>保存中の単元数</dt><dd>${state.units.length}単元</dd></div>
     <div><dt>保存中の演習ログ数</dt><dd>${state.practiceLogs.length}件</dd></div>
     <div><dt>保存中の過去問ログ数</dt><dd>${state.pastExamLogs.length}件</dd></div>
@@ -9387,9 +9429,17 @@ function renderSettings() {
     <div><dt>保存中のレッスン進捗数</dt><dd>${state.curriculumProgress.length}件</dd></div>
     <div><dt>最終更新単元</dt><dd>${escapeHtml(last?.title || "未保存")}</dd></div>
     <div><dt>最終更新日</dt><dd>${escapeHtml(last?.updatedAt || "未保存")}</dd></div>
-    <div><dt>おおよその保存サイズ</dt><dd>約${sizeKb}KB</dd></div>
+    <div><dt>最終バックアップ日時</dt><dd>${escapeHtml(formatDateTime(localStorage.getItem(STORAGE_KEYS.lastBackupAt)))}</dd></div>
     <div><dt>バージョン</dt><dd>${APP_VERSION}</dd></div>
   `;
+  document.querySelector("#backupSummaryDetails").innerHTML = renderSummaryDetails(summary);
+  document.querySelector("#storageDetails").innerHTML = `
+    <div><dt>保存データ概算サイズ</dt><dd>約${storageUsage.sizeKb}KB</dd></div>
+    <div><dt>localStorageキー数</dt><dd>${storageUsage.keys.length}件</dd></div>
+    <div><dt>主なデータ件数</dt><dd>進捗${summary.curriculumProgressCount} / ドリル${summary.drillResultsCount} / 模試${summary.mockExamResultsCount}</dd></div>
+    <div><dt>キー一覧</dt><dd>${escapeHtml(storageUsage.keys.join(" / ") || "なし")}</dd></div>
+  `;
+  renderSnapshotStatus();
   renderDataStatus();
   if (!saved) saveUnits();
 }
@@ -9426,6 +9476,8 @@ function duplicateCount(values) {
 
 function validateDataIntegrity() {
   const lessonIds = new Set(CURRICULUM_LESSONS.map((lesson) => lesson.id).filter(Boolean));
+  const bankQuestionIds = new Set(QUESTION_BANK.map((question) => question.id).filter(Boolean));
+  const allQuestionIds = new Set([...QUESTION_BANK, ...MOCK_EXAM_QUESTIONS].map((question) => question.id).filter(Boolean));
   const lessonQuestionIds = CURRICULUM_LESSONS.flatMap((lesson) => (lesson.questions || []).map((question) => `${lesson.id}:${question.id}`));
   const questionIds = [
     ...QUESTION_BANK.map((question) => question.id),
@@ -9442,7 +9494,13 @@ function validateDataIntegrity() {
   const invalidChoicesCount = bankAndMockQuestions.filter((question) => !Array.isArray(question.choices) || question.choices.length === 0).length;
   const missingAnswerCount = bankAndMockQuestions.filter((question) => !String(question.answer || "").trim()).length;
   const mockModeIds = Object.values(MOCK_EXAM_MODES).map((mode) => mode.id).filter(Boolean);
+  const unknownDrillQuestionIds = state.drillResults.flatMap((result) => normalizeArray(result.answers).map((answer) => answer.questionId)).filter((id) => id && !bankQuestionIds.has(id));
+  const unknownMockQuestionIds = state.mockExamResults.flatMap((result) => normalizeArray(result.answers).map((answer) => answer.questionId)).filter((id) => id && !allQuestionIds.has(id));
+  const unknownProgressLessonIds = state.curriculumProgress.map((item) => item.lessonId).filter((id) => id && !lessonIds.has(id));
+  const unknownOverrideLessonIds = state.lessonOverrides.map((item) => item.lessonId).filter((id) => id && !lessonIds.has(id));
+  const missingDisplayFields = bankAndMockQuestions.filter((question) => !question.id || !question.question || !question.subject).slice(0, 10);
   return {
+    dataFilesOk: Object.values(DATA_FILE_STATUS).every(Boolean),
     lessonCount: CURRICULUM_LESSONS.length,
     questionCount: QUESTION_BANK.length,
     mockQuestionCount: MOCK_EXAM_QUESTIONS.length,
@@ -9453,7 +9511,12 @@ function validateDataIntegrity() {
     missingWeaknessTagCount,
     missingSubjectCount,
     invalidChoicesCount,
-    missingAnswerCount
+    missingAnswerCount,
+    unknownDrillQuestionIds,
+    unknownMockQuestionIds,
+    unknownProgressLessonIds,
+    unknownOverrideLessonIds,
+    missingDisplayFields
   };
 }
 
@@ -9461,48 +9524,70 @@ function renderDataIntegrityResult() {
   const result = validateDataIntegrity();
   const host = document.querySelector("#dataIntegrityResult");
   if (!host) return;
-  host.innerHTML = `
-    教材データチェック：<br>
-    レッスン数 ${result.lessonCount} / 問題数 ${result.questionCount} / 模試問題数 ${result.mockQuestionCount}<br>
-    重複ID数 レッスン${result.duplicateLessonIds}・問題${result.duplicateQuestionIds}・模試モード${result.duplicateMockModeIds}<br>
-    lessonId不明問題数 ${result.unknownLessonIdCount} / weaknessTag未設定数 ${result.missingWeaknessTagCount}<br>
-    subject未設定数 ${result.missingSubjectCount} / choices不正数 ${result.invalidChoicesCount} / answer未設定数 ${result.missingAnswerCount}
-  `;
+  const warnings = [
+    ["教材データ読み込みNG", result.dataFilesOk ? 0 : 1, "data/*.jsの読み込み順とファイル配置を確認してください。"],
+    ["レッスンID重複", result.duplicateLessonIds, "data/lessons.jsのid重複を確認してください。"],
+    ["問題ID重複", result.duplicateQuestionIds, "問題IDはドリル・模試・レッスン内で一意にしてください。"],
+    ["question.lessonId不明", result.unknownLessonIdCount, "QUESTION_BANKのlessonIdがLESSONSに存在するか確認してください。"],
+    ["drillResults内の不明questionId", result.unknownDrillQuestionIds.length, result.unknownDrillQuestionIds.slice(0, 5).join(" / ") || "保存済みドリル結果を確認してください。"],
+    ["mockExamResults内の不明questionId", result.unknownMockQuestionIds.length, result.unknownMockQuestionIds.slice(0, 5).join(" / ") || "保存済み模試結果を確認してください。"],
+    ["curriculumProgress内の不明lessonId", result.unknownProgressLessonIds.length, result.unknownProgressLessonIds.slice(0, 5).join(" / ") || "保存済み進捗を確認してください。"],
+    ["lessonOverrides内の不明lessonId", result.unknownOverrideLessonIds.length, result.unknownOverrideLessonIds.slice(0, 5).join(" / ") || "追加教材の対象レッスンを確認してください。"],
+    ["表示欠損候補", result.missingDisplayFields.length + result.invalidChoicesCount + result.missingAnswerCount + result.missingSubjectCount, "id/question/subject/choices/answerの欠損を確認してください。"]
+  ].filter((item) => item[1] > 0);
+  host.innerHTML = warnings.length
+    ? `<strong>警告 ${warnings.length}項目</strong><ul class="note-list compact">${warnings.map(([label, count, hint]) => `<li>${escapeHtml(label)}：${count}件。${escapeHtml(hint)}</li>`).join("")}</ul>`
+    : `データ整合性に大きな問題は見つかりませんでした。<br>レッスン数 ${result.lessonCount} / 問題数 ${result.questionCount} / 模試問題数 ${result.mockQuestionCount}`;
 }
 
 function getLastUpdatedUnit() {
   return [...state.units].filter((unit) => unit.updatedAt).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0];
 }
 
-function makeBackupPayload() {
+function makeBackupData() {
   return {
-    appName: "TSUKAN YOBIKO",
-    version: APP_VERSION,
-    exportedAt: new Date().toISOString(),
     units: state.units,
     practiceLogs: state.practiceLogs,
     pastExamLogs: state.pastExamLogs,
     practicalLogs: state.practicalLogs,
-    mockExamResults: state.mockExamResults,
-    drillResults: state.drillResults,
     aiAnalyses: state.aiAnalyses,
-    lessonOverrides: state.lessonOverrides,
     studyPlans: state.studyPlans,
-    curriculumProgress: state.curriculumProgress
+    curriculumProgress: state.curriculumProgress,
+    mockExamResults: state.mockExamResults,
+    lessonOverrides: state.lessonOverrides,
+    drillResults: state.drillResults,
+    userSettings: state.userSettings,
+    pastExamMappings: state.pastExamMappings,
+    importedPastExamQuestions: state.importedPastExamQuestions
+  };
+}
+
+function makeBackupPayload() {
+  return {
+    appName: APP_NAME,
+    appVersion: APP_VERSION,
+    exportedAt: new Date().toISOString(),
+    schemaVersion: BACKUP_SCHEMA_VERSION,
+    data: makeBackupData()
   };
 }
 
 function exportBackup() {
-  const json = JSON.stringify(makeBackupPayload(), null, 2);
+  const payload = makeBackupPayload();
+  const json = JSON.stringify(payload, null, 2);
   const blob = new Blob([json], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = `tsukan-yobiko-backup-${backupTimestamp()}.json`;
+  link.download = `tsukan-yobiko-backup-${APP_VERSION}-${backupTimestamp()}.json`;
   document.body.appendChild(link);
   link.click();
   link.remove();
   URL.revokeObjectURL(url);
+  localStorage.setItem(STORAGE_KEYS.lastBackupAt, payload.exportedAt);
+  const message = document.querySelector("#backupMessage");
+  if (message) message.textContent = "バックアップを作成しました。ファイルを安全な場所に保存してください。";
+  renderSettings();
   showToast("バックアップを書き出しました。");
 }
 
@@ -9526,27 +9611,12 @@ function importBackup(file) {
   const reader = new FileReader();
   reader.addEventListener("load", () => {
     try {
-      const parsed = JSON.parse(String(reader.result || ""));
-      validateBackup(parsed);
-      const confirmed = window.confirm("現在の学習データを、選択したバックアップ内容で上書きします。よろしいですか？");
-      if (!confirmed) return;
-      state.units = parsed.units.map(normalizeUnit);
-      state.practiceLogs = normalizeArray(parsed.practiceLogs).map(normalizePracticeLog);
-      state.pastExamLogs = normalizeArray(parsed.pastExamLogs).map(normalizePastExamLog);
-      state.practicalLogs = normalizeArray(parsed.practicalLogs).map(normalizePracticalLog);
-      state.mockExamResults = normalizeArray(parsed.mockExamResults).map(normalizeMockExamResult);
-      state.drillResults = normalizeArray(parsed.drillResults).map(normalizeDrillResult);
-      state.aiAnalyses = normalizeArray(parsed.aiAnalyses).map(normalizeAiAnalysis);
-      state.lessonOverrides = normalizeArray(parsed.lessonOverrides).map(normalizeLessonOverride);
-      state.aiSettings = normalizeAiSettings(null);
-      state.studyPlans = normalizeArray(parsed.studyPlans).map(normalizeStudyPlan);
-      state.curriculumProgress = normalizeArray(parsed.curriculumProgress).map(normalizeCurriculumProgress);
-      closeDetail();
-      closeLessonDetail();
-      saveUnits();
-      render();
-      message.textContent = "バックアップから復元しました。";
-      showToast("復元しました。");
+      const parsed = safeJsonParse(String(reader.result || ""), undefined, "復元JSON");
+      if (parsed === undefined) throw new SyntaxError("JSONとして読み込めません。");
+      const normalized = normalizeBackupPayload(parsed);
+      state.pendingRestore = normalized;
+      renderRestorePreview(normalized);
+      message.textContent = "復元プレビューを確認してください。まだ上書きしていません。";
     } catch (error) {
       message.textContent = error instanceof SyntaxError ? "JSONとして読み込めません。" : error.message || "想定外の形式のため復元できません。";
     } finally {
@@ -9559,16 +9629,254 @@ function importBackup(file) {
   reader.readAsText(file);
 }
 
-function validateBackup(value) {
+function normalizeBackupPayload(value) {
   if (!value || typeof value !== "object") {
     throw new Error("想定外の形式のため復元できません。");
   }
-  if (!Object.prototype.hasOwnProperty.call(value, "units")) {
-    throw new Error("unitsが存在しないため復元できません。");
+  const appName = value.appName || value.app || "";
+  if (appName && appName !== APP_NAME && appName !== "TSUKAN YOBIKO") {
+    throw new Error("TSUKAN YOBIKOのバックアップではありません。");
   }
-  if (!Array.isArray(value.units)) {
+  const hasDataWrapper = value.data && typeof value.data === "object";
+  const hasLegacyData = ["units", "practiceLogs", "pastExamLogs", "practicalLogs", "curriculumProgress", "mockExamResults", "drillResults"].some((key) => Object.prototype.hasOwnProperty.call(value, key));
+  if (!hasDataWrapper && !hasLegacyData) {
+    throw new Error("dataが存在しないため復元できません。");
+  }
+  const rawData = hasDataWrapper ? value.data : value;
+  const data = {
+    units: normalizeArray(rawData.units).map(normalizeUnit),
+    practiceLogs: normalizeArray(rawData.practiceLogs).map(normalizePracticeLog),
+    pastExamLogs: normalizeArray(rawData.pastExamLogs).map(normalizePastExamLog),
+    practicalLogs: normalizeArray(rawData.practicalLogs).map(normalizePracticalLog),
+    aiAnalyses: normalizeArray(rawData.aiAnalyses).map(normalizeAiAnalysis),
+    studyPlans: normalizeArray(rawData.studyPlans).map(normalizeStudyPlan),
+    curriculumProgress: normalizeArray(rawData.curriculumProgress).map(normalizeCurriculumProgress),
+    mockExamResults: normalizeArray(rawData.mockExamResults).map(normalizeMockExamResult),
+    lessonOverrides: normalizeArray(rawData.lessonOverrides).map(normalizeLessonOverride),
+    drillResults: normalizeArray(rawData.drillResults).map(normalizeDrillResult),
+    userSettings: normalizePlainObject(rawData.userSettings),
+    pastExamMappings: normalizeArray(rawData.pastExamMappings),
+    importedPastExamQuestions: normalizeArray(rawData.importedPastExamQuestions)
+  };
+  if (!Array.isArray(data.units)) {
     throw new Error("unitsが配列ではないため復元できません。");
   }
+  const schemaVersion = Number(value.schemaVersion || 1);
+  return {
+    appName: appName || APP_NAME,
+    appVersion: value.appVersion || value.version || "不明",
+    exportedAt: value.exportedAt || "",
+    schemaVersion: Number.isFinite(schemaVersion) ? schemaVersion : 1,
+    data,
+    summary: getBackupSummary(data)
+  };
+}
+
+function renderRestorePreview(backup) {
+  const host = document.querySelector("#restorePreview");
+  const executeButton = document.querySelector("#executeRestoreButton");
+  if (!host) return;
+  host.innerHTML = `
+    <div class="inline-warning">現在の学習データが復元データで上書きされます。必要であれば先にバックアップを作成してください。</div>
+    <dl class="info-list compact">
+      <div><dt>バックアップ作成日時</dt><dd>${escapeHtml(formatDateTime(backup.exportedAt))}</dd></div>
+      <div><dt>バックアップアプリバージョン</dt><dd>${escapeHtml(backup.appVersion)}</dd></div>
+      <div><dt>schemaVersion</dt><dd>${backup.schemaVersion}</dd></div>
+      ${renderSummaryDetails(backup.summary)}
+    </dl>
+  `;
+  document.querySelector("#restoreBackupChecked").checked = false;
+  document.querySelector("#restoreOverwriteChecked").checked = false;
+  if (executeButton) executeButton.disabled = true;
+}
+
+function updateRestoreButtonState() {
+  const executeButton = document.querySelector("#executeRestoreButton");
+  if (!executeButton) return;
+  executeButton.disabled = !state.pendingRestore
+    || !document.querySelector("#restoreBackupChecked")?.checked
+    || !document.querySelector("#restoreOverwriteChecked")?.checked;
+}
+
+function executePendingRestore() {
+  if (!state.pendingRestore) return;
+  if (!document.querySelector("#restoreBackupChecked")?.checked || !document.querySelector("#restoreOverwriteChecked")?.checked) return;
+  createRestoreSafetySnapshot("before_restore");
+  createAutoSnapshot("before_restore");
+  applyBackupData(state.pendingRestore.data);
+  state.pendingRestore = null;
+  closeDetail();
+  closeLessonDetail();
+  saveUnits();
+  render();
+  const message = document.querySelector("#importMessage");
+  if (message) message.textContent = "バックアップから復元しました。";
+  showToast("復元しました。");
+}
+
+function applyBackupData(data) {
+  state.units = data.units;
+  state.practiceLogs = data.practiceLogs;
+  state.pastExamLogs = data.pastExamLogs;
+  state.practicalLogs = data.practicalLogs;
+  state.mockExamResults = data.mockExamResults;
+  state.drillResults = data.drillResults;
+  state.aiAnalyses = data.aiAnalyses;
+  state.lessonOverrides = data.lessonOverrides;
+  state.aiSettings = normalizeAiSettings(null);
+  state.studyPlans = data.studyPlans;
+  state.curriculumProgress = data.curriculumProgress;
+  state.userSettings = data.userSettings;
+  state.pastExamMappings = data.pastExamMappings;
+  state.importedPastExamQuestions = data.importedPastExamQuestions;
+}
+
+function getBackupSummary(data) {
+  return {
+    curriculumProgressCount: countItems(data.curriculumProgress),
+    drillResultsCount: countItems(data.drillResults),
+    mockExamResultsCount: countItems(data.mockExamResults),
+    studyPlansCount: countItems(data.studyPlans),
+    lessonOverridesCount: countItems(data.lessonOverrides),
+    aiAnalysesCount: countItems(data.aiAnalyses),
+    practiceLogsCount: countItems(data.practiceLogs),
+    pastExamLogsCount: countItems(data.pastExamLogs),
+    practicalLogsCount: countItems(data.practicalLogs),
+    logCount: countItems(data.practiceLogs) + countItems(data.pastExamLogs) + countItems(data.practicalLogs)
+  };
+}
+
+function countItems(value) {
+  if (Array.isArray(value)) return value.length;
+  if (value && typeof value === "object") return Object.keys(value).length;
+  return 0;
+}
+
+function renderSummaryDetails(summary) {
+  return `
+    <div><dt>レッスン進捗数</dt><dd>${summary.curriculumProgressCount}件</dd></div>
+    <div><dt>ドリル結果数</dt><dd>${summary.drillResultsCount}件</dd></div>
+    <div><dt>模試結果数</dt><dd>${summary.mockExamResultsCount}件</dd></div>
+    <div><dt>学習計画数</dt><dd>${summary.studyPlansCount}件</dd></div>
+    <div><dt>レッスン追加教材数</dt><dd>${summary.lessonOverridesCount}件</dd></div>
+    <div><dt>外部ChatGPT相談履歴数</dt><dd>${summary.aiAnalysesCount}件</dd></div>
+    <div><dt>演習ログ数</dt><dd>${summary.practiceLogsCount}件</dd></div>
+    <div><dt>過去問ログ数</dt><dd>${summary.pastExamLogsCount}件</dd></div>
+    <div><dt>実務ログ数</dt><dd>${summary.practicalLogsCount}件</dd></div>
+  `;
+}
+
+function getLocalStorageUsage() {
+  const keys = [];
+  let size = 0;
+  for (let index = 0; index < localStorage.length; index += 1) {
+    const key = localStorage.key(index);
+    if (!key || !key.startsWith("tsukanYobiko.")) continue;
+    const value = localStorage.getItem(key) || "";
+    keys.push(key);
+    size += key.length + value.length;
+  }
+  return {
+    keys: keys.sort(),
+    sizeKb: Math.max(1, Math.ceil(size / 1024))
+  };
+}
+
+function createRestoreSafetySnapshot(reason) {
+  const snapshot = {
+    createdAt: new Date().toISOString(),
+    reason,
+    data: makeBackupData()
+  };
+  localStorage.setItem(STORAGE_KEYS.restoreSafetySnapshot, JSON.stringify(snapshot));
+}
+
+function createAutoSnapshot(reason) {
+  const snapshots = normalizeArray(readJson(STORAGE_KEYS.autoSnapshots));
+  const data = makeBackupData();
+  snapshots.unshift({
+    id: `snapshot-${Date.now().toString(36)}`,
+    createdAt: new Date().toISOString(),
+    reason,
+    summary: getBackupSummary(data),
+    data
+  });
+  localStorage.setItem(STORAGE_KEYS.autoSnapshots, JSON.stringify(snapshots.slice(0, 3)));
+}
+
+function renderSnapshotStatus() {
+  const snapshots = normalizeArray(readJson(STORAGE_KEYS.autoSnapshots));
+  const latest = snapshots[0];
+  const snapshotSummary = document.querySelector("#snapshotSummary");
+  if (snapshotSummary) {
+    snapshotSummary.innerHTML = `
+      <div><dt>自動スナップショット件数</dt><dd>${snapshots.length}件</dd></div>
+      <div><dt>最新スナップショット日時</dt><dd>${escapeHtml(formatDateTime(latest?.createdAt))}</dd></div>
+    `;
+  }
+  const list = document.querySelector("#snapshotList");
+  if (list) {
+    list.innerHTML = snapshots.length
+      ? snapshots.map((snapshot) => `
+        <div class="snapshot-item">
+          <p><strong>${escapeHtml(formatDateTime(snapshot.createdAt))}</strong> / ${escapeHtml(snapshot.reason)}</p>
+          <p class="muted">進捗${snapshot.summary?.curriculumProgressCount || 0}・ドリル${snapshot.summary?.drillResultsCount || 0}・模試${snapshot.summary?.mockExamResultsCount || 0}</p>
+          <button class="ghost-button" type="button" data-restore-auto-snapshot="${escapeAttribute(snapshot.id)}">このスナップショットから復元</button>
+        </div>
+      `).join("")
+      : `<p class="muted">自動スナップショットはまだありません。</p>`;
+  }
+  const safety = readJson(STORAGE_KEYS.restoreSafetySnapshot);
+  const safetySummary = document.querySelector("#restoreSafetySnapshotSummary");
+  if (safetySummary) {
+    const summary = safety?.data ? getBackupSummary(safety.data) : null;
+    safetySummary.innerHTML = safety
+      ? `
+        <div><dt>作成日時</dt><dd>${escapeHtml(formatDateTime(safety.createdAt))}</dd></div>
+        <div><dt>理由</dt><dd>${escapeHtml(safety.reason || "不明")}</dd></div>
+        <div><dt>内容</dt><dd>進捗${summary?.curriculumProgressCount || 0}・ドリル${summary?.drillResultsCount || 0}・模試${summary?.mockExamResultsCount || 0}</dd></div>
+      `
+      : `<div><dt>状態</dt><dd>直前スナップショットはありません。</dd></div>`;
+  }
+}
+
+function restoreAutoSnapshot(snapshotId) {
+  const snapshot = normalizeArray(readJson(STORAGE_KEYS.autoSnapshots)).find((item) => item.id === snapshotId);
+  if (!snapshot?.data) return;
+  const confirmed = window.confirm("現在の学習データを、この自動スナップショットで上書きします。実行しますか？");
+  if (!confirmed) return;
+  createRestoreSafetySnapshot("before_auto_snapshot_restore");
+  applyBackupData(normalizeBackupPayload({ appName: APP_NAME, data: snapshot.data }).data);
+  saveUnits();
+  render();
+  showToast("スナップショットから復元しました。");
+}
+
+function restoreSafetySnapshot() {
+  const snapshot = readJson(STORAGE_KEYS.restoreSafetySnapshot);
+  if (!snapshot?.data) {
+    showToast("直前スナップショットはありません。");
+    return;
+  }
+  const confirmed = window.confirm("現在の学習データを、直前スナップショットで上書きします。実行しますか？");
+  if (!confirmed) return;
+  createAutoSnapshot("before_restore_safety_snapshot");
+  applyBackupData(normalizeBackupPayload({ appName: APP_NAME, data: snapshot.data }).data);
+  saveUnits();
+  render();
+  showToast("直前スナップショットから復元しました。");
+}
+
+function showSafetySnapshotSummary() {
+  const snapshot = readJson(STORAGE_KEYS.restoreSafetySnapshot);
+  const message = document.querySelector("#restoreSafetySnapshotMessage");
+  if (!message) return;
+  if (!snapshot?.data) {
+    message.textContent = "直前スナップショットはありません。";
+    return;
+  }
+  const summary = getBackupSummary(snapshot.data);
+  message.textContent = `作成日時：${formatDateTime(snapshot.createdAt)} / 進捗${summary.curriculumProgressCount}件・ドリル${summary.drillResultsCount}件・模試${summary.mockExamResultsCount}件`;
 }
 
 function showToast(message) {
@@ -10332,9 +10640,29 @@ function attachEvents() {
   document.querySelector("#importInput")?.addEventListener("change", (event) => {
     importBackup(event.target.files[0]);
   });
+  document.querySelector("#restoreBackupChecked")?.addEventListener("change", updateRestoreButtonState);
+  document.querySelector("#restoreOverwriteChecked")?.addEventListener("change", updateRestoreButtonState);
+  document.querySelector("#executeRestoreButton")?.addEventListener("click", executePendingRestore);
+  document.querySelector("#showSafetySnapshotButton")?.addEventListener("click", showSafetySnapshotSummary);
+  document.querySelector("#restoreSafetySnapshotButton")?.addEventListener("click", restoreSafetySnapshot);
+  document.body.addEventListener("click", (event) => {
+    const autoSnapshotButton = event.target.closest("[data-restore-auto-snapshot]");
+    if (autoSnapshotButton) {
+      restoreAutoSnapshot(autoSnapshotButton.dataset.restoreAutoSnapshot);
+    }
+  });
   document.querySelector("#resetButton")?.addEventListener("click", () => {
-    const confirmed = window.confirm("保存済みの学習記録を削除し、初期データに戻します。よろしいですか？");
+    const resetCheck = document.querySelector("#resetConfirmCheck");
+    const resetText = document.querySelector("#resetConfirmText");
+    const resetMessage = document.querySelector("#resetMessage");
+    if (!resetCheck?.checked || !["RESET", "初期化"].includes(String(resetText?.value || "").trim())) {
+      if (resetMessage) resetMessage.textContent = "チェックを入れ、RESET または 初期化 と入力すると初期化できます。";
+      return;
+    }
+    const confirmed = window.confirm("学習進捗、ドリル結果、模試結果、学習計画、ログ、追加教材、相談履歴を削除します。教材データ自体は削除されません。実行しますか？");
     if (!confirmed) return;
+    createAutoSnapshot("before_reset");
+    createRestoreSafetySnapshot("before_reset");
     localStorage.removeItem(STORAGE_KEYS.units);
     localStorage.removeItem(STORAGE_KEYS.practiceLogs);
     localStorage.removeItem(STORAGE_KEYS.pastExamLogs);
@@ -10346,6 +10674,9 @@ function attachEvents() {
     localStorage.removeItem(STORAGE_KEYS.aiSettings);
     localStorage.removeItem(STORAGE_KEYS.studyPlans);
     localStorage.removeItem(STORAGE_KEYS.curriculumProgress);
+    localStorage.removeItem(STORAGE_KEYS.userSettings);
+    localStorage.removeItem(STORAGE_KEYS.pastExamMappings);
+    localStorage.removeItem(STORAGE_KEYS.importedPastExamQuestions);
     state.units = makeInitialUnits();
     state.practiceLogs = [];
     state.pastExamLogs = [];
@@ -10357,6 +10688,9 @@ function attachEvents() {
     state.aiSettings = normalizeAiSettings(null);
     state.studyPlans = [];
     state.curriculumProgress = [];
+    state.userSettings = {};
+    state.pastExamMappings = [];
+    state.importedPastExamQuestions = [];
     state.editingPracticeLogId = null;
     state.editingPastExamLogId = null;
     state.editingPracticalLogId = null;
