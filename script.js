@@ -2130,7 +2130,7 @@ function startMockExam(modeId = state.mockExam.selectedMode) {
     lastReviewResult: null
   };
   renderMockExamView();
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  scrollToActiveQuestion("mock");
 }
 
 function buildMockExamQuestions(modeId) {
@@ -2236,6 +2236,29 @@ function uniqueQuestions(questions) {
   return [...map.values()];
 }
 
+function scrollToActiveQuestion(area = "") {
+  const selectorGroups = {
+    drill: ["#drill-question-area", "#drillAreaStandalone .drill-card", "#drillAreaStandalone"],
+    mock: ["#mock-question-area", "#mockExamPlayer .mock-question-card", "#mockExamPlayer"]
+  };
+  const selectors = selectorGroups[area] || [
+    "#active-question-area",
+    "#drill-question-area",
+    "#mock-question-area",
+    ".active-question-area",
+    ".question-card"
+  ];
+  const scroll = () => {
+    const target = selectors.map((selector) => document.querySelector(selector)).find(Boolean);
+    if (!target) return;
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+  const schedule = typeof requestAnimationFrame === "function" ? requestAnimationFrame : (callback) => setTimeout(callback, 0);
+  schedule(() => {
+    setTimeout(scroll, 50);
+  });
+}
+
 function answerMockQuestion(questionId, value) {
   if (!state.mockExam.active) return;
   state.mockExam.active.answers[questionId] = {
@@ -2250,7 +2273,7 @@ function moveMockQuestion(delta) {
   const max = state.mockExam.active.questions.length - 1;
   state.mockExam.currentIndex = Math.min(max, Math.max(0, state.mockExam.currentIndex + delta));
   renderMockExamView();
-  document.querySelector("#mockExamPlayer")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  scrollToActiveQuestion("mock");
 }
 
 function finishMockExamEarly() {
@@ -2290,7 +2313,7 @@ function startMockWrongReview(resultId = "") {
   };
   switchView("mock");
   renderMockExamView();
-  document.querySelector("#mockExamPlayer")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  scrollToActiveQuestion("mock");
 }
 
 function saveMockWrongReviewResult(result) {
@@ -3550,7 +3573,7 @@ function renderDrillQuestion(question, questions) {
     : question.questionType === "processChoice" || question.questionType === "calculationCheck" ? "ミス防止ポイント"
     : "ひっかけ解説";
   return `
-    <article class="drill-card">
+    <article class="drill-card active-question-area" id="drill-question-area">
       <div class="card-meta">
         <span class="badge">${escapeHtml(question.subject)}</span>
         <span class="badge">${escapeHtml(question.topic)}</span>
@@ -3676,7 +3699,7 @@ function startDrillByMode(mode, options = {}) {
   state.drill.message = "";
   switchView("drill");
   renderDrillView();
-  document.querySelector("#drillAreaStandalone")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  scrollToActiveQuestion("drill");
   return true;
 }
 
@@ -3715,7 +3738,7 @@ function startDrillBySubject(subject, options = {}) {
   state.drill.message = "";
   switchView("drill");
   renderDrillView();
-  document.querySelector("#drillAreaStandalone")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  scrollToActiveQuestion("drill");
   return true;
 }
 
@@ -3760,7 +3783,7 @@ function startWeaknessDrill(targetName, type = "tag", count = "5") {
     state.drill.startedAt = new Date().toISOString();
   }
   renderDrillView();
-  document.querySelector("#drillAreaStandalone")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  scrollToActiveQuestion("drill");
 }
 
 function gradeCurrentDrill() {
@@ -3801,6 +3824,7 @@ function moveNextDrill() {
   state.drill.selectedAnswer = "";
   state.drill.graded = false;
   renderDrillView();
+  scrollToActiveQuestion("drill");
 }
 
 function finishCurrentDrill() {
@@ -6916,7 +6940,7 @@ function renderMockPlayer() {
     </div>
     <div class="progress-bar" aria-label="模試回答進捗"><span style="width:${Math.round((answeredCount / total) * 100)}%"></span></div>
     ${active.shortageMessage ? `<p class="form-message">${escapeHtml(active.shortageMessage)}</p>` : ""}
-    <article class="mock-question-card">
+    <article class="mock-question-card active-question-area" id="mock-question-area">
       <div class="card-meta">
         <span class="badge">${escapeHtml(question.subject)}</span>
         <span class="badge">${escapeHtml(question.topic)}</span>
@@ -11243,6 +11267,7 @@ function attachEvents() {
     if (mockJumpButton) {
       state.mockExam.currentIndex = Number(mockJumpButton.dataset.mockJump || 0);
       renderMockExamView();
+      scrollToActiveQuestion("mock");
       return;
     }
     if (event.target.closest("[data-grade-mock]")) {
