@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="TSUKAN YOBIKO v2.8 - バックアップ・復元・データ安全性強化版">
+    <meta name="description" content="TSUKAN YOBIKO v2.9 - 過去問マッピング機能版">
     <meta name="theme-color" content="#1f5f5b">
     <title>TSUKAN YOBIKO</title>
     <link rel="stylesheet" href="style.css">
@@ -15,7 +15,7 @@
           <p class="eyebrow">通関士試験 個人予備校</p>
           <h1>TSUKAN YOBIKO</h1>
         </div>
-        <span class="version-pill">v2.8</span>
+        <span class="version-pill">v2.9</span>
       </header>
 
       <main class="app-main">
@@ -67,6 +67,16 @@
               <h3>弱点トップ3</h3>
             </div>
             <div id="homeRiskSummary" class="compact-list"></div>
+          </section>
+          <section class="panel">
+            <div class="analysis-cta">
+              <div>
+                <p class="eyebrow">Past Exam Mapping</p>
+                <h3>過去問マッピング</h3>
+                <p class="muted">ローカルJSONで取り込んだ過去問を、レッスン・問題バンク・教材根拠判定へ紐づけます。</p>
+              </div>
+              <button class="primary-button" type="button" data-view-shortcut="past-mapping">開く</button>
+            </div>
           </section>
           <details class="panel details-panel home-secondary-panel">
             <summary>学習進捗・模試・分析・記録管理</summary>
@@ -800,6 +810,91 @@
               <button id="analysisAiConsultButton" class="primary-button" type="button">外部ChatGPT相談文を作る</button>
             </div>
           </section>
+          <section class="panel">
+            <div class="analysis-cta">
+              <div>
+                <p class="eyebrow">Past Exam Mapping</p>
+                <h3>過去問マッピング結果を確認</h3>
+              </div>
+              <button class="ghost-button" type="button" data-view-shortcut="past-mapping">過去問マッピングを開く</button>
+            </div>
+          </section>
+        </section>
+
+        <section id="view-past-mapping" class="view" aria-labelledby="past-mapping-title">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Past Exam Mapping</p>
+              <h2 id="past-mapping-title">過去問マッピング</h2>
+            </div>
+          </div>
+
+          <section class="panel">
+            <div class="panel-heading">
+              <h3>過去問JSONインポート</h3>
+            </div>
+            <div class="settings-actions">
+              <label class="file-picker">
+                ローカルJSONファイルを選択
+                <input id="pastExamImportInput" type="file" accept="application/json,.json">
+              </label>
+              <div id="pastExamImportPreview" class="restore-preview"></div>
+              <div class="form-actions">
+                <button id="executePastExamImportButton" class="primary-button" type="button" disabled>インポート実行</button>
+                <button id="clearPastExamImportButton" class="ghost-button" type="button">プレビューをクリア</button>
+              </div>
+              <p id="pastExamImportMessage" class="muted" role="status" aria-live="polite"></p>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-heading">
+              <h3>教材根拠率</h3>
+            </div>
+            <div id="pastMappingSummary" class="analysis-section-body"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-heading">
+              <h3>インポート済み過去問一覧</h3>
+            </div>
+            <div class="filters panel review-filters past-mapping-filters">
+              <label>試験名<select id="pastMapExamFilter"></select></label>
+              <label>年度<select id="pastMapYearFilter"></select></label>
+              <label>科目<select id="pastMapSubjectFilter"></select></label>
+              <label>論点<select id="pastMapTopicFilter"></select></label>
+              <label>弱点タグ<select id="pastMapWeaknessFilter"></select></label>
+              <label>判定<select id="pastMapCoverageFilter"></select></label>
+              <label class="check-card filter-check">
+                <input id="pastMapUnmappedOnlyFilter" type="checkbox">
+                マッピング未完了のみ
+              </label>
+            </div>
+            <p id="pastMappingResultCount" class="result-count" aria-live="polite"></p>
+            <div id="pastMappingQuestionList" class="past-mapping-list"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-heading">
+              <h3>不足教材リスト</h3>
+            </div>
+            <div id="pastMappingMissingList" class="analysis-section-body"></div>
+          </section>
+
+          <section class="panel">
+            <div class="analysis-cta">
+              <div>
+                <p class="eyebrow">ChatGPT Prompt</p>
+                <h3>マッピング結果から外部ChatGPT相談文を作る</h3>
+                <p class="muted">外部通信は行わず、コピー用テキストだけを作成します。</p>
+              </div>
+              <button id="pastMappingAiPromptButton" class="primary-button" type="button">相談文を作る</button>
+            </div>
+            <textarea id="pastMappingAiPromptResult" class="ai-prompt-textarea" aria-label="過去問マッピング相談文"></textarea>
+            <div class="form-actions">
+              <button id="copyPastMappingAiPromptButton" class="ghost-button" type="button">コピーする</button>
+            </div>
+          </section>
         </section>
 
         <section id="view-review" class="view" aria-labelledby="review-title">
@@ -868,8 +963,8 @@
               </div>
               <dl class="info-list">
                 <div><dt>アプリ名</dt><dd>TSUKAN YOBIKO</dd></div>
-                <div><dt>現在のバージョン</dt><dd>v2.8</dd></div>
-                <div><dt>状態</dt><dd>バックアップ・復元・データ安全性強化版</dd></div>
+                <div><dt>現在のバージョン</dt><dd>v2.9</dd></div>
+                <div><dt>状態</dt><dd>過去問マッピング機能版</dd></div>
                 <div><dt>公開前提</dt><dd>GitHub Pagesで公開して使う静的アプリです。</dd></div>
                 <div><dt>保存方式</dt><dd id="storageStatus">確認中</dd></div>
               </dl>
@@ -967,7 +1062,7 @@
                 <h3>初期化</h3>
               </div>
               <div class="settings-actions">
-                <p class="muted">初期化対象：学習進捗、ドリル結果、模試結果、学習計画、ログ、lessonOverrides、相談履歴。教材初期データ data/*.js は削除されません。</p>
+                <p class="muted">初期化対象：学習進捗、ドリル結果、模試結果、学習計画、ログ、lessonOverrides、相談履歴、インポート済み過去問、過去問マッピング。教材初期データ data/*.js は削除されません。</p>
                 <label class="check-card">
                   <input id="resetConfirmCheck" type="checkbox">
                   <span>全データが削除されることを理解しました</span>

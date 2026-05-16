@@ -1,0 +1,31 @@
+{
+  "examName": "サンプル通関士試験",
+  "year": 2025,
+  "sourceType": "user_import",
+  "questions": [
+    {
+      "id": "sample-past-001",
+      "subject": "通関業法",
+      "questionNo": "第1問",
+      "topic": "信用失墜行為",
+      "questionType": "trueFalse",
+      "questionText": "信用失墜行為の禁止と罰則の有無を区別して判断する必要がある。",
+      "choices": ["正しい", "誤り"],
+      "answer": "正しい",
+      "explanation": "義務規定と罰則規定は分けて確認します。",
+      "weaknessTag": "義務規定と罰則の混同"
+    },
+    {
+      "id": "sample-past-002",
+      "subject": "関税法等",
+      "questionNo": "第2問",
+      "topic": "輸入許可",
+      "questionType": "trueFalse",
+      "questionText": "輸入申告と輸入許可は別段階として整理する。",
+      "choices": ["正しい", "誤り"],
+      "answer": "正しい",
+      "explanation": "申告、審査、納税、許可の流れを区別します。",
+      "weaknessTag": "申告と許可の混同"
+    }
+  ]
+}

@@ -1,90 +1,115 @@
 # TSUKAN YOBIKO
 
-通関士試験向けのスマホファースト個人予備校アプリです。GitHub Pagesで動く静的アプリとして、HTML / CSS / JavaScriptのみで構成しています。
+通関士試験向けのローカル学習アプリです。HTML / CSS / JavaScript のみで動作し、GitHub Pagesで公開できる静的アプリとして構成しています。
 
 ## 現在のバージョン
 
-v2.8
+v2.9
 
-v2.8は「バックアップ・復元・データ安全性強化版」です。学習データをJSONで分かりやすく退避し、復元前の確認、ローカルスナップショット、初期化保護、壊れたlocalStorageへの耐性を強化しました。
+v2.9は「過去問マッピング機能版」です。ユーザーが用意したローカルJSONの過去問データを取り込み、TSUKAN YOBIKO内のレッスン・問題バンク・ドリルでどこまで対応できるかをA/B/C/Dで判定できます。
 
-## v2.8で行ったこと
+## v2.9で追加された機能
 
-- バックアップJSON構造整理
-- バックアップファイル名改善
-- バックアップ対象データサマリー
-- 復元前プレビュー
-- 復元前確認チェック
-- 古いバックアップ形式への対応
-- 復元前自動退避スナップショット
-- 自動スナップショット最大3件
-- スナップショットからの復元
-- 初期化保護
-- localStorage使用状況表示
-- データ整合性チェック強化
-- 壊れたlocalStorageデータへの耐性
+- 過去問JSONインポート
+- インポート前プレビュー
+- インポート済み過去問一覧
+- 過去問詳細表示
+- 対応レッスンマッピング
+- 対応問題バンクマッピング
+- 教材根拠判定 A/B/C/D
+- 教材根拠率集計
+- 科目別・弱点タグ別・年度別A/B/C/D集計
+- 不足教材リスト
+- 過去問から対応レッスン・弱点別ドリル・科目別ドリルへの導線
+- 外部ChatGPT相談文作成への過去問マッピング結果反映
+- JSONバックアップ/復元への `importedPastExamQuestions` / `pastExamMappings` 追加
+- データ整合性チェックへの過去問マッピング関連チェック追加
 
-## 方針
+## データと通信方針
 
-- AI APIは使いません
-- OpenAI API連携は復活させません
-- Cloudflare Workers連携は使いません
-- 外部通信は行いません
-- 不明点や深掘りは外部ChatGPT相談文をコピーして行います
-- アプリ本体はローカル教材・問題・解説・復習・模試・ドリル結果分析に集中します
-- 問題バンクの問題は、市販教材や過去問本文の丸写しではないオリジナル問題です
+- AI APIは使いません。
+- OpenAI API連携は復活させません。
+- Cloudflare Workers連携は使いません。
+- APIキー入力欄はありません。
+- 外部通信は行いません。
+- 過去問データはユーザーがローカルJSONファイルとして取り込みます。
+- 市販教材や過去問本文をアプリに大量同梱しません。
+- 外部ChatGPT相談は、コピー用の相談文を作成するだけです。
 
-## ファイル構成
+## 使い方
 
-```text
-index.html
-style.css
-script.js
-README.md
-data/
-  lessons.js
-  question-bank.js
-  mock-exams.js
-  weakness-groups.js
+1. `index.html` をブラウザで開きます。
+2. 「過去問マッピング」を開きます。
+3. ローカルの過去問JSONを選択します。
+4. プレビューで件数、科目別件数、id重複、必須項目不足を確認します。
+5. インポート実行後、各過去問に対応レッスン・対応問題バンク・A/B/C/D判定を保存します。
+6. 教材根拠率と不足教材リストを見て、次に補強する講義・問題・ドリルを決めます。
+
+## 過去問JSONサンプル形式
+
+配列形式:
+
+```json
+[
+  {
+    "id": "sample-past-001",
+    "year": 2025,
+    "examName": "サンプル通関士試験",
+    "subject": "通関業法",
+    "questionNo": "第1問",
+    "topic": "信用失墜行為",
+    "questionType": "trueFalse",
+    "questionText": "信用失墜行為の禁止と罰則の有無を区別して判断する必要がある。",
+    "choices": ["正しい", "誤り"],
+    "answer": "正しい",
+    "explanation": "義務規定と罰則規定は分けて確認します。",
+    "weaknessTag": "義務規定と罰則の混同"
+  }
+]
 ```
 
-教材データは `data/*.js` に分離しています。各ファイルは `window.TSUKAN_*` にデータを載せ、`script.js` が参照します。
+ラッパー形式:
 
-## 中心機能
+```json
+{
+  "examName": "サンプル通関士試験",
+  "year": 2025,
+  "sourceType": "user_import",
+  "questions": [
+    {
+      "id": "sample-past-002",
+      "subject": "関税法等",
+      "questionNo": "第2問",
+      "topic": "輸入許可",
+      "questionType": "trueFalse",
+      "questionText": "輸入申告と輸入許可は別段階として整理する。",
+      "choices": ["正しい", "誤り"],
+      "answer": "正しい",
+      "explanation": "申告、審査、納税、許可の流れを区別します。",
+      "weaknessTag": "申告と許可の混同"
+    }
+  ]
+}
+```
 
-- 学ぶ：講義、重要ポイント、混同ポイント、ひっかけ注意、ミニまとめ
-- 解く：確認問題、弱点別ドリル、科目別ドリル、手順・計算・資料読取ドリル、総合模試
-- 直す：解説、ひっかけ解説、ミス防止ポイント、復習対象化
-- 繰り返す：C判定復習、誤答復習、弱点タグ別復習、今日のメニュー
-- 見る：進捗、弱点、模試結果、科目別状態、問題バンク分析
+必須項目は `id`、`subject`、`questionNo`、`questionText`、`answer` です。
 
-## データ保存
+## 保存とバックアップ
 
 学習データはこのブラウザの `localStorage` に保存されます。スマホとPCは自動同期されません。ブラウザ変更、端末変更、キャッシュ削除、サイトデータ削除を行うとデータが失われる可能性があります。
 
-定期的にJSONバックアップを取ってください。v2.8のバックアップには `appName`、`appVersion`、`schemaVersion`、`exportedAt`、`data` が含まれます。
+定期的にJSONバックアップを取ってください。v2.9のバックアップには `appName`、`appVersion`、`schemaVersion`、`exportedAt`、`data` が含まれます。`data` には学習進捗、ドリル結果、模試結果、レッスン追加教材、インポート済み過去問、過去問マッピングが含まれます。
 
-主な保存対象:
+## 主なlocalStorageキー
 
-- `units`
-- `practiceLogs`
-- `pastExamLogs`
-- `practicalLogs`
-- `aiAnalyses`
-- `studyPlans`
-- `curriculumProgress`
-- `mockExamResults`
-- `lessonOverrides`
-- `drillResults`
-- `userSettings`
-- `pastExamMappings`
-- `importedPastExamQuestions`
-
-## 外部ChatGPT相談
-
-アプリ内通信は行いません。必要な場合は、アプリで「外部ChatGPT相談文を作る」から相談文を作成し、外部ChatGPTに貼り付けて使います。
+- `tsukanYobiko.curriculumProgress`
+- `tsukanYobiko.drillResults`
+- `tsukanYobiko.mockExamResults`
+- `tsukanYobiko.lessonOverrides`
+- `tsukanYobiko.importedPastExamQuestions`
+- `tsukanYobiko.pastExamMappings`
 
 ## 今後の予定
 
-- v2.9：過去問マッピング機能
 - v3.0：ローカル予備校版完成
+- v3.1以降：過去問マッピング結果に基づく教材補強

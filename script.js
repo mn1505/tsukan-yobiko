@@ -1,4 +1,4 @@
-const APP_VERSION = "v2.8";
+const APP_VERSION = "v2.9";
 const APP_NAME = "TSUKAN_YOBIKO";
 const BACKUP_SCHEMA_VERSION = 2;
 const AI_API_TIMEOUT_MS = 30000;
@@ -45,6 +45,8 @@ const PAST_EXAM_ROUNDS = ["第59回", "第58回", "第57回", "第56回", "第55
 const PAST_EXAM_SUBJECTS = ["通関業法", "関税法等", "通関実務", "共通", "未設定"];
 const PAST_EXAM_SCORE_TYPES = ["未設定", "部分点あり", "全正解のみ", "計算式", "申告書形式", "その他"];
 const PAST_EXAM_PRIORITIES = ["未設定", "高", "中", "低"];
+const PAST_MAPPING_COVERAGE_LEVELS = ["未判定", "A", "B", "C", "D"];
+const PAST_MAPPING_REVIEW_PRIORITIES = ["未設定", "高", "中", "低"];
 const PAST_EXAM_QUESTION_PRESETS = {
   "通関業法": ["第1問", "第2問", "第3問", "第4問", "第5問", "第6問", "第7問", "第8問", "第9問", "第10問"],
   "関税法等": ["第1問", "第2問", "第3問", "第4問", "第5問", "第6問", "第7問", "第8問", "第9問", "第10問", "第11問", "第12問", "第13問", "第14問", "第15問"],
@@ -240,6 +242,17 @@ const state = {
     allCorrectOnly: false,
     practicalOnly: false
   },
+  pastMappingFilters: {
+    examName: "すべて",
+    year: "すべて",
+    subject: "すべて",
+    topic: "すべて",
+    weakness: "すべて",
+    coverage: "すべて",
+    unmappedOnly: false
+  },
+  pendingPastExamImport: null,
+  expandedPastQuestionId: "",
   practicalFilters: {
     search: "",
     practicalType: "すべて",
@@ -602,8 +615,8 @@ function loadState() {
   state.studyPlans = normalizeArray(readJson(STORAGE_KEYS.studyPlans)).map(normalizeStudyPlan);
   state.curriculumProgress = normalizeArray(readJson(STORAGE_KEYS.curriculumProgress)).map(normalizeCurriculumProgress);
   state.userSettings = normalizePlainObject(readJson(STORAGE_KEYS.userSettings));
-  state.pastExamMappings = normalizeArray(readJson(STORAGE_KEYS.pastExamMappings));
-  state.importedPastExamQuestions = normalizeArray(readJson(STORAGE_KEYS.importedPastExamQuestions));
+  state.pastExamMappings = normalizeArray(readJson(STORAGE_KEYS.pastExamMappings)).map(normalizePastExamMapping);
+  state.importedPastExamQuestions = normalizeArray(readJson(STORAGE_KEYS.importedPastExamQuestions)).map(normalizeImportedPastExamQuestion);
   localStorage.setItem(STORAGE_KEYS.version, APP_VERSION);
 }
 
@@ -862,7 +875,7 @@ function normalizeAiSettings(item) {
     enabled: false,
     endpointUrl: "",
     lastTestedAt: String(item?.lastTestedAt || ""),
-    lastStatus: "v2.8でも廃止",
+    lastStatus: "v2.9でも廃止",
     lastError: ""
   };
 }
@@ -1018,7 +1031,7 @@ function sanitizeAiSettings(settings) {
     enabled: false,
     endpointUrl: "",
     lastTestedAt: "",
-    lastStatus: "v2.8でも廃止",
+    lastStatus: "v2.9でも廃止",
     lastError: ""
   };
 }
@@ -1042,6 +1055,54 @@ function makePastExamLogId() {
 function makePracticalLogId() {
   const random = Math.random().toString(36).slice(2, 10);
   return `prac-${Date.now().toString(36)}-${random}`;
+}
+
+function makePastExamMappingId() {
+  const random = Math.random().toString(36).slice(2, 10);
+  return `mapping-${Date.now().toString(36)}-${random}`;
+}
+
+function normalizeImportedPastExamQuestion(question, wrapper = {}) {
+  const normalized = {
+    id: String(question?.id || "").trim(),
+    year: question?.year ?? wrapper.year ?? "",
+    examName: String(question?.examName || wrapper.examName || "").trim(),
+    subject: String(question?.subject || "").trim(),
+    questionNo: String(question?.questionNo || "").trim(),
+    topic: String(question?.topic || "").trim(),
+    questionType: String(question?.questionType || "").trim(),
+    questionText: String(question?.questionText || question?.question || "").trim(),
+    choices: Array.isArray(question?.choices) ? question.choices.map(String) : [],
+    answer: String(question?.answer || "").trim(),
+    explanation: String(question?.explanation || "").trim(),
+    weaknessTag: String(question?.weaknessTag || "").trim(),
+    importedAt: String(question?.importedAt || "").trim()
+  };
+  return normalized;
+}
+
+function normalizePastExamMapping(mapping) {
+  const normalized = {
+    id: String(mapping?.id || "").trim(),
+    pastQuestionId: String(mapping?.pastQuestionId || "").trim(),
+    mappedLessonIds: Array.isArray(mapping?.mappedLessonIds) ? mapping.mappedLessonIds.map(String).filter(Boolean) : [],
+    mappedQuestionIds: Array.isArray(mapping?.mappedQuestionIds) ? mapping.mappedQuestionIds.map(String).filter(Boolean) : [],
+    coverageLevel: String(mapping?.coverageLevel || "未判定").trim(),
+    coverageReason: String(mapping?.coverageReason || "").trim(),
+    missingContent: String(mapping?.missingContent || "").trim(),
+    neededLesson: String(mapping?.neededLesson || "").trim(),
+    neededQuestions: String(mapping?.neededQuestions || "").trim(),
+    neededDrill: String(mapping?.neededDrill || "").trim(),
+    weaknessTag: String(mapping?.weaknessTag || "").trim(),
+    reviewPriority: String(mapping?.reviewPriority || "未設定").trim(),
+    updatedAt: String(mapping?.updatedAt || "").trim()
+  };
+  if (!normalized.id) normalized.id = makePastExamMappingId();
+  if (!PAST_MAPPING_COVERAGE_LEVELS.includes(normalized.coverageLevel)) normalized.coverageLevel = "未判定";
+  if (!PAST_MAPPING_REVIEW_PRIORITIES.includes(normalized.reviewPriority)) normalized.reviewPriority = "未設定";
+  normalized.mappedLessonIds = [...new Set(normalized.mappedLessonIds)];
+  normalized.mappedQuestionIds = [...new Set(normalized.mappedQuestionIds)];
+  return normalized;
 }
 
 function makeMockExamResultId() {
@@ -2463,6 +2524,7 @@ function render() {
   renderMockExamView();
   renderAiView();
   renderAnalysisView();
+  renderPastMappingView();
   renderReviewList();
   renderSettings();
   if (state.activeUnitId) {
@@ -4447,6 +4509,513 @@ function renderAnalysisView() {
   document.querySelector("#analysisQuestionBank").innerHTML = renderDrillBankAnalysis();
   document.querySelector("#analysisRetryTargets").innerHTML = renderRetryTargets(analysis.retryTargets);
   document.querySelector("#analysisAiUsage").innerHTML = renderAiUsage(analysis.aiUsage);
+}
+
+function renderPastMappingView() {
+  const root = document.querySelector("#pastMappingSummary");
+  if (!root) return;
+  renderPastExamImportPreview();
+  renderPastMappingFilters();
+  root.innerHTML = renderPastMappingSummary();
+  document.querySelector("#pastMappingQuestionList").innerHTML = renderPastMappingQuestionList();
+  document.querySelector("#pastMappingMissingList").innerHTML = renderPastMappingMissingList();
+}
+
+function renderPastMappingFilters() {
+  const questions = state.importedPastExamQuestions;
+  fillSelect("#pastMapExamFilter", ["すべて", ...rankFromValues(questions.map((item) => item.examName)).map((item) => item.label)], state.pastMappingFilters.examName);
+  fillSelect("#pastMapYearFilter", ["すべて", ...rankFromValues(questions.map((item) => item.year)).map((item) => item.label)], state.pastMappingFilters.year);
+  fillSelect("#pastMapSubjectFilter", ["すべて", ...rankFromValues(questions.map((item) => item.subject)).map((item) => item.label)], state.pastMappingFilters.subject);
+  fillSelect("#pastMapTopicFilter", ["すべて", ...rankFromValues(questions.map((item) => item.topic)).map((item) => item.label)], state.pastMappingFilters.topic);
+  fillSelect("#pastMapWeaknessFilter", ["すべて", ...rankFromValues(questions.map((item) => item.weaknessTag)).map((item) => item.label)], state.pastMappingFilters.weakness);
+  fillSelect("#pastMapCoverageFilter", ["すべて", ...PAST_MAPPING_COVERAGE_LEVELS], state.pastMappingFilters.coverage);
+  const unmapped = document.querySelector("#pastMapUnmappedOnlyFilter");
+  if (unmapped) unmapped.checked = state.pastMappingFilters.unmappedOnly;
+}
+
+function getPastExamMapping(questionId) {
+  return state.pastExamMappings.find((mapping) => mapping.pastQuestionId === questionId) || null;
+}
+
+function isPastExamMappingComplete(mapping) {
+  return Boolean(mapping && PAST_MAPPING_COVERAGE_LEVELS.includes(mapping.coverageLevel) && mapping.coverageLevel !== "未判定");
+}
+
+function getPastMappingStats() {
+  const questions = state.importedPastExamQuestions;
+  const mapped = questions.filter((question) => isPastExamMappingComplete(getPastExamMapping(question.id)));
+  const counts = PAST_MAPPING_COVERAGE_LEVELS.reduce((acc, level) => ({ ...acc, [level]: 0 }), {});
+  questions.forEach((question) => {
+    const level = getPastExamMapping(question.id)?.coverageLevel || "未判定";
+    counts[level] = (counts[level] || 0) + 1;
+  });
+  const total = questions.length;
+  const pct = (value) => total ? `${Math.round((value / total) * 1000) / 10}%` : "0%";
+  return {
+    total,
+    mapped: mapped.length,
+    unmapped: total - mapped.length,
+    counts,
+    abRate: pct((counts.A || 0) + (counts.B || 0)),
+    aRate: pct(counts.A || 0),
+    cdRate: pct((counts.C || 0) + (counts.D || 0)),
+    bySubject: buildPastMappingCoverageGroups("subject"),
+    byWeakness: buildPastMappingCoverageGroups("weaknessTag"),
+    byYear: buildPastMappingCoverageGroups("year")
+  };
+}
+
+function buildPastMappingCoverageGroups(key) {
+  const groups = {};
+  state.importedPastExamQuestions.forEach((question) => {
+    const label = String(question[key] || "未設定").trim() || "未設定";
+    if (!groups[label]) groups[label] = { label, total: 0, A: 0, B: 0, C: 0, D: 0, "未判定": 0 };
+    const level = getPastExamMapping(question.id)?.coverageLevel || "未判定";
+    groups[label].total += 1;
+    groups[label][level] = (groups[label][level] || 0) + 1;
+  });
+  return Object.values(groups).sort((a, b) => b.total - a.total || a.label.localeCompare(b.label, "ja"));
+}
+
+function renderPastMappingSummary() {
+  const stats = getPastMappingStats();
+  return `
+    <div class="analysis-stat-grid">
+      ${[
+        ["インポート済み", `${stats.total}問`],
+        ["マッピング済み", `${stats.mapped}問`],
+        ["未マッピング", `${stats.unmapped}問`],
+        ["A判定", `${stats.counts.A || 0}問`],
+        ["B判定", `${stats.counts.B || 0}問`],
+        ["C判定", `${stats.counts.C || 0}問`],
+        ["D判定", `${stats.counts.D || 0}問`],
+        ["A+B率", stats.abRate],
+        ["Aのみ率", stats.aRate],
+        ["C+D率", stats.cdRate]
+      ].map(([label, value]) => `<div class="analysis-stat"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`).join("")}
+    </div>
+    <div class="analysis-card-grid three-col past-mapping-groups">
+      ${renderCoverageGroupCard("科目別A/B/C/D", stats.bySubject)}
+      ${renderCoverageGroupCard("弱点タグ別A/B/C/D", stats.byWeakness)}
+      ${renderCoverageGroupCard("年度別A/B/C/D", stats.byYear)}
+    </div>
+  `;
+}
+
+function renderCoverageGroupCard(title, groups) {
+  return `
+    <article class="analysis-card">
+      <h4>${escapeHtml(title)}</h4>
+      ${groups.length ? groups.slice(0, 12).map((item) => `
+        <div class="mini-item">
+          <span>${escapeHtml(item.label)}</span>
+          <small>A${item.A || 0} / B${item.B || 0} / C${item.C || 0} / D${item.D || 0} / 未${item["未判定"] || 0}</small>
+        </div>
+      `).join("") : `<p class="muted">過去問JSONをインポートしてください。</p>`}
+    </article>
+  `;
+}
+
+function getFilteredPastMappingQuestions() {
+  return state.importedPastExamQuestions.filter((question) => {
+    const mapping = getPastExamMapping(question.id);
+    const level = mapping?.coverageLevel || "未判定";
+    return (
+      (state.pastMappingFilters.examName === "すべて" || question.examName === state.pastMappingFilters.examName) &&
+      (state.pastMappingFilters.year === "すべて" || String(question.year || "") === state.pastMappingFilters.year) &&
+      (state.pastMappingFilters.subject === "すべて" || question.subject === state.pastMappingFilters.subject) &&
+      (state.pastMappingFilters.topic === "すべて" || question.topic === state.pastMappingFilters.topic) &&
+      (state.pastMappingFilters.weakness === "すべて" || question.weaknessTag === state.pastMappingFilters.weakness) &&
+      (state.pastMappingFilters.coverage === "すべて" || level === state.pastMappingFilters.coverage) &&
+      (!state.pastMappingFilters.unmappedOnly || !isPastExamMappingComplete(mapping))
+    );
+  }).sort((a, b) => String(b.year || "").localeCompare(String(a.year || ""), "ja") || a.subject.localeCompare(b.subject, "ja") || a.questionNo.localeCompare(b.questionNo, "ja"));
+}
+
+function renderPastMappingQuestionList() {
+  const questions = getFilteredPastMappingQuestions();
+  const count = document.querySelector("#pastMappingResultCount");
+  if (count) count.textContent = `${questions.length}問を表示中 / 全${state.importedPastExamQuestions.length}問`;
+  if (!state.importedPastExamQuestions.length) return `<p class="muted">過去問JSONをインポートすると一覧に表示されます。</p>`;
+  if (!questions.length) return `<p class="muted">条件に一致する過去問はありません。</p>`;
+  return questions.map(renderPastMappingQuestionCard).join("");
+}
+
+function renderPastMappingQuestionCard(question) {
+  const mapping = getPastExamMapping(question.id) || normalizePastExamMapping({ pastQuestionId: question.id, weaknessTag: question.weaknessTag });
+  const expanded = state.expandedPastQuestionId === question.id;
+  return `
+    <article class="past-question-card">
+      <div class="past-question-top">
+        <div>
+          <p class="eyebrow">${escapeHtml([question.examName, question.year].filter(Boolean).join(" / ") || "Imported")}</p>
+          <h3>${escapeHtml([question.subject, question.questionNo, question.topic].filter(Boolean).join(" / "))}</h3>
+        </div>
+        <span class="coverage-badge coverage-${escapeAttribute(mapping.coverageLevel)}">${escapeHtml(mapping.coverageLevel || "未判定")}</span>
+      </div>
+      <dl class="analysis-facts compact">
+        <div><dt>弱点タグ</dt><dd>${escapeHtml(question.weaknessTag || "未設定")}</dd></div>
+        <div><dt>対応レッスン数</dt><dd>${mapping.mappedLessonIds.length}</dd></div>
+        <div><dt>対応問題数</dt><dd>${mapping.mappedQuestionIds.length}</dd></div>
+      </dl>
+      <div class="card-actions">
+        <button class="ghost-button" type="button" data-toggle-past-question="${escapeAttribute(question.id)}">${expanded ? "閉じる" : "詳細/マッピング"}</button>
+      </div>
+      ${expanded ? renderPastMappingDetail(question, mapping) : ""}
+    </article>
+  `;
+}
+
+function renderPastMappingDetail(question, mapping) {
+  const lessonCandidates = getPastMappingLessonCandidates(question);
+  const questionCandidates = getPastMappingQuestionCandidates(question);
+  const lessonIds = new Set(mapping.mappedLessonIds);
+  const mappedQuestionIds = new Set(mapping.mappedQuestionIds);
+  const lessonOptions = CURRICULUM_LESSONS.filter((lesson) => lesson.subject === question.subject || lessonCandidates.some((candidate) => candidate.id === lesson.id)).slice(0, 80);
+  const bankOptions = QUESTION_BANK.filter((item) => item.subject === question.subject || questionCandidates.some((candidate) => candidate.id === item.id)).slice(0, 120);
+  return `
+    <div class="past-question-detail">
+      <div class="past-question-text">
+        <p><strong>問題文</strong></p>
+        <p>${escapeHtml(question.questionText)}</p>
+        ${question.choices.length ? `<ol>${question.choices.map((choice) => `<li>${escapeHtml(choice)}</li>`).join("")}</ol>` : ""}
+        <dl class="analysis-facts compact">
+          <div><dt>正答</dt><dd>${escapeHtml(question.answer)}</dd></div>
+          <div><dt>解説</dt><dd>${escapeHtml(question.explanation || "なし")}</dd></div>
+        </dl>
+      </div>
+      <div class="candidate-box">
+        <h4>自動候補</h4>
+        <p class="muted">候補は自動確定されません。下のチェックを選んで保存してください。</p>
+        <div class="mini-list">
+          ${lessonCandidates.slice(0, 5).map((lesson) => `<button class="compact-item ghost-button" type="button" data-open-lesson="${escapeAttribute(lesson.id)}"><span>${escapeHtml(lesson.title)}</span><small>${escapeHtml(lesson.subject)}</small></button>`).join("") || `<p class="muted">対応レッスン候補なし</p>`}
+          ${questionCandidates.slice(0, 5).map((item) => `<div class="mini-item"><span>${escapeHtml(item.id)} / ${escapeHtml(item.topic || item.weaknessTag || "")}</span><small>${escapeHtml(item.question || "")}</small></div>`).join("") || `<p class="muted">対応問題候補なし</p>`}
+        </div>
+      </div>
+      <form class="past-mapping-form" data-past-mapping-form="${escapeAttribute(question.id)}">
+        <div class="field-wide">
+          <div class="field-label">対応レッスン</div>
+          <div class="check-row past-map-checks">
+            ${lessonOptions.map((lesson) => `
+              <label class="check-card">
+                <input type="checkbox" name="mappedLessonIds" value="${escapeAttribute(lesson.id)}" ${lessonIds.has(lesson.id) ? "checked" : ""}>
+                ${escapeHtml(lesson.subject)} / ${escapeHtml(lesson.title)}
+              </label>
+            `).join("")}
+          </div>
+        </div>
+        <label class="field-wide">
+          対応レッスンID追加（カンマ区切り）
+          <input name="mappedLessonIdsText" type="text" value="${escapeAttribute(mapping.mappedLessonIds.filter((id) => !lessonOptions.some((lesson) => lesson.id === id)).join(", "))}">
+        </label>
+        <div class="field-wide">
+          <div class="field-label">対応問題バンク</div>
+          <div class="check-row past-map-checks">
+            ${bankOptions.map((item) => `
+              <label class="check-card">
+                <input type="checkbox" name="mappedQuestionIds" value="${escapeAttribute(item.id)}" ${mappedQuestionIds.has(item.id) ? "checked" : ""}>
+                ${escapeHtml(item.id)} / ${escapeHtml(item.topic || item.weaknessTag || "")}
+              </label>
+            `).join("")}
+          </div>
+        </div>
+        <label class="field-wide">
+          対応問題ID追加（カンマ区切り）
+          <input name="mappedQuestionIdsText" type="text" value="${escapeAttribute(mapping.mappedQuestionIds.filter((id) => !bankOptions.some((item) => item.id === id)).join(", "))}">
+        </label>
+        <label>
+          教材根拠判定
+          <select name="coverageLevel">${PAST_MAPPING_COVERAGE_LEVELS.map((level) => `<option value="${escapeAttribute(level)}" ${mapping.coverageLevel === level ? "selected" : ""}>${escapeHtml(level)}</option>`).join("")}</select>
+        </label>
+        <label>
+          復習優先度
+          <select name="reviewPriority">${PAST_MAPPING_REVIEW_PRIORITIES.map((level) => `<option value="${escapeAttribute(level)}" ${mapping.reviewPriority === level ? "selected" : ""}>${escapeHtml(level)}</option>`).join("")}</select>
+        </label>
+        <label class="field-wide">判定理由<textarea name="coverageReason">${escapeHtml(mapping.coverageReason)}</textarea></label>
+        <label class="field-wide">不足教材<textarea name="missingContent">${escapeHtml(mapping.missingContent)}</textarea></label>
+        <label class="field-wide">追加すべき講義<textarea name="neededLesson">${escapeHtml(mapping.neededLesson)}</textarea></label>
+        <label class="field-wide">追加すべき問題<textarea name="neededQuestions">${escapeHtml(mapping.neededQuestions)}</textarea></label>
+        <label class="field-wide">追加すべきドリル<textarea name="neededDrill">${escapeHtml(mapping.neededDrill)}</textarea></label>
+        <label class="field-wide">弱点タグ<input name="weaknessTag" type="text" value="${escapeAttribute(mapping.weaknessTag || question.weaknessTag)}"></label>
+        <div class="form-actions field-wide">
+          <button class="primary-button" type="button" data-save-past-mapping="${escapeAttribute(question.id)}">保存</button>
+          ${mapping.mappedLessonIds[0] ? `<button class="ghost-button" type="button" data-open-lesson="${escapeAttribute(mapping.mappedLessonIds[0])}">対応レッスンを開く</button>` : ""}
+          ${question.weaknessTag ? `<button class="ghost-button" type="button" data-start-weakness-drill="${escapeAttribute(question.weaknessTag)}" data-weakness-type="tag" data-weakness-count="5">同じ弱点ドリル</button>` : ""}
+          ${subjectDrillMode(question.subject) ? `<button class="ghost-button" type="button" data-start-drill-mode="${escapeAttribute(subjectDrillMode(question.subject))}">同じ科目のドリル</button>` : ""}
+        </div>
+      </form>
+    </div>
+  `;
+}
+
+function subjectDrillMode(subject) {
+  if (subject === "通関業法") return "通関業法ドリル";
+  if (subject === "関税法等") return "関税法等ドリル";
+  if (subject === "通関実務") return "通関実務ドリル";
+  return "";
+}
+
+function getPastMappingLessonCandidates(question) {
+  const terms = [question.topic, question.weaknessTag].filter(Boolean).map((value) => String(value).toLowerCase());
+  return CURRICULUM_LESSONS.map((lesson) => {
+    const haystack = [lesson.title, lesson.topic, lesson.goal, lesson.intro, lesson.weaknessTag, ...(lesson.keyPoints || []), ...(lesson.traps || [])].join(" ").toLowerCase();
+    let score = lesson.subject === question.subject ? 4 : 0;
+    terms.forEach((term) => {
+      if (term && haystack.includes(term)) score += 6;
+    });
+    if (question.topic && lesson.title?.includes(question.topic)) score += 8;
+    if (question.weaknessTag && lesson.weaknessTag === question.weaknessTag) score += 8;
+    return { ...lesson, score };
+  }).filter((lesson) => lesson.score > 0).sort((a, b) => b.score - a.score || a.order - b.order);
+}
+
+function getPastMappingQuestionCandidates(question) {
+  const terms = [question.topic, question.weaknessTag].filter(Boolean).map((value) => String(value).toLowerCase());
+  return QUESTION_BANK.map((item) => {
+    const haystack = [item.topic, item.weaknessTag, item.question, item.explanation, item.trapExplanation].join(" ").toLowerCase();
+    let score = item.subject === question.subject ? 4 : 0;
+    terms.forEach((term) => {
+      if (term && haystack.includes(term)) score += 6;
+    });
+    if (question.topic && item.topic === question.topic) score += 8;
+    if (question.weaknessTag && item.weaknessTag === question.weaknessTag) score += 8;
+    return { ...item, score };
+  }).filter((item) => item.score > 0).sort((a, b) => b.score - a.score || a.id.localeCompare(b.id, "ja"));
+}
+
+function parseIdList(value) {
+  return String(value || "").split(",").map((item) => item.trim()).filter(Boolean);
+}
+
+function savePastExamMapping(questionId) {
+  const question = state.importedPastExamQuestions.find((item) => item.id === questionId);
+  const form = [...document.querySelectorAll("[data-past-mapping-form]")].find((item) => item.dataset.pastMappingForm === questionId);
+  if (!question || !form) return;
+  const formData = new FormData(form);
+  const existing = getPastExamMapping(questionId);
+  const mapping = normalizePastExamMapping({
+    ...(existing || {}),
+    id: existing?.id || makePastExamMappingId(),
+    pastQuestionId: questionId,
+    mappedLessonIds: [...formData.getAll("mappedLessonIds").map(String), ...parseIdList(formData.get("mappedLessonIdsText"))],
+    mappedQuestionIds: [...formData.getAll("mappedQuestionIds").map(String), ...parseIdList(formData.get("mappedQuestionIdsText"))],
+    coverageLevel: String(formData.get("coverageLevel") || "未判定"),
+    coverageReason: String(formData.get("coverageReason") || "").trim(),
+    missingContent: String(formData.get("missingContent") || "").trim(),
+    neededLesson: String(formData.get("neededLesson") || "").trim(),
+    neededQuestions: String(formData.get("neededQuestions") || "").trim(),
+    neededDrill: String(formData.get("neededDrill") || "").trim(),
+    weaknessTag: String(formData.get("weaknessTag") || question.weaknessTag || "").trim(),
+    reviewPriority: String(formData.get("reviewPriority") || "未設定"),
+    updatedAt: new Date().toISOString()
+  });
+  if (existing) {
+    state.pastExamMappings = state.pastExamMappings.map((item) => item.pastQuestionId === questionId ? mapping : item);
+  } else {
+    state.pastExamMappings.unshift(mapping);
+  }
+  saveUnits();
+  renderPastMappingView();
+  showToast("過去問マッピングを保存しました。");
+}
+
+function renderPastMappingMissingList() {
+  const rows = buildPastMappingMissingRows();
+  if (!rows.length) return `<p class="muted">C/D判定、または不足メモがあるB判定はまだありません。</p>`;
+  return `
+    <div class="ranking-list">
+      ${rows.map((row) => `
+        <details class="past-missing-item">
+          <summary>
+            <span>${escapeHtml([row.subject, row.topic, row.weaknessTag].filter(Boolean).join(" / "))}</span>
+            <span class="badge ${row.priority === "高" ? "priority" : row.priority === "中" ? "normal" : "ok"}">${escapeHtml(row.priority)}</span>
+          </summary>
+          <dl class="analysis-facts compact">
+            <div><dt>対象過去問数</dt><dd>${row.count}</dd></div>
+            <div><dt>不足内容</dt><dd>${escapeHtml(row.missingContent || "未記入")}</dd></div>
+            <div><dt>必要な講義</dt><dd>${escapeHtml(row.neededLesson || "未記入")}</dd></div>
+            <div><dt>必要な問題</dt><dd>${escapeHtml(row.neededQuestions || "未記入")}</dd></div>
+            <div><dt>必要なドリル</dt><dd>${escapeHtml(row.neededDrill || "未記入")}</dd></div>
+          </dl>
+        </details>
+      `).join("")}
+    </div>
+  `;
+}
+
+function buildPastMappingMissingRows() {
+  const groups = {};
+  state.importedPastExamQuestions.forEach((question) => {
+    const mapping = getPastExamMapping(question.id);
+    if (!mapping) return;
+    const hasShortage = ["C", "D"].includes(mapping.coverageLevel) || (mapping.coverageLevel === "B" && String(mapping.missingContent || "").trim());
+    if (!hasShortage) return;
+    const key = [question.subject, question.topic, mapping.weaknessTag || question.weaknessTag].join("|");
+    if (!groups[key]) {
+      groups[key] = {
+        subject: question.subject,
+        topic: question.topic,
+        weaknessTag: mapping.weaknessTag || question.weaknessTag,
+        levels: [],
+        missingContent: [],
+        neededLesson: [],
+        neededQuestions: [],
+        neededDrill: [],
+        count: 0
+      };
+    }
+    groups[key].count += 1;
+    groups[key].levels.push(mapping.coverageLevel);
+    ["missingContent", "neededLesson", "neededQuestions", "neededDrill"].forEach((field) => {
+      if (mapping[field]) groups[key][field].push(mapping[field]);
+    });
+  });
+  const weights = { 高: 3, 中: 2, 低: 1 };
+  return Object.values(groups).map((row) => {
+    const priority = row.levels.includes("D") ? "高" : row.levels.includes("C") ? "中" : "低";
+    return {
+      ...row,
+      priority,
+      missingContent: [...new Set(row.missingContent)].join(" / "),
+      neededLesson: [...new Set(row.neededLesson)].join(" / "),
+      neededQuestions: [...new Set(row.neededQuestions)].join(" / "),
+      neededDrill: [...new Set(row.neededDrill)].join(" / ")
+    };
+  }).sort((a, b) => weights[b.priority] - weights[a.priority] || b.count - a.count);
+}
+
+function parsePastExamImportJson(rawText) {
+  const parsed = JSON.parse(rawText);
+  const wrapper = !Array.isArray(parsed) && parsed && typeof parsed === "object" ? parsed : {};
+  const rawQuestions = Array.isArray(parsed) ? parsed : Array.isArray(parsed?.questions) ? parsed.questions : null;
+  if (!rawQuestions) throw new Error("配列形式、または questions 配列を持つラッパー形式のJSONを指定してください。");
+  const normalized = rawQuestions.map((question) => normalizeImportedPastExamQuestion(question, wrapper));
+  const existingIds = new Set(state.importedPastExamQuestions.map((question) => question.id));
+  const seen = new Set();
+  let duplicateInFile = 0;
+  const rows = normalized.map((question) => {
+    const missing = ["id", "subject", "questionNo", "questionText", "answer"].filter((field) => !String(question[field] || "").trim());
+    const duplicateExisting = existingIds.has(question.id);
+    const duplicateCurrent = question.id && seen.has(question.id);
+    if (duplicateCurrent) duplicateInFile += 1;
+    if (question.id) seen.add(question.id);
+    return { question, missing, duplicateExisting, duplicateCurrent, importable: !missing.length && !duplicateExisting && !duplicateCurrent };
+  });
+  return {
+    wrapper,
+    rows,
+    questions: rows.filter((row) => row.importable).map((row) => ({ ...row.question, importedAt: new Date().toISOString() })),
+    summary: {
+      examName: wrapper.examName || normalized.find((item) => item.examName)?.examName || "未設定",
+      year: wrapper.year || normalized.find((item) => item.year)?.year || "未設定",
+      total: normalized.length,
+      bySubject: rankFromValues(normalized.map((item) => item.subject)),
+      duplicateExisting: rows.filter((row) => row.duplicateExisting).length,
+      duplicateInFile,
+      missingRequired: rows.filter((row) => row.missing.length).length,
+      importable: rows.filter((row) => row.importable).length
+    }
+  };
+}
+
+function previewPastExamImport(file) {
+  const message = document.querySelector("#pastExamImportMessage");
+  if (!file) return;
+  const reader = new FileReader();
+  reader.addEventListener("load", () => {
+    try {
+      state.pendingPastExamImport = parsePastExamImportJson(String(reader.result || ""));
+      renderPastExamImportPreview();
+      if (message) message.textContent = "プレビューを確認してください。まだ保存していません。";
+    } catch (error) {
+      state.pendingPastExamImport = null;
+      renderPastExamImportPreview();
+      if (message) message.textContent = error.message || "JSONを読み込めませんでした。";
+    } finally {
+      document.querySelector("#pastExamImportInput").value = "";
+    }
+  });
+  reader.addEventListener("error", () => {
+    if (message) message.textContent = "ファイルを読み込めませんでした。";
+  });
+  reader.readAsText(file);
+}
+
+function renderPastExamImportPreview() {
+  const host = document.querySelector("#pastExamImportPreview");
+  const button = document.querySelector("#executePastExamImportButton");
+  if (!host || !button) return;
+  const pending = state.pendingPastExamImport;
+  button.disabled = !pending?.questions?.length;
+  if (!pending) {
+    host.innerHTML = `<p class="muted">JSONを選択すると、保存前に内容を確認できます。</p>`;
+    return;
+  }
+  const summary = pending.summary;
+  const warnings = [
+    summary.duplicateExisting ? `既存idとの重複 ${summary.duplicateExisting}件はスキップします。` : "",
+    summary.duplicateInFile ? `ファイル内id重複 ${summary.duplicateInFile}件はスキップします。` : "",
+    summary.missingRequired ? `必須項目不足 ${summary.missingRequired}件はスキップします。` : ""
+  ].filter(Boolean);
+  host.innerHTML = `
+    <dl class="info-list compact">
+      <div><dt>試験名</dt><dd>${escapeHtml(summary.examName)}</dd></div>
+      <div><dt>年度</dt><dd>${escapeHtml(summary.year)}</dd></div>
+      <div><dt>問題数</dt><dd>${summary.total}問</dd></div>
+      <div><dt>科目別問題数</dt><dd>${escapeHtml(summary.bySubject.map((item) => `${item.label}:${item.count}`).join(" / ") || "なし")}</dd></div>
+      <div><dt>id重複数</dt><dd>既存${summary.duplicateExisting} / ファイル内${summary.duplicateInFile}</dd></div>
+      <div><dt>必須項目不足数</dt><dd>${summary.missingRequired}件</dd></div>
+      <div><dt>インポート可能件数</dt><dd>${summary.importable}件</dd></div>
+    </dl>
+    ${warnings.length ? `<div class="inline-warning">${warnings.map(escapeHtml).join("<br>")}</div>` : `<p class="muted">警告はありません。</p>`}
+  `;
+}
+
+function executePastExamImport() {
+  const pending = state.pendingPastExamImport;
+  if (!pending?.questions?.length) return;
+  state.importedPastExamQuestions = [...pending.questions, ...state.importedPastExamQuestions].map(normalizeImportedPastExamQuestion);
+  state.pendingPastExamImport = null;
+  saveUnits();
+  renderPastExamImportPreview();
+  renderPastMappingView();
+  const message = document.querySelector("#pastExamImportMessage");
+  if (message) message.textContent = "過去問JSONをインポートしました。";
+  showToast("過去問をインポートしました。");
+}
+
+function buildPastMappingAiPrompt() {
+  const stats = getPastMappingStats();
+  const missing = buildPastMappingMissingRows().slice(0, 12);
+  const subjects = stats.bySubject.map((item) => `${item.label}: A${item.A || 0}/B${item.B || 0}/C${item.C || 0}/D${item.D || 0}`).join("\n");
+  return [
+    "私は通関士試験を学習しています。",
+    "TSUKAN YOBIKOというローカル教材アプリの過去問マッピング結果をもとに、教材不足を分析してください。",
+    "",
+    "【対象】",
+    `${state.importedPastExamQuestions[0]?.examName || "インポート済み過去問"} ${state.importedPastExamQuestions[0]?.subject || ""}`.trim(),
+    "",
+    "【教材根拠率】",
+    `インポート済み過去問数：${stats.total}`,
+    `マッピング済み問題数：${stats.mapped}`,
+    `A判定：${stats.counts.A || 0}`,
+    `B判定：${stats.counts.B || 0}`,
+    `C判定：${stats.counts.C || 0}`,
+    `D判定：${stats.counts.D || 0}`,
+    `A+B率：${stats.abRate}`,
+    `Aのみ率：${stats.aRate}`,
+    `C+D率：${stats.cdRate}`,
+    "",
+    "【科目別A/B/C/D】",
+    subjects || "データなし",
+    "",
+    "【不足論点】",
+    missing.length ? missing.map((item) => `・${[item.subject, item.topic, item.weaknessTag].filter(Boolean).join(" / ")}：${item.priority}、${item.missingContent || item.neededLesson || item.neededQuestions || item.neededDrill || "不足内容未記入"}`).join("\n") : "不足論点は未登録です。",
+    "",
+    "【相談したいこと】",
+    "次にどの教材・問題・ドリルを追加すべきか、優先順位を提案してください。",
+    "市販教材や過去問本文をそのまま複製せず、論点ベースで教材補強案を出してください。"
+  ].join("\n");
 }
 
 function renderDrillBankAnalysis() {
@@ -7089,9 +7658,6 @@ function renderAiResponse() {
   `;
   text.textContent = state.aiForm.apiResponseText || "AI応答はまだありません。";
   error.textContent = state.aiForm.apiError || "";
-  document.querySelector("#sendAiPromptButton")?.classList.toggle("attention", Boolean(state.aiForm.highlightSend && state.aiSettings.enabled));
-  document.querySelector("#sendAiPromptButton")?.toggleAttribute("disabled", Boolean(state.aiForm.sending));
-  document.querySelector("#cancelAiSendButton")?.toggleAttribute("disabled", !state.aiForm.sending);
 }
 
 function renderAiApiLogSummary() {
@@ -7879,7 +8445,7 @@ function resolveAiSubject(target) {
 }
 
 async function postAiApiRequest(payload) {
-  throw new Error("v2.8ではアプリ内通信を行いません。相談文をコピーして外部ChatGPTに貼り付けてください。");
+  throw new Error("v2.9ではアプリ内通信を行いません。相談文をコピーして外部ChatGPTに貼り付けてください。");
 }
 
 function buildAiConnectionHint(prefix) {
@@ -7887,7 +8453,7 @@ function buildAiConnectionHint(prefix) {
   return [
     prefix,
     "外部API設定は使いません。",
-    "v2.8では外部通信を行わないため、相談文をコピーして外部ChatGPTに貼り付けてください。"
+    "v2.9では外部通信を行わないため、相談文をコピーして外部ChatGPTに貼り付けてください。"
   ].join(" ");
 }
 
@@ -7905,9 +8471,9 @@ function inferAiHealthUrl(endpointUrl) {
 
 async function checkAiWorkerHealth() {
   const result = document.querySelector("#aiConnectionTestResult");
-  state.aiSettings.lastStatus = "v2.8でも廃止";
+  state.aiSettings.lastStatus = "v2.9でも廃止";
   state.aiSettings.lastError = "";
-  if (result) result.textContent = "v2.8ではアプリ内通信を行いません。";
+  if (result) result.textContent = "v2.9ではアプリ内通信を行いません。";
   saveUnits();
   renderSettings();
 }
@@ -7922,7 +8488,7 @@ async function sendCurrentAiPromptToApi() {
     return;
   }
   state.aiForm.apiStatus = "コピー用";
-  state.aiForm.apiError = "v2.8ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
+  state.aiForm.apiError = "v2.9ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
   renderAiResponse();
   await copyAiPrompt();
 }
@@ -7932,7 +8498,7 @@ async function askAiTutor() {
   const { target, promptText } = generateAiTutorPrompt();
   if (!promptText) return;
   state.aiTutorForm.apiStatus = "コピー用";
-  state.aiTutorForm.apiError = "v2.8ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
+  state.aiTutorForm.apiError = "v2.9ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
   saveAiTutorAnalysis({ target, sentViaApi: false });
   renderAiTutorView();
   showToast("相談文を生成しました。");
@@ -7963,7 +8529,7 @@ async function runAiSuggestion() {
   const { target, promptText } = generateAiSuggestionPrompt();
   if (!promptText) return;
   state.aiSuggestionForm.apiStatus = "コピー用";
-  state.aiSuggestionForm.apiError = "v2.8ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
+  state.aiSuggestionForm.apiError = "v2.9ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
   saveAiSuggestionAnalysis({ target, sentViaApi: false });
   renderAiSuggestionView();
   showToast("相談文を生成しました。");
@@ -8257,18 +8823,15 @@ function saveCurrentAiResponse() {
 async function testAiConnection() {
   const result = document.querySelector("#aiConnectionTestResult");
   state.aiSettings.lastTestedAt = new Date().toISOString();
-  state.aiSettings.lastStatus = "v2.8でも廃止";
+  state.aiSettings.lastStatus = "v2.9でも廃止";
   state.aiSettings.lastError = "";
-  if (result) result.textContent = "v2.8ではアプリ内通信を行いません。";
+  if (result) result.textContent = "v2.9ではアプリ内通信を行いません。";
   saveUnits();
   renderSettings();
 }
 
 function saveAiSettingsFromInputs(showMessage = true) {
-  const enabled = document.querySelector("#aiApiEnabled");
-  const endpoint = document.querySelector("#aiEndpointUrl");
-  state.aiSettings.enabled = Boolean(enabled?.checked);
-  state.aiSettings.endpointUrl = String(endpoint?.value || "").trim();
+  state.aiSettings = normalizeAiSettings(null);
   saveUnits();
   renderSettings();
   renderAiResponse();
@@ -9425,6 +9988,8 @@ function renderSettings() {
     <div><dt>保存中のドリル結果数</dt><dd>${state.drillResults.length}件</dd></div>
     <div><dt>保存中の過去AIメモ・相談文数</dt><dd>${state.aiAnalyses.length}件</dd></div>
     <div><dt>保存中の追加教材数</dt><dd>${state.lessonOverrides.length}件</dd></div>
+    <div><dt>保存中のインポート済み過去問数</dt><dd>${state.importedPastExamQuestions.length}件</dd></div>
+    <div><dt>保存中の過去問マッピング数</dt><dd>${state.pastExamMappings.length}件</dd></div>
     <div><dt>保存中の学習メニュー数</dt><dd>${state.studyPlans.length}件</dd></div>
     <div><dt>保存中のレッスン進捗数</dt><dd>${state.curriculumProgress.length}件</dd></div>
     <div><dt>最終更新単元</dt><dd>${escapeHtml(last?.title || "未保存")}</dd></div>
@@ -9460,6 +10025,8 @@ function renderDataStatus() {
     <div><dt>問題数</dt><dd>${QUESTION_BANK.length}問</dd></div>
     <div><dt>模試問題数</dt><dd>${MOCK_EXAM_QUESTIONS.length}問</dd></div>
     <div><dt>弱点グループ数</dt><dd>${WEAKNESS_GROUPS.length}件</dd></div>
+    <div><dt>インポート済み過去問数</dt><dd>${state.importedPastExamQuestions.length}問</dd></div>
+    <div><dt>過去問マッピング数</dt><dd>${state.pastExamMappings.length}件</dd></div>
     <div><dt>現在のバージョン</dt><dd>${APP_VERSION}</dd></div>
   `;
 }
@@ -9499,6 +10066,13 @@ function validateDataIntegrity() {
   const unknownProgressLessonIds = state.curriculumProgress.map((item) => item.lessonId).filter((id) => id && !lessonIds.has(id));
   const unknownOverrideLessonIds = state.lessonOverrides.map((item) => item.lessonId).filter((id) => id && !lessonIds.has(id));
   const missingDisplayFields = bankAndMockQuestions.filter((question) => !question.id || !question.question || !question.subject).slice(0, 10);
+  const importedQuestionIds = new Set(state.importedPastExamQuestions.map((question) => question.id).filter(Boolean));
+  const unknownPastMappingQuestionIds = state.pastExamMappings.map((mapping) => mapping.pastQuestionId).filter((id) => id && !importedQuestionIds.has(id));
+  const unknownPastMappedLessonIds = state.pastExamMappings.flatMap((mapping) => mapping.mappedLessonIds || []).filter((id) => id && !lessonIds.has(id));
+  const unknownPastMappedQuestionIds = state.pastExamMappings.flatMap((mapping) => mapping.mappedQuestionIds || []).filter((id) => id && !bankQuestionIds.has(id));
+  const invalidPastCoverageLevels = state.pastExamMappings.filter((mapping) => !["A", "B", "C", "D", "未判定"].includes(mapping.coverageLevel));
+  const missingPastQuestionSubjectCount = state.importedPastExamQuestions.filter((question) => !String(question.subject || "").trim()).length;
+  const missingPastQuestionTextCount = state.importedPastExamQuestions.filter((question) => !String(question.questionText || "").trim()).length;
   return {
     dataFilesOk: Object.values(DATA_FILE_STATUS).every(Boolean),
     lessonCount: CURRICULUM_LESSONS.length,
@@ -9516,7 +10090,14 @@ function validateDataIntegrity() {
     unknownMockQuestionIds,
     unknownProgressLessonIds,
     unknownOverrideLessonIds,
-    missingDisplayFields
+    missingDisplayFields,
+    duplicateImportedPastQuestionIds: duplicateCount(state.importedPastExamQuestions.map((question) => question.id)),
+    unknownPastMappingQuestionIds,
+    unknownPastMappedLessonIds,
+    unknownPastMappedQuestionIds,
+    invalidPastCoverageLevels,
+    missingPastQuestionSubjectCount,
+    missingPastQuestionTextCount
   };
 }
 
@@ -9533,7 +10114,14 @@ function renderDataIntegrityResult() {
     ["mockExamResults内の不明questionId", result.unknownMockQuestionIds.length, result.unknownMockQuestionIds.slice(0, 5).join(" / ") || "保存済み模試結果を確認してください。"],
     ["curriculumProgress内の不明lessonId", result.unknownProgressLessonIds.length, result.unknownProgressLessonIds.slice(0, 5).join(" / ") || "保存済み進捗を確認してください。"],
     ["lessonOverrides内の不明lessonId", result.unknownOverrideLessonIds.length, result.unknownOverrideLessonIds.slice(0, 5).join(" / ") || "追加教材の対象レッスンを確認してください。"],
-    ["表示欠損候補", result.missingDisplayFields.length + result.invalidChoicesCount + result.missingAnswerCount + result.missingSubjectCount, "id/question/subject/choices/answerの欠損を確認してください。"]
+    ["表示欠損候補", result.missingDisplayFields.length + result.invalidChoicesCount + result.missingAnswerCount + result.missingSubjectCount, "id/question/subject/choices/answerの欠損を確認してください。"],
+    ["importedPastExamQuestionsのid重複", result.duplicateImportedPastQuestionIds, "インポート済み過去問のidを確認してください。"],
+    ["pastExamMappings内の不明pastQuestionId", result.unknownPastMappingQuestionIds.length, result.unknownPastMappingQuestionIds.slice(0, 5).join(" / ") || "過去問マッピングを確認してください。"],
+    ["pastExamMappings内の不明lessonId", result.unknownPastMappedLessonIds.length, result.unknownPastMappedLessonIds.slice(0, 5).join(" / ") || "対応レッスンIDを確認してください。"],
+    ["pastExamMappings内の不明questionId", result.unknownPastMappedQuestionIds.length, result.unknownPastMappedQuestionIds.slice(0, 5).join(" / ") || "対応問題IDを確認してください。"],
+    ["pastExamMappingsのcoverageLevel不正", result.invalidPastCoverageLevels.length, "A/B/C/D/未判定のいずれかにしてください。"],
+    ["インポート過去問のsubject欠損", result.missingPastQuestionSubjectCount, "過去問JSONのsubjectを確認してください。"],
+    ["インポート過去問のquestionText欠損", result.missingPastQuestionTextCount, "過去問JSONのquestionTextを確認してください。"]
   ].filter((item) => item[1] > 0);
   host.innerHTML = warnings.length
     ? `<strong>警告 ${warnings.length}項目</strong><ul class="note-list compact">${warnings.map(([label, count, hint]) => `<li>${escapeHtml(label)}：${count}件。${escapeHtml(hint)}</li>`).join("")}</ul>`
@@ -9655,8 +10243,8 @@ function normalizeBackupPayload(value) {
     lessonOverrides: normalizeArray(rawData.lessonOverrides).map(normalizeLessonOverride),
     drillResults: normalizeArray(rawData.drillResults).map(normalizeDrillResult),
     userSettings: normalizePlainObject(rawData.userSettings),
-    pastExamMappings: normalizeArray(rawData.pastExamMappings),
-    importedPastExamQuestions: normalizeArray(rawData.importedPastExamQuestions)
+    pastExamMappings: normalizeArray(rawData.pastExamMappings).map(normalizePastExamMapping),
+    importedPastExamQuestions: normalizeArray(rawData.importedPastExamQuestions).map(normalizeImportedPastExamQuestion)
   };
   if (!Array.isArray(data.units)) {
     throw new Error("unitsが配列ではないため復元できません。");
@@ -9742,6 +10330,8 @@ function getBackupSummary(data) {
     practiceLogsCount: countItems(data.practiceLogs),
     pastExamLogsCount: countItems(data.pastExamLogs),
     practicalLogsCount: countItems(data.practicalLogs),
+    importedPastExamQuestionsCount: countItems(data.importedPastExamQuestions),
+    pastExamMappingsCount: countItems(data.pastExamMappings),
     logCount: countItems(data.practiceLogs) + countItems(data.pastExamLogs) + countItems(data.practicalLogs)
   };
 }
@@ -9763,6 +10353,8 @@ function renderSummaryDetails(summary) {
     <div><dt>演習ログ数</dt><dd>${summary.practiceLogsCount}件</dd></div>
     <div><dt>過去問ログ数</dt><dd>${summary.pastExamLogsCount}件</dd></div>
     <div><dt>実務ログ数</dt><dd>${summary.practicalLogsCount}件</dd></div>
+    <div><dt>インポート済み過去問数</dt><dd>${summary.importedPastExamQuestionsCount || 0}件</dd></div>
+    <div><dt>過去問マッピング数</dt><dd>${summary.pastExamMappingsCount || 0}件</dd></div>
   `;
 }
 
@@ -9820,7 +10412,7 @@ function renderSnapshotStatus() {
       ? snapshots.map((snapshot) => `
         <div class="snapshot-item">
           <p><strong>${escapeHtml(formatDateTime(snapshot.createdAt))}</strong> / ${escapeHtml(snapshot.reason)}</p>
-          <p class="muted">進捗${snapshot.summary?.curriculumProgressCount || 0}・ドリル${snapshot.summary?.drillResultsCount || 0}・模試${snapshot.summary?.mockExamResultsCount || 0}</p>
+          <p class="muted">進捗${snapshot.summary?.curriculumProgressCount || 0}・ドリル${snapshot.summary?.drillResultsCount || 0}・模試${snapshot.summary?.mockExamResultsCount || 0}・過去問${snapshot.summary?.importedPastExamQuestionsCount || 0}・マッピング${snapshot.summary?.pastExamMappingsCount || 0}</p>
           <button class="ghost-button" type="button" data-restore-auto-snapshot="${escapeAttribute(snapshot.id)}">このスナップショットから復元</button>
         </div>
       `).join("")
@@ -9834,7 +10426,7 @@ function renderSnapshotStatus() {
       ? `
         <div><dt>作成日時</dt><dd>${escapeHtml(formatDateTime(safety.createdAt))}</dd></div>
         <div><dt>理由</dt><dd>${escapeHtml(safety.reason || "不明")}</dd></div>
-        <div><dt>内容</dt><dd>進捗${summary?.curriculumProgressCount || 0}・ドリル${summary?.drillResultsCount || 0}・模試${summary?.mockExamResultsCount || 0}</dd></div>
+        <div><dt>内容</dt><dd>進捗${summary?.curriculumProgressCount || 0}・ドリル${summary?.drillResultsCount || 0}・模試${summary?.mockExamResultsCount || 0}・過去問${summary?.importedPastExamQuestionsCount || 0}・マッピング${summary?.pastExamMappingsCount || 0}</dd></div>
       `
       : `<div><dt>状態</dt><dd>直前スナップショットはありません。</dd></div>`;
   }
@@ -9876,7 +10468,7 @@ function showSafetySnapshotSummary() {
     return;
   }
   const summary = getBackupSummary(snapshot.data);
-  message.textContent = `作成日時：${formatDateTime(snapshot.createdAt)} / 進捗${summary.curriculumProgressCount}件・ドリル${summary.drillResultsCount}件・模試${summary.mockExamResultsCount}件`;
+  message.textContent = `作成日時：${formatDateTime(snapshot.createdAt)} / 進捗${summary.curriculumProgressCount}件・ドリル${summary.drillResultsCount}件・模試${summary.mockExamResultsCount}件・過去問${summary.importedPastExamQuestionsCount || 0}件・マッピング${summary.pastExamMappingsCount || 0}件`;
 }
 
 function showToast(message) {
@@ -10134,8 +10726,6 @@ function attachEvents() {
   });
   document.querySelector("#generateAiPromptButton")?.addEventListener("click", generateAiPrompt);
   document.querySelector("#copyAiPromptButton")?.addEventListener("click", copyAiPrompt);
-  document.querySelector("#sendAiPromptButton")?.addEventListener("click", sendCurrentAiPromptToApi);
-  document.querySelector("#cancelAiSendButton")?.addEventListener("click", cancelAiSend);
   document.querySelector("#clearAiPromptButton")?.addEventListener("click", () => {
     state.aiForm.promptText = "";
     state.aiForm.currentAnalysisId = "";
@@ -10220,6 +10810,52 @@ function attachEvents() {
   document.querySelector("#parseAiSuggestionManualResponseButton")?.addEventListener("click", parseManualAiSuggestionResponse);
   document.querySelector("#applyAiSuggestionButton")?.addEventListener("click", applyCurrentAiSuggestion);
   document.querySelector("#analysisAiConsultButton")?.addEventListener("click", openAiForAnalysisConsult);
+  document.querySelector("#pastExamImportInput")?.addEventListener("change", (event) => {
+    previewPastExamImport(event.target.files[0]);
+  });
+  document.querySelector("#executePastExamImportButton")?.addEventListener("click", executePastExamImport);
+  document.querySelector("#clearPastExamImportButton")?.addEventListener("click", () => {
+    state.pendingPastExamImport = null;
+    renderPastExamImportPreview();
+    const message = document.querySelector("#pastExamImportMessage");
+    if (message) message.textContent = "";
+  });
+  [
+    ["#pastMapExamFilter", "examName"],
+    ["#pastMapYearFilter", "year"],
+    ["#pastMapSubjectFilter", "subject"],
+    ["#pastMapTopicFilter", "topic"],
+    ["#pastMapWeaknessFilter", "weakness"],
+    ["#pastMapCoverageFilter", "coverage"]
+  ].forEach(([selector, key]) => {
+    document.querySelector(selector)?.addEventListener("change", (event) => {
+      state.pastMappingFilters[key] = event.target.value;
+      renderPastMappingView();
+    });
+  });
+  document.querySelector("#pastMapUnmappedOnlyFilter")?.addEventListener("change", (event) => {
+    state.pastMappingFilters.unmappedOnly = event.target.checked;
+    renderPastMappingView();
+  });
+  document.querySelector("#pastMappingAiPromptButton")?.addEventListener("click", () => {
+    const area = document.querySelector("#pastMappingAiPromptResult");
+    if (area) area.value = buildPastMappingAiPrompt();
+    showToast("相談文を作成しました。");
+  });
+  document.querySelector("#copyPastMappingAiPromptButton")?.addEventListener("click", async () => {
+    const area = document.querySelector("#pastMappingAiPromptResult");
+    if (!area) return;
+    if (!area.value.trim()) area.value = buildPastMappingAiPrompt();
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error("clipboard unavailable");
+      await navigator.clipboard.writeText(area.value);
+      showToast("相談文をコピーしました。");
+    } catch (error) {
+      area.focus();
+      area.select();
+      showToast("コピーできませんでした。選択中の本文を手動でコピーしてください。");
+    }
+  });
   document.querySelector("#todayAiConsultButton")?.addEventListener("click", openAiForTodayConsult);
   document.querySelector("#saveTodayMemoButton")?.addEventListener("click", saveTodayMemo);
   document.querySelector("#durationButtons")?.addEventListener("click", (event) => {
@@ -10325,6 +10961,18 @@ function attachEvents() {
       if (shortcut.dataset.drillHome) setDrillMode(shortcut.dataset.drillHome);
       switchView(shortcut.dataset.viewShortcut);
       window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    const togglePastQuestion = event.target.closest("[data-toggle-past-question]");
+    if (togglePastQuestion) {
+      const id = togglePastQuestion.dataset.togglePastQuestion;
+      state.expandedPastQuestionId = state.expandedPastQuestionId === id ? "" : id;
+      renderPastMappingView();
+      return;
+    }
+    const savePastMappingButton = event.target.closest("[data-save-past-mapping]");
+    if (savePastMappingButton) {
+      savePastExamMapping(savePastMappingButton.dataset.savePastMapping);
       return;
     }
     const lessonButton = event.target.closest("[data-open-lesson]");
@@ -10634,9 +11282,6 @@ function attachEvents() {
   });
   document.querySelector("#exportButton")?.addEventListener("click", exportBackup);
   document.querySelector("#validateDataButton")?.addEventListener("click", renderDataIntegrityResult);
-  document.querySelector("#saveAiSettingsButton")?.addEventListener("click", () => saveAiSettingsFromInputs(true));
-  document.querySelector("#checkAiHealthButton")?.addEventListener("click", checkAiWorkerHealth);
-  document.querySelector("#testAiConnectionButton")?.addEventListener("click", testAiConnection);
   document.querySelector("#importInput")?.addEventListener("change", (event) => {
     importBackup(event.target.files[0]);
   });
@@ -10659,7 +11304,7 @@ function attachEvents() {
       if (resetMessage) resetMessage.textContent = "チェックを入れ、RESET または 初期化 と入力すると初期化できます。";
       return;
     }
-    const confirmed = window.confirm("学習進捗、ドリル結果、模試結果、学習計画、ログ、追加教材、相談履歴を削除します。教材データ自体は削除されません。実行しますか？");
+    const confirmed = window.confirm("学習進捗、ドリル結果、模試結果、学習計画、ログ、追加教材、相談履歴、インポート済み過去問、過去問マッピングを削除します。教材データ自体は削除されません。実行しますか？");
     if (!confirmed) return;
     createAutoSnapshot("before_reset");
     createRestoreSafetySnapshot("before_reset");
