@@ -1,4 +1,4 @@
-const APP_VERSION = "v2.9";
+const APP_VERSION = "v3.0";
 const APP_NAME = "TSUKAN_YOBIKO";
 const BACKUP_SCHEMA_VERSION = 2;
 const AI_API_TIMEOUT_MS = 30000;
@@ -875,7 +875,7 @@ function normalizeAiSettings(item) {
     enabled: false,
     endpointUrl: "",
     lastTestedAt: String(item?.lastTestedAt || ""),
-    lastStatus: "v2.9でも廃止",
+    lastStatus: "v3.0でも廃止",
     lastError: ""
   };
 }
@@ -1031,7 +1031,7 @@ function sanitizeAiSettings(settings) {
     enabled: false,
     endpointUrl: "",
     lastTestedAt: "",
-    lastStatus: "v2.9でも廃止",
+    lastStatus: "v3.0でも廃止",
     lastError: ""
   };
 }
@@ -2498,6 +2498,38 @@ function daysSince(dateString) {
   return Math.floor((Date.now() - date.getTime()) / 86400000);
 }
 
+function daysSinceDateTime(value) {
+  if (!value) return 999;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return 999;
+  return Math.floor((Date.now() - date.getTime()) / 86400000);
+}
+
+function getBackupRecommendation() {
+  const lastBackupAt = localStorage.getItem(STORAGE_KEYS.lastBackupAt);
+  const hasGrowingData = state.drillResults.length > 0 || state.mockExamResults.length > 0 || state.pastExamMappings.length > 0;
+  if (!lastBackupAt) return "まだバックアップがありません";
+  if (daysSinceDateTime(lastBackupAt) >= 7) return "バックアップをおすすめします";
+  if (hasGrowingData) return "学習データが増えています。バックアップ推奨";
+  return "直近のバックアップを確認済みです";
+}
+
+function renderBackupStatusSummary() {
+  const lastBackupAt = localStorage.getItem(STORAGE_KEYS.lastBackupAt);
+  return `
+    <dl class="summary-list">
+      <div><dt>最終バックアップ日時</dt><dd>${escapeHtml(lastBackupAt ? formatDateTime(lastBackupAt) : "まだバックアップがありません")}</dd></div>
+      <div><dt>ドリル結果数</dt><dd>${state.drillResults.length}件</dd></div>
+      <div><dt>模試結果数</dt><dd>${state.mockExamResults.length}件</dd></div>
+      <div><dt>過去問マッピング数</dt><dd>${state.pastExamMappings.length}件</dd></div>
+    </dl>
+    <p class="inline-warning">${escapeHtml(getBackupRecommendation())}</p>
+    <div class="form-actions">
+      <button class="primary-button" type="button" data-view-shortcut="settings">設定でバックアップ</button>
+    </div>
+  `;
+}
+
 function isTodayItemCompleted(itemId) {
   const plan = getTodayPlan();
   return plan.completedItems.some((item) => item.id === itemId);
@@ -2619,6 +2651,26 @@ function renderDashboard() {
     </div>
   `;
 
+  const pastMappingHost = document.querySelector("#homePastMappingSummary");
+  if (pastMappingHost) {
+    const mappingStats = getPastMappingStats();
+    pastMappingHost.innerHTML = `
+      <dl class="summary-list">
+        <div><dt>インポート済み過去問数</dt><dd>${mappingStats.total}問</dd></div>
+        <div><dt>マッピング済み数</dt><dd>${mappingStats.mapped}問</dd></div>
+        <div><dt>A+B率</dt><dd>${escapeHtml(mappingStats.abRate)}</dd></div>
+        <div><dt>C+D率</dt><dd>${escapeHtml(mappingStats.cdRate)}</dd></div>
+        <div><dt>不足教材件数</dt><dd>${mappingStats.missingCount}件</dd></div>
+      </dl>
+      <p class="muted">${mappingStats.total ? "教材根拠率を確認できます。" : "まだ過去問は取り込まれていません。"}</p>
+    `;
+  }
+
+  const backupHost = document.querySelector("#homeBackupSummary");
+  if (backupHost) {
+    backupHost.innerHTML = renderBackupStatusSummary();
+  }
+
   const practicalStats = getPracticalStats(state.practicalLogs);
   const recentPracticalDate = getRecentPracticalDate();
   const recentWrongPracticalLogs = [...state.practicalLogs]
@@ -2655,7 +2707,7 @@ function renderDashboard() {
     <dl class="summary-list">
       <div><dt>作成方式</dt><dd>コピー専用</dd></div>
       <div><dt>外部相談履歴</dt><dd>${state.aiAnalyses.length}件</dd></div>
-      <div><dt>過去のAIメモ</dt><dd>${aiTutorItems.length + aiSuggestions.length}件</dd></div>
+      <div><dt>過去の相談文メモ</dt><dd>${aiTutorItems.length + aiSuggestions.length}件</dd></div>
       <div><dt>通信</dt><dd>アプリ内では行いません</dd></div>
       <div><dt>最新メモ</dt><dd>${escapeHtml(latestSuggestion ? truncateText(latestSuggestion.targetTitle || latestSuggestion.correctionType, 42) : "なし")}</dd></div>
     </dl>
@@ -4488,7 +4540,7 @@ function practicalLogCard(log) {
         <div><dt>ミス理由</dt><dd>${escapeHtml(truncateText(log.mistakeReason, 64) || "未入力")}</dd></div>
       </dl>
       <div class="card-actions">
-        <button class="ghost-button" type="button" data-ai-practical-log="${escapeAttribute(log.id)}">AI解析</button>
+        <button class="ghost-button" type="button" data-ai-practical-log="${escapeAttribute(log.id)}">外部ChatGPT相談文を作る</button>
         <button class="ghost-button" type="button" data-edit-practical-log="${escapeAttribute(log.id)}">編集</button>
         <button class="danger-button" type="button" data-delete-practical-log="${escapeAttribute(log.id)}">削除</button>
       </div>
@@ -4559,6 +4611,7 @@ function getPastMappingStats() {
     abRate: pct((counts.A || 0) + (counts.B || 0)),
     aRate: pct(counts.A || 0),
     cdRate: pct((counts.C || 0) + (counts.D || 0)),
+    missingCount: state.pastExamMappings.filter((mapping) => ["C", "D"].includes(mapping.coverageLevel) || String(mapping.missingContent || "").trim()).length,
     bySubject: buildPastMappingCoverageGroups("subject"),
     byWeakness: buildPastMappingCoverageGroups("weaknessTag"),
     byYear: buildPastMappingCoverageGroups("year")
@@ -5899,20 +5952,28 @@ function buildAiUsage() {
 function renderAnalysisOverall(analysis) {
   const summary = analysis.summary;
   const curriculumStats = getCurriculumStats();
-  const drillAverage = state.drillResults.length ? `${Math.round(state.drillResults.reduce((sum, result) => sum + result.scoreRate, 0) / state.drillResults.length)}%` : "データ不足";
-  const mockAverage = state.mockExamResults.length ? `${Math.round(state.mockExamResults.reduce((sum, result) => sum + result.scoreRate, 0) / state.mockExamResults.length)}%` : "データ不足";
-  const topWeakness = buildWeaknessTagStats().filter((item) => item.total || item.wrong).slice(0, 3).map((item) => item.tag).join(" / ") || "データ不足";
+  const topWeakness = buildWeaknessTagStats().filter((item) => item.total || item.wrong).slice(0, 3).map((item) => item.tag).join(" / ") || "未実施";
+  const mappingStats = getPastMappingStats();
   const todayMenu = state.todayMenu || generateTodayMenu(getTodayPlan().selectedDuration);
   const todayUnitIds = new Set(todayMenu.allItems.map((item) => item.relatedUnitId).filter(Boolean));
   const todayTags = getTodayMenuWeaknessTags(todayMenu);
   const todayLogCount = todayMenu.pastExamItems.length + todayMenu.practicalItems.length;
+  const nextAction = curriculumStats.nextLesson?.lesson
+    ? `次に「${curriculumStats.nextLesson.lesson.title}」を読む`
+    : summary.reviewCount || curriculumStats.reviewCount
+    ? "復習画面でC判定・誤答を直す"
+    : state.mockExamResults.length
+    ? "過去問マッピングで教材根拠率を確認する"
+    : "総合模試で横断確認する";
   const rows = [
-    ["総合進捗", `${curriculumStats.rate}%`],
-    ["総問題数", QUESTION_BANK.length + MOCK_EXAM_QUESTIONS.length + CURRICULUM_LESSONS.flatMap((lesson) => lesson.questions || []).length],
-    ["ドリル平均正答率", drillAverage],
-    ["模試平均正答率", mockAverage],
-    ["復習対象数", curriculumStats.reviewCount + summary.reviewCount],
-    ["弱点トップ3", topWeakness]
+    ["レッスン進捗", `${curriculumStats.completed}/${curriculumStats.total}（${curriculumStats.rate}%）`],
+    ["問題バンク総数", `${QUESTION_BANK.length}問`],
+    ["ドリル実施回数", state.drillResults.length ? `${state.drillResults.length}回` : "未実施"],
+    ["模試実施回数", state.mockExamResults.length ? `${state.mockExamResults.length}回` : "未実施"],
+    ["過去問マッピング数", mappingStats.mapped ? `${mappingStats.mapped}件` : "未実施"],
+    ["教材根拠率 A+B", mappingStats.total ? mappingStats.abRate : "未実施"],
+    ["弱点トップ3", topWeakness],
+    ["次にやるべきこと", nextAction]
   ];
   return `
     <div class="risk-summary-card risk-${summary.risk.className}">
@@ -6404,7 +6465,7 @@ function pastExamLogCard(log) {
         <div><dt>ミス理由</dt><dd>${escapeHtml(truncateText(log.mistakeReason, 64) || "未入力")}</dd></div>
       </dl>
       <div class="card-actions">
-        <button class="ghost-button" type="button" data-ai-past-exam-log="${escapeAttribute(log.id)}">AI解析</button>
+        <button class="ghost-button" type="button" data-ai-past-exam-log="${escapeAttribute(log.id)}">外部ChatGPT相談文を作る</button>
         <button class="ghost-button" type="button" data-edit-past-exam-log="${escapeAttribute(log.id)}">編集</button>
         <button class="danger-button" type="button" data-delete-past-exam-log="${escapeAttribute(log.id)}">削除</button>
       </div>
@@ -6606,7 +6667,7 @@ function practiceLogCard(log) {
         <div><dt>ミス理由</dt><dd>${escapeHtml(truncateText(log.mistakeReason, 64) || "未入力")}</dd></div>
       </dl>
       <div class="card-actions">
-        <button class="ghost-button" type="button" data-ai-practice-log="${escapeAttribute(log.id)}">AI解析</button>
+        <button class="ghost-button" type="button" data-ai-practice-log="${escapeAttribute(log.id)}">外部ChatGPT相談文を作る</button>
         <button class="ghost-button" type="button" data-edit-practice-log="${escapeAttribute(log.id)}">編集</button>
         <button class="danger-button" type="button" data-delete-practice-log="${escapeAttribute(log.id)}">削除</button>
       </div>
@@ -8398,7 +8459,7 @@ function saveCurrentAiPromptMemo() {
   state.aiForm.promptText = text;
   saveUnits();
   render();
-  showToast("AI解析メモ用の履歴として保存しました。");
+  showToast("相談文履歴として保存しました。");
 }
 
 function buildAiApiPayload(mode, promptText) {
@@ -8445,7 +8506,7 @@ function resolveAiSubject(target) {
 }
 
 async function postAiApiRequest(payload) {
-  throw new Error("v2.9ではアプリ内通信を行いません。相談文をコピーして外部ChatGPTに貼り付けてください。");
+  throw new Error("v3.0ではアプリ内通信を行いません。相談文をコピーして外部ChatGPTに貼り付けてください。");
 }
 
 function buildAiConnectionHint(prefix) {
@@ -8453,7 +8514,7 @@ function buildAiConnectionHint(prefix) {
   return [
     prefix,
     "外部API設定は使いません。",
-    "v2.9では外部通信を行わないため、相談文をコピーして外部ChatGPTに貼り付けてください。"
+    "v3.0では外部通信を行わないため、相談文をコピーして外部ChatGPTに貼り付けてください。"
   ].join(" ");
 }
 
@@ -8471,9 +8532,9 @@ function inferAiHealthUrl(endpointUrl) {
 
 async function checkAiWorkerHealth() {
   const result = document.querySelector("#aiConnectionTestResult");
-  state.aiSettings.lastStatus = "v2.9でも廃止";
+  state.aiSettings.lastStatus = "v3.0でも廃止";
   state.aiSettings.lastError = "";
-  if (result) result.textContent = "v2.9ではアプリ内通信を行いません。";
+  if (result) result.textContent = "v3.0ではアプリ内通信を行いません。";
   saveUnits();
   renderSettings();
 }
@@ -8488,7 +8549,7 @@ async function sendCurrentAiPromptToApi() {
     return;
   }
   state.aiForm.apiStatus = "コピー用";
-  state.aiForm.apiError = "v2.9ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
+  state.aiForm.apiError = "v3.0ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
   renderAiResponse();
   await copyAiPrompt();
 }
@@ -8498,7 +8559,7 @@ async function askAiTutor() {
   const { target, promptText } = generateAiTutorPrompt();
   if (!promptText) return;
   state.aiTutorForm.apiStatus = "コピー用";
-  state.aiTutorForm.apiError = "v2.9ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
+  state.aiTutorForm.apiError = "v3.0ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
   saveAiTutorAnalysis({ target, sentViaApi: false });
   renderAiTutorView();
   showToast("相談文を生成しました。");
@@ -8529,7 +8590,7 @@ async function runAiSuggestion() {
   const { target, promptText } = generateAiSuggestionPrompt();
   if (!promptText) return;
   state.aiSuggestionForm.apiStatus = "コピー用";
-  state.aiSuggestionForm.apiError = "v2.9ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
+  state.aiSuggestionForm.apiError = "v3.0ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
   saveAiSuggestionAnalysis({ target, sentViaApi: false });
   renderAiSuggestionView();
   showToast("相談文を生成しました。");
@@ -8823,9 +8884,9 @@ function saveCurrentAiResponse() {
 async function testAiConnection() {
   const result = document.querySelector("#aiConnectionTestResult");
   state.aiSettings.lastTestedAt = new Date().toISOString();
-  state.aiSettings.lastStatus = "v2.9でも廃止";
+  state.aiSettings.lastStatus = "v3.0でも廃止";
   state.aiSettings.lastError = "";
-  if (result) result.textContent = "v2.9ではアプリ内通信を行いません。";
+  if (result) result.textContent = "v3.0ではアプリ内通信を行いません。";
   saveUnits();
   renderSettings();
 }
@@ -9449,7 +9510,7 @@ function renderUnitDetail() {
     .join("");
   document.querySelector("#unitForm").innerHTML = renderTabForm(unit, state.activeTab);
   if (!document.querySelector("#detailAiButton")) {
-    document.querySelector(".detail-header").insertAdjacentHTML("beforeend", `<button id="detailAiButton" class="ghost-button" type="button" data-ai-unit="${escapeAttribute(unit.id)}">この単元をAI解析</button>`);
+    document.querySelector(".detail-header").insertAdjacentHTML("beforeend", `<button id="detailAiButton" class="ghost-button" type="button" data-ai-unit="${escapeAttribute(unit.id)}">外部ChatGPT相談文を作る</button>`);
   } else {
     document.querySelector("#detailAiButton").dataset.aiUnit = unit.id;
   }
@@ -9972,7 +10033,7 @@ function renderSettings() {
   const summary = getBackupSummary(makeBackupData());
   const storageUsage = getLocalStorageUsage();
   const last = getLastUpdatedUnit();
-  document.querySelector("#storageStatus").textContent = `${state.units.length}単元・${CURRICULUM_LESSONS.length}レッスン・模試${state.mockExamResults.length}件 / 約${storageUsage.sizeKb}KBをこのブラウザに保存`;
+  document.querySelector("#storageStatus").textContent = `${state.units.length}単元・${CURRICULUM_LESSONS.length}レッスン・模試${state.mockExamResults.length}件 / 約${storageUsage.sizeKb}KBをlocalStorageに保存`;
   const warningHost = document.querySelector("#storageWarning");
   if (warningHost) {
     warningHost.textContent = state.storageWarnings.length
@@ -9986,7 +10047,7 @@ function renderSettings() {
     <div><dt>保存中の実務ログ数</dt><dd>${state.practicalLogs.length}件</dd></div>
     <div><dt>保存中の模試結果数</dt><dd>${state.mockExamResults.length}件</dd></div>
     <div><dt>保存中のドリル結果数</dt><dd>${state.drillResults.length}件</dd></div>
-    <div><dt>保存中の過去AIメモ・相談文数</dt><dd>${state.aiAnalyses.length}件</dd></div>
+    <div><dt>保存中の相談文履歴数</dt><dd>${state.aiAnalyses.length}件</dd></div>
     <div><dt>保存中の追加教材数</dt><dd>${state.lessonOverrides.length}件</dd></div>
     <div><dt>保存中のインポート済み過去問数</dt><dd>${state.importedPastExamQuestions.length}件</dd></div>
     <div><dt>保存中の過去問マッピング数</dt><dd>${state.pastExamMappings.length}件</dd></div>
@@ -9994,10 +10055,23 @@ function renderSettings() {
     <div><dt>保存中のレッスン進捗数</dt><dd>${state.curriculumProgress.length}件</dd></div>
     <div><dt>最終更新単元</dt><dd>${escapeHtml(last?.title || "未保存")}</dd></div>
     <div><dt>最終更新日</dt><dd>${escapeHtml(last?.updatedAt || "未保存")}</dd></div>
-    <div><dt>最終バックアップ日時</dt><dd>${escapeHtml(formatDateTime(localStorage.getItem(STORAGE_KEYS.lastBackupAt)))}</dd></div>
+    <div><dt>最終バックアップ日時</dt><dd>${escapeHtml(localStorage.getItem(STORAGE_KEYS.lastBackupAt) ? formatDateTime(localStorage.getItem(STORAGE_KEYS.lastBackupAt)) : "まだバックアップがありません")}</dd></div>
+    <div><dt>バックアップ推奨</dt><dd>${escapeHtml(getBackupRecommendation())}</dd></div>
     <div><dt>バージョン</dt><dd>${APP_VERSION}</dd></div>
   `;
   document.querySelector("#backupSummaryDetails").innerHTML = renderSummaryDetails(summary);
+  const pastExamDataHost = document.querySelector("#pastExamDataStatusDetails");
+  if (pastExamDataHost) {
+    const mappingStats = getPastMappingStats();
+    pastExamDataHost.innerHTML = `
+      <div><dt>インポート済み過去問数</dt><dd>${mappingStats.total}問</dd></div>
+      <div><dt>マッピング済み数</dt><dd>${mappingStats.mapped}問</dd></div>
+      <div><dt>A+B率</dt><dd>${escapeHtml(mappingStats.abRate)}</dd></div>
+      <div><dt>C+D率</dt><dd>${escapeHtml(mappingStats.cdRate)}</dd></div>
+      <div><dt>不足教材件数</dt><dd>${mappingStats.missingCount}件</dd></div>
+      <div><dt>状態</dt><dd>${mappingStats.total ? "過去問マッピングを利用できます" : "まだ過去問は取り込まれていません"}</dd></div>
+    `;
+  }
   document.querySelector("#storageDetails").innerHTML = `
     <div><dt>保存データ概算サイズ</dt><dd>約${storageUsage.sizeKb}KB</dd></div>
     <div><dt>localStorageキー数</dt><dd>${storageUsage.keys.length}件</dd></div>
@@ -10123,9 +10197,31 @@ function renderDataIntegrityResult() {
     ["インポート過去問のsubject欠損", result.missingPastQuestionSubjectCount, "過去問JSONのsubjectを確認してください。"],
     ["インポート過去問のquestionText欠損", result.missingPastQuestionTextCount, "過去問JSONのquestionTextを確認してください。"]
   ].filter((item) => item[1] > 0);
-  host.innerHTML = warnings.length
-    ? `<strong>警告 ${warnings.length}項目</strong><ul class="note-list compact">${warnings.map(([label, count, hint]) => `<li>${escapeHtml(label)}：${count}件。${escapeHtml(hint)}</li>`).join("")}</ul>`
-    : `データ整合性に大きな問題は見つかりませんでした。<br>レッスン数 ${result.lessonCount} / 問題数 ${result.questionCount} / 模試問題数 ${result.mockQuestionCount}`;
+  const warningCount = warnings.reduce((sum, item) => sum + item[1], 0);
+  const verdict = warningCount === 0
+    ? ["OK", "大きな問題は見つかりません"]
+    : warnings.some(([label]) => /重複|不明|不正|読み込みNG/.test(label))
+    ? ["警告", "データ不整合があります"]
+    : ["注意", "一部の紐づけに確認が必要です"];
+  const lessonIssueCount = result.duplicateLessonIds + result.unknownProgressLessonIds.length + result.unknownOverrideLessonIds.length;
+  const questionIssueCount = result.duplicateQuestionIds + result.unknownLessonIdCount + result.unknownDrillQuestionIds.length + result.unknownMockQuestionIds.length + result.missingDisplayFields.length + result.invalidChoicesCount + result.missingAnswerCount + result.missingSubjectCount;
+  const pastMappingIssueCount = result.duplicateImportedPastQuestionIds + result.unknownPastMappingQuestionIds.length + result.unknownPastMappedLessonIds.length + result.unknownPastMappedQuestionIds.length + result.invalidPastCoverageLevels.length + result.missingPastQuestionSubjectCount + result.missingPastQuestionTextCount;
+  host.innerHTML = `
+    <dl class="summary-list">
+      <div><dt>総合判定</dt><dd><strong>${escapeHtml(verdict[0])}</strong>：${escapeHtml(verdict[1])}</dd></div>
+      <div><dt>レッスンIDチェック</dt><dd>${lessonIssueCount ? `${lessonIssueCount}件確認` : "OK"}</dd></div>
+      <div><dt>問題IDチェック</dt><dd>${questionIssueCount ? `${questionIssueCount}件確認` : "OK"}</dd></div>
+      <div><dt>過去問マッピングチェック</dt><dd>${pastMappingIssueCount ? `${pastMappingIssueCount}件確認` : "OK"}</dd></div>
+      <div><dt>localStorageチェック</dt><dd>${state.storageWarnings.length ? `${state.storageWarnings.length}件確認` : "OK"}</dd></div>
+      <div><dt>警告件数</dt><dd>${warningCount}件</dd></div>
+    </dl>
+    <div class="analysis-card">
+      <h4>詳細</h4>
+      ${warnings.length
+        ? `<ul class="note-list compact">${warnings.map(([label, count, hint]) => `<li>${escapeHtml(label)}：${count}件。${escapeHtml(hint)}</li>`).join("")}</ul>`
+        : `<p class="muted">レッスン数 ${result.lessonCount} / 問題バンク ${result.questionCount}問 / 模試問題 ${result.mockQuestionCount}問。データ整合性に大きな問題は見つかりませんでした。</p>`}
+    </div>
+  `;
 }
 
 function getLastUpdatedUnit() {
@@ -10349,7 +10445,7 @@ function renderSummaryDetails(summary) {
     <div><dt>模試結果数</dt><dd>${summary.mockExamResultsCount}件</dd></div>
     <div><dt>学習計画数</dt><dd>${summary.studyPlansCount}件</dd></div>
     <div><dt>レッスン追加教材数</dt><dd>${summary.lessonOverridesCount}件</dd></div>
-    <div><dt>外部ChatGPT相談履歴数</dt><dd>${summary.aiAnalysesCount}件</dd></div>
+    <div><dt>外部ChatGPT相談文履歴数</dt><dd>${summary.aiAnalysesCount}件</dd></div>
     <div><dt>演習ログ数</dt><dd>${summary.practiceLogsCount}件</dd></div>
     <div><dt>過去問ログ数</dt><dd>${summary.pastExamLogsCount}件</dd></div>
     <div><dt>実務ログ数</dt><dd>${summary.practicalLogsCount}件</dd></div>

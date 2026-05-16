@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="TSUKAN YOBIKO v2.9 - 過去問マッピング機能版">
+    <meta name="description" content="TSUKAN YOBIKO v3.0 - ローカル予備校版 完成">
     <meta name="theme-color" content="#1f5f5b">
     <title>TSUKAN YOBIKO</title>
     <link rel="stylesheet" href="style.css">
@@ -15,7 +15,7 @@
           <p class="eyebrow">通関士試験 個人予備校</p>
           <h1>TSUKAN YOBIKO</h1>
         </div>
-        <span class="version-pill">v2.9</span>
+        <span class="version-pill">TSUKAN YOBIKO v3.0</span>
       </header>
 
       <main class="app-main">
@@ -24,12 +24,13 @@
             <div>
               <p class="eyebrow" id="homeTodayDate">Today</p>
               <h2 id="home-title">TSUKAN YOBIKO</h2>
+              <p class="home-version-label">ローカル予備校版 完成</p>
               <p id="homeLearningState" class="muted">学習状態を確認中</p>
             </div>
             <div class="home-priority">
               <span class="badge priority">今日の最優先</span>
               <strong id="homePriorityTask">今日のメニューを確認</strong>
-              <button class="primary-button" type="button" data-open-today>学習を始める</button>
+              <button class="primary-button" type="button" data-open-today>すぐ始める</button>
             </div>
           </div>
           <section class="panel today-home-panel">
@@ -58,7 +59,7 @@
           </section>
           <section class="panel">
             <div class="panel-heading">
-              <h3>最新模試結果</h3>
+              <h3>模試へ進む</h3>
             </div>
             <div id="lastUpdatedUnit" class="empty-state"></div>
           </section>
@@ -73,11 +74,30 @@
               <div>
                 <p class="eyebrow">Past Exam Mapping</p>
                 <h3>過去問マッピング</h3>
-                <p class="muted">ローカルJSONで取り込んだ過去問を、レッスン・問題バンク・教材根拠判定へ紐づけます。</p>
+                <p class="muted">過去問JSONを取り込み、TSUKAN YOBIKO教材でどこまで対応できるか確認します。</p>
               </div>
               <button class="primary-button" type="button" data-view-shortcut="past-mapping">開く</button>
             </div>
+            <div id="homePastMappingSummary" class="compact-list"></div>
           </section>
+          <section class="panel">
+            <div class="panel-heading">
+              <h3>バックアップ確認</h3>
+            </div>
+            <div id="homeBackupSummary" class="compact-list"></div>
+          </section>
+          <details class="panel details-panel">
+            <summary>初回利用ガイド</summary>
+            <ol class="note-list details-body">
+              <li>まず学習画面からレッスンを読む</li>
+              <li>確認問題を解く</li>
+              <li>ドリルで反復する</li>
+              <li>復習画面でC判定・誤答を直す</li>
+              <li>模試で横断確認する</li>
+              <li>過去問JSONを取り込んで教材根拠率を見る</li>
+              <li>定期的にJSONバックアップを取る</li>
+            </ol>
+          </details>
           <details class="panel details-panel home-secondary-panel">
             <summary>学習進捗・模試・分析・記録管理</summary>
             <div class="details-body home-secondary-grid">
@@ -87,7 +107,7 @@
                 <div id="homePastExamSummary" class="compact-list"></div>
               </section>
               <section>
-                <h3>模試へ進む</h3>
+                <h3>模試履歴・横断確認</h3>
                 <div id="homePracticeSummary" class="compact-list"></div>
               </section>
               <section>
@@ -672,7 +692,8 @@
                 <h3>コピー用テキスト</h3>
               </div>
               <div class="ai-result">
-                <textarea id="aiPromptResult" class="ai-prompt-textarea" aria-label="生成されたAI解析プロンプト"></textarea>
+                <p class="muted">この内容をChatGPTに貼り付けて相談できます。アプリから外部通信は行わず、コピーのみです。</p>
+                <textarea id="aiPromptResult" class="ai-prompt-textarea" aria-label="生成された外部ChatGPT相談文"></textarea>
                 <div class="form-actions">
                   <button id="copyAiPromptButton" class="primary-button" type="button">コピーする</button>
                   <button id="clearAiPromptButton" class="ghost-button" type="button">生成結果をクリア</button>
@@ -683,7 +704,7 @@
           </div>
 
           <details class="panel details-panel ai-history-panel">
-            <summary>過去のAIメモ・相談文履歴</summary>
+            <summary>過去の相談文履歴</summary>
             <div id="aiHistoryList" class="ai-history-list details-body"></div>
           </details>
         </section>
@@ -797,7 +818,7 @@
           </details>
 
           <details class="panel details-panel">
-            <summary>過去のAIメモ</summary>
+            <summary>過去の相談文メモ</summary>
             <div id="analysisAiUsage" class="analysis-section-body"></div>
           </details>
 
@@ -963,10 +984,13 @@
               </div>
               <dl class="info-list">
                 <div><dt>アプリ名</dt><dd>TSUKAN YOBIKO</dd></div>
-                <div><dt>現在のバージョン</dt><dd>v2.9</dd></div>
-                <div><dt>状態</dt><dd>過去問マッピング機能版</dd></div>
+                <div><dt>現在のバージョン</dt><dd>v3.0</dd></div>
+                <div><dt>状態</dt><dd>ローカル予備校版完成</dd></div>
+                <div><dt>AI API</dt><dd>使用しない</dd></div>
+                <div><dt>外部通信</dt><dd>なし</dd></div>
+                <div><dt>保存方式</dt><dd>localStorage + JSONバックアップ</dd></div>
                 <div><dt>公開前提</dt><dd>GitHub Pagesで公開して使う静的アプリです。</dd></div>
-                <div><dt>保存方式</dt><dd id="storageStatus">確認中</dd></div>
+                <div><dt>保存状態</dt><dd id="storageStatus">確認中</dd></div>
               </dl>
               <p id="storageWarning" class="form-message" role="status" aria-live="polite"></p>
             </section>
@@ -991,6 +1015,16 @@
                 <h3>教材データ読み込み状態</h3>
               </div>
               <dl id="dataStatusDetails" class="info-list"></dl>
+            </section>
+
+            <section class="panel">
+              <div class="panel-heading">
+                <h3>過去問データ状態</h3>
+              </div>
+              <dl id="pastExamDataStatusDetails" class="info-list"></dl>
+              <div class="settings-actions">
+                <button class="ghost-button" type="button" data-view-shortcut="past-mapping">過去問マッピングを開く</button>
+              </div>
             </section>
 
             <section class="panel">
@@ -1076,6 +1110,19 @@
               </div>
             </section>
 
+            <details class="panel details-panel">
+              <summary>初回利用ガイド</summary>
+              <ol class="note-list details-body">
+                <li>まず学習画面からレッスンを読む</li>
+                <li>確認問題を解く</li>
+                <li>ドリルで反復する</li>
+                <li>復習画面でC判定・誤答を直す</li>
+                <li>模試で横断確認する</li>
+                <li>過去問JSONを取り込んで教材根拠率を見る</li>
+                <li>定期的にJSONバックアップを取る</li>
+              </ol>
+            </details>
+
             <section class="panel">
               <div class="panel-heading">
                 <h3>注意事項</h3>
@@ -1085,8 +1132,9 @@
                 <li>アプリ上でAI API通信は行いません。</li>
                 <li>外部通信は行いません。</li>
                 <li>学習データはこのブラウザのlocalStorageに保存されます。</li>
+                <li>ブラウザデータ削除・端末変更でデータが失われる可能性があります。</li>
                 <li>定期的にJSONバックアップを取ってください。</li>
-                <li>v2.9：過去問マッピング機能</li>
+                <li>過去問データはユーザーがJSONとして取り込みます。</li>
                 <li>v3.0：ローカル予備校版完成</li>
               </ul>
             </section>
