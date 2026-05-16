@@ -1,4 +1,4 @@
-const APP_VERSION = "v3.0";
+const APP_VERSION = "v3.0.1";
 const APP_NAME = "TSUKAN_YOBIKO";
 const BACKUP_SCHEMA_VERSION = 2;
 const AI_API_TIMEOUT_MS = 30000;
@@ -145,6 +145,10 @@ const CURRICULUM_LESSONS = Array.isArray(window.TSUKAN_LESSONS) ? window.TSUKAN_
 const MOCK_EXAM_QUESTIONS = Array.isArray(window.TSUKAN_MOCK_EXAM_QUESTIONS) ? window.TSUKAN_MOCK_EXAM_QUESTIONS : [];
 const QUESTION_BANK = Array.isArray(window.TSUKAN_QUESTION_BANK) ? window.TSUKAN_QUESTION_BANK : [];
 
+function getQuestionBank() {
+  return Array.isArray(window.TSUKAN_QUESTION_BANK) ? window.TSUKAN_QUESTION_BANK : QUESTION_BANK;
+}
+
 Object.entries(DATA_FILE_STATUS).forEach(([name, ok]) => {
   if (!ok) console.error("教材データを読み込めませんでした: " + name);
 });
@@ -183,7 +187,8 @@ const state = {
     answers: [],
     startedAt: "",
     targetWeaknessTag: "",
-    targetWeaknessGroup: ""
+    targetWeaknessGroup: "",
+    message: ""
   },
   todayMenu: null,
   activeView: "home",
@@ -2106,6 +2111,10 @@ function getSubjectMockQuestions(subject) {
 
 function startMockExam(modeId = state.mockExam.selectedMode) {
   const questions = buildMockExamQuestions(modeId);
+  if (!questions.length) {
+    console.warn("No mock exam questions found", { modeId, ...getQuestionBankSummary() });
+    showToast("模試の問題が見つかりません。問題バンクの読み込み状態を確認してください。");
+  }
   state.mockExam = {
     selectedMode: modeId,
     active: {
@@ -2672,6 +2681,7 @@ function renderDashboard() {
   }
 
   const practicalStats = getPracticalStats(state.practicalLogs);
+  const questionSummary = getQuestionBankSummary();
   const recentPracticalDate = getRecentPracticalDate();
   const recentWrongPracticalLogs = [...state.practicalLogs]
     .filter((log) => log.result === "×")
@@ -2681,10 +2691,10 @@ function renderDashboard() {
   if (practicalHost) {
     practicalHost.innerHTML = `
       <dl class="summary-list">
-        <div><dt>問題バンク</dt><dd>${QUESTION_BANK.length}問</dd></div>
-        <div><dt>通関業法</dt><dd>${QUESTION_BANK.filter((question) => question.subject === "通関業法").length}問</dd></div>
-        <div><dt>関税法等</dt><dd>${QUESTION_BANK.filter((question) => question.subject === "関税法等").length}問</dd></div>
-        <div><dt>通関実務</dt><dd>${QUESTION_BANK.filter((question) => question.subject === "通関実務").length}問</dd></div>
+        <div><dt>問題バンク</dt><dd>${questionSummary.bankLength}問</dd></div>
+        <div><dt>通関業法</dt><dd>${questionSummary.tsukangyoho}問</dd></div>
+        <div><dt>関税法等</dt><dd>${questionSummary.kanzeihou}問</dd></div>
+        <div><dt>通関実務</dt><dd>${questionSummary.jitsumu}問</dd></div>
       </dl>
       <div class="action-card-list">
         <button class="record-link" type="button" data-view-shortcut="drill" data-drill-home="通関業法10問"><strong>通関業法ドリル</strong><span>義務・許可・罰則</span></button>
@@ -3084,6 +3094,7 @@ function renderDrillView() {
       <span class="badge">保存済み ${state.drillResults.length}回</span>
       ${isWeaknessDrillMode(state.drill.mode) ? `<span class="badge priority">${escapeHtml(state.drill.targetWeaknessGroup || state.drill.targetWeaknessTag || "弱点別")}</span>` : ""}
     </div>
+    ${state.drill.message ? `<div class="empty-state drill-message"><p>${escapeHtml(state.drill.message)}</p></div>` : ""}
     ${current ? renderDrillQuestion(current, questions) : `<div class="empty-state"><p class="muted">この条件のドリル問題はまだありません。</p></div>`}
   `;
   hosts.forEach((host) => {
@@ -3175,15 +3186,16 @@ function buildWeaknessResultTagStats(result) {
 }
 
 function getDrillQuestions(mode) {
+  const bank = getQuestionBank();
   if (state.drill.sessionQuestionIds?.length) {
-    const byId = new Map(QUESTION_BANK.map((question) => [question.id, question]));
+    const byId = new Map(bank.map((question) => [question.id, question]));
     return state.drill.sessionQuestionIds.map((id) => byId.get(id)).filter(Boolean);
   }
-  if (mode === "通関業法10問") return pickDrillQuestions(QUESTION_BANK.filter((question) => question.subject === "通関業法"), 10, true);
-  if (mode === "通関業法ランダム") return pickDrillQuestions(QUESTION_BANK.filter((question) => question.subject === "通関業法"), 10, true);
-  if (mode === "通関業法順番") return QUESTION_BANK.filter((question) => question.subject === "通関業法");
-  if (mode === "通関業法ひっかけ") return pickDrillQuestions(QUESTION_BANK.filter((question) => question.subject === "通関業法" && (question.questionType === "trapCheck" || question.difficulty === "ひっかけ" || /ひっかけ|罰則|混同/.test(`${question.trapExplanation}${question.weaknessTag}`))), 10, true);
-  if (mode === "通関業法ドリル") return QUESTION_BANK.filter((question) => question.subject === "通関業法");
+  if (mode === "通関業法10問") return pickDrillQuestions(bank.filter((question) => question.subject === "通関業法"), 10, true);
+  if (mode === "通関業法ランダム") return pickDrillQuestions(bank.filter((question) => question.subject === "通関業法"), 10, true);
+  if (mode === "通関業法順番") return bank.filter((question) => question.subject === "通関業法");
+  if (mode === "通関業法ひっかけ") return pickDrillQuestions(bank.filter((question) => question.subject === "通関業法" && (question.questionType === "trapCheck" || question.difficulty === "ひっかけ" || /ひっかけ|罰則|混同/.test(`${question.trapExplanation}${question.weaknessTag}`))), 10, true);
+  if (mode === "通関業法ドリル") return bank.filter((question) => question.subject === "通関業法");
   if (mode === "関税法等10問") return pickDrillQuestions(getKanzeihouQuestions(), 10, true);
   if (mode === "関税法等20問") return pickDrillQuestions(getKanzeihouQuestions(), 20, true);
   if (mode === "関税法等ランダム") return pickDrillQuestions(getKanzeihouQuestions(), 10, true);
@@ -3198,7 +3210,7 @@ function getDrillQuestions(mode) {
   if (mode === "減免税ドリル") return pickKanzeihouTopicDrill(/減免税|戻し税|免税|減税/);
   if (mode === "輸入禁止貨物・原産地表示ドリル") return pickKanzeihouTopicDrill(/輸入してはならない|輸入禁止|原産地|虚偽表示/);
   if (mode === "罰則ドリル") return pickKanzeihouTopicDrill(/罰則|没収|追徴|密輸/);
-  if (mode === "関税法等ドリル") return QUESTION_BANK.filter((question) => question.subject === "関税法等");
+  if (mode === "関税法等ドリル") return bank.filter((question) => question.subject === "関税法等");
   if (mode === "通関実務10問") return pickDrillQuestions(getJitsumuQuestions(), 10, true);
   if (mode === "通関実務20問") return pickDrillQuestions(getJitsumuQuestions(), 20, true);
   if (mode === "通関実務ランダム") return pickDrillQuestions(getJitsumuQuestions(), 10, true);
@@ -3225,16 +3237,16 @@ function getDrillQuestions(mode) {
   if (mode === "時間配分ドリル") return pickJitsumuTopicDrill(/時間配分|問題要求の確認/);
   if (mode === "弱点タグ別ドリル") {
     const tags = [...new Set([...getTopWeaknessTags(), ...getDrillWeaknessTagRanking().slice(0, 3).map((item) => item.tag)])];
-    const matched = tags.length ? QUESTION_BANK.filter((question) => tags.some((tag) => question.weaknessTag.includes(tag) || tag.includes(question.weaknessTag))) : [];
-    return pickDrillQuestions(matched.length ? matched : QUESTION_BANK.filter((question) => question.subject === "通関業法"), 10, true);
+    const matched = tags.length ? bank.filter((question) => tags.some((tag) => question.weaknessTag.includes(tag) || tag.includes(question.weaknessTag))) : [];
+    return pickDrillQuestions(matched.length ? matched : bank.filter((question) => question.subject === "通関業法"), 10, true);
   }
   if (isWeaknessDrillMode(mode)) {
     const count = getWeaknessDrillLimit(mode);
     const matched = getWeaknessDrillQuestionPool(state.drill.targetWeaknessTag, state.drill.targetWeaknessGroup);
-    return pickDrillQuestions(matched.length ? matched : QUESTION_BANK, count || QUESTION_BANK.length, true);
+    return pickDrillQuestions(matched.length ? matched : bank, count || bank.length, true);
   }
-  if (mode === "ひっかけ問題ドリル") return QUESTION_BANK.filter((question) => question.trapExplanation);
-  return QUESTION_BANK;
+  if (mode === "ひっかけ問題ドリル") return bank.filter((question) => question.trapExplanation);
+  return bank;
 }
 
 function isWeaknessDrillMode(mode) {
@@ -3248,11 +3260,11 @@ function getWeaknessDrillLimit(mode) {
 }
 
 function getKanzeihouQuestions() {
-  return QUESTION_BANK.filter((question) => question.subject === "関税法等");
+  return getQuestionBank().filter((question) => question.subject === "関税法等");
 }
 
 function getJitsumuQuestions() {
-  return QUESTION_BANK.filter((question) => question.subject === "通関実務");
+  return getQuestionBank().filter((question) => question.subject === "通関実務");
 }
 
 function pickKanzeihouTopicDrill(pattern) {
@@ -3281,10 +3293,11 @@ function pickDrillQuestions(questions, limit, randomize = false) {
 }
 
 function getWeaknessTagCandidates() {
+  const bank = getQuestionBank();
   return [...new Set([
     ...V24_WEAKNESS_TAG_CANDIDATES,
     ...WEAKNESS_TAGS,
-    ...QUESTION_BANK.map((question) => question.weaknessTag).filter(Boolean)
+    ...bank.map((question) => question.weaknessTag).filter(Boolean)
   ])].filter((tag) => getQuestionsByWeaknessTag(tag).length || V24_WEAKNESS_TAG_CANDIDATES.includes(tag));
 }
 
@@ -3296,7 +3309,7 @@ function tagMatchesQuestion(tag, question) {
 }
 
 function getQuestionsByWeaknessTag(tag) {
-  return QUESTION_BANK.filter((question) => tagMatchesQuestion(tag, question));
+  return getQuestionBank().filter((question) => tagMatchesQuestion(tag, question));
 }
 
 function getWeaknessGroupByName(groupName) {
@@ -3307,7 +3320,7 @@ function getWeaknessDrillQuestionPool(tag = "", groupName = "") {
   if (groupName) {
     const group = getWeaknessGroupByName(groupName);
     if (!group) return [];
-    return QUESTION_BANK.filter((question) => group.tags.some((tagName) => tagMatchesQuestion(tagName, question)));
+    return getQuestionBank().filter((question) => group.tags.some((tagName) => tagMatchesQuestion(tagName, question)));
   }
   return getQuestionsByWeaknessTag(tag);
 }
@@ -3596,6 +3609,116 @@ function splitDocumentQuestion(text) {
   return { material: material.replace(/^【簡易資料】\s*/, ""), body: `【問】${body || ""}` };
 }
 
+function getDrillModeSubject(mode) {
+  if (String(mode || "").startsWith("通関業法")) return "通関業法";
+  if (String(mode || "").startsWith("関税法等") || [
+    "輸出入申告ドリル", "保税地域ドリル", "保税運送ドリル", "納税申告・更正ドリル", "納期限・加算税ドリル",
+    "課税価格ドリル", "減免税ドリル", "輸入禁止貨物・原産地表示ドリル", "罰則ドリル"
+  ].includes(mode)) return "関税法等";
+  if (String(mode || "").startsWith("通関実務") || [
+    "手順ドリル", "計算過程ドリル", "資料読取ドリル", "インボイス読取ドリル", "輸出申告ドリル", "輸入申告ドリル",
+    "品目分類ドリル", "統計品目番号ドリル", "通関実務課税価格ドリル", "加算要素・不算入要素ドリル", "為替換算ドリル",
+    "関税額計算ドリル", "消費税・地方消費税ドリル", "端数処理ドリル", "税率適用ドリル", "NACCS入力ドリル",
+    "資料読取論点ドリル", "時間配分ドリル"
+  ].includes(mode)) return "通関実務";
+  return "横断";
+}
+
+function getQuestionBankSummary() {
+  const bank = getQuestionBank();
+  return {
+    bankLength: bank.length,
+    tsukangyoho: bank.filter((question) => question.subject === "通関業法").length,
+    kanzeihou: bank.filter((question) => question.subject === "関税法等").length,
+    jitsumu: bank.filter((question) => question.subject === "通関実務").length
+  };
+}
+
+function buildNoDrillQuestionsMessage(mode, subject = getDrillModeSubject(mode)) {
+  if (subject && subject !== "横断") {
+    return `${subject}の問題が見つかりません。問題バンクの読み込み状態を確認してください。`;
+  }
+  return `${mode || "対象"}の問題が見つかりません。問題バンクの読み込み状態を確認してください。`;
+}
+
+function showDrillStartMessage(message) {
+  state.drill.message = message;
+  showToast(message);
+}
+
+function startDrillByMode(mode, options = {}) {
+  state.drill.mode = mode;
+  state.drill.currentQuestionId = "";
+  state.drill.selectedAnswer = "";
+  state.drill.graded = false;
+  state.drill.sessionQuestionIds = [];
+  state.drill.answers = [];
+  state.drill.startedAt = "";
+  if (!isWeaknessDrillMode(mode)) {
+    state.drill.targetWeaknessTag = "";
+    state.drill.targetWeaknessGroup = "";
+  }
+
+  const questions = getDrillQuestions(mode);
+  if (!questions.length) {
+    const subject = options.subject || getDrillModeSubject(mode);
+    const message = options.emptyMessage || buildNoDrillQuestionsMessage(mode, subject);
+    showDrillStartMessage(message);
+    console.warn("No drill questions found", { mode, subject, ...getQuestionBankSummary() });
+    switchView("drill");
+    renderDrillView();
+    return false;
+  }
+
+  state.drill.sessionQuestionIds = questions.map((question) => question.id);
+  state.drill.currentQuestionId = questions[0].id;
+  state.drill.startedAt = new Date().toISOString();
+  state.drill.message = "";
+  switchView("drill");
+  renderDrillView();
+  document.querySelector("#drillAreaStandalone")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  return true;
+}
+
+function startDrillBySubject(subject, options = {}) {
+  const bank = getQuestionBank();
+  const limit = Number(options.count || 10);
+  const matched = bank.filter((question) => question.subject === subject);
+  const mode = options.mode || `${subject}ドリル`;
+  if (!matched.length) {
+    state.drill.mode = mode;
+    state.drill.currentQuestionId = "";
+    state.drill.selectedAnswer = "";
+    state.drill.graded = false;
+    state.drill.sessionQuestionIds = [];
+    state.drill.answers = [];
+    state.drill.startedAt = "";
+    state.drill.targetWeaknessTag = "";
+    state.drill.targetWeaknessGroup = "";
+    const message = options.emptyMessage || buildNoDrillQuestionsMessage(mode, subject);
+    showDrillStartMessage(message);
+    console.warn("No drill questions found", { subject, mode, ...getQuestionBankSummary() });
+    switchView("drill");
+    renderDrillView();
+    return false;
+  }
+  const questions = pickDrillQuestions(matched, limit || matched.length, options.randomize !== false);
+  state.drill.mode = mode;
+  state.drill.currentQuestionId = questions[0].id;
+  state.drill.selectedAnswer = "";
+  state.drill.graded = false;
+  state.drill.sessionQuestionIds = questions.map((question) => question.id);
+  state.drill.answers = [];
+  state.drill.startedAt = new Date().toISOString();
+  state.drill.targetWeaknessTag = "";
+  state.drill.targetWeaknessGroup = "";
+  state.drill.message = "";
+  switchView("drill");
+  renderDrillView();
+  document.querySelector("#drillAreaStandalone")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  return true;
+}
+
 function setDrillMode(mode) {
   state.drill.mode = mode;
   state.drill.currentQuestionId = "";
@@ -3604,6 +3727,7 @@ function setDrillMode(mode) {
   state.drill.sessionQuestionIds = [];
   state.drill.answers = [];
   state.drill.startedAt = "";
+  state.drill.message = "";
   if (!isWeaknessDrillMode(mode)) {
     state.drill.targetWeaknessTag = "";
     state.drill.targetWeaknessGroup = "";
@@ -3623,7 +3747,18 @@ function startWeaknessDrill(targetName, type = "tag", count = "5") {
   state.drill.sessionQuestionIds = [];
   state.drill.answers = [];
   state.drill.startedAt = "";
+  state.drill.message = "";
   switchView("drill");
+  const questions = getDrillQuestions(state.drill.mode);
+  if (!questions.length) {
+    const message = buildNoDrillQuestionsMessage(state.drill.mode, "横断");
+    showDrillStartMessage(message);
+    console.warn("No weakness drill questions found", { targetName, type, count, ...getQuestionBankSummary() });
+  } else {
+    state.drill.sessionQuestionIds = questions.map((question) => question.id);
+    state.drill.currentQuestionId = questions[0].id;
+    state.drill.startedAt = new Date().toISOString();
+  }
   renderDrillView();
   document.querySelector("#drillAreaStandalone")?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
@@ -10090,13 +10225,17 @@ function statusLabel(ok) {
 function renderDataStatus() {
   const host = document.querySelector("#dataStatusDetails");
   if (!host) return;
+  const questionSummary = getQuestionBankSummary();
   host.innerHTML = `
     <div><dt>レッスンデータ読み込み</dt><dd>${statusLabel(DATA_FILE_STATUS.lessons)}</dd></div>
     <div><dt>問題バンク読み込み</dt><dd>${statusLabel(DATA_FILE_STATUS.questionBank)}</dd></div>
     <div><dt>模試定義読み込み</dt><dd>${statusLabel(DATA_FILE_STATUS.mockExams)}</dd></div>
     <div><dt>弱点グループ読み込み</dt><dd>${statusLabel(DATA_FILE_STATUS.weaknessGroups)}</dd></div>
     <div><dt>レッスン数</dt><dd>${CURRICULUM_LESSONS.length}件</dd></div>
-    <div><dt>問題数</dt><dd>${QUESTION_BANK.length}問</dd></div>
+    <div><dt>問題数</dt><dd>${questionSummary.bankLength}問</dd></div>
+    <div><dt>通関業法問題数</dt><dd>${questionSummary.tsukangyoho}問</dd></div>
+    <div><dt>関税法等問題数</dt><dd>${questionSummary.kanzeihou}問</dd></div>
+    <div><dt>通関実務問題数</dt><dd>${questionSummary.jitsumu}問</dd></div>
     <div><dt>模試問題数</dt><dd>${MOCK_EXAM_QUESTIONS.length}問</dd></div>
     <div><dt>弱点グループ数</dt><dd>${WEAKNESS_GROUPS.length}件</dd></div>
     <div><dt>インポート済み過去問数</dt><dd>${state.importedPastExamQuestions.length}問</dd></div>
@@ -10978,9 +11117,7 @@ function attachEvents() {
     }
     const startDrillButton = event.target.closest("[data-start-drill-mode]");
     if (startDrillButton) {
-      switchView("drill");
-      setDrillMode(startDrillButton.dataset.startDrillMode);
-      document.querySelector("#drillAreaStandalone")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      startDrillByMode(startDrillButton.dataset.startDrillMode);
       return;
     }
     const startWeaknessDrillButton = event.target.closest("[data-start-weakness-drill]");
