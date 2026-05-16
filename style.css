@@ -1063,6 +1063,21 @@ button:disabled {
   gap: 12px;
 }
 
+.reinforcement-pack-list,
+.reinforcement-map-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.reinforcement-subject-map {
+  margin-top: 12px;
+}
+
+.reinforcement-topic-card p,
+.reinforcement-pack-card p {
+  margin-bottom: 0;
+}
+
 .analysis-card h4,
 .analysis-cta h3,
 .risk-detail-panel strong {
@@ -2488,5 +2503,10 @@ body {
 
   .home-secondary-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .reinforcement-pack-list,
+  .reinforcement-map-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

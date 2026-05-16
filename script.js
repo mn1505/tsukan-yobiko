@@ -1,4 +1,4 @@
-const APP_VERSION = "v3.0.1";
+const APP_VERSION = "v3.1";
 const APP_NAME = "TSUKAN_YOBIKO";
 const BACKUP_SCHEMA_VERSION = 2;
 const AI_API_TIMEOUT_MS = 30000;
@@ -66,9 +66,10 @@ const AI_PROMPT_TYPES = [
   "総合学習相談",
   "学習データ確認",
   "復習優先度整理",
-  "バックアップJSON確認"
+  "バックアップJSON確認",
+  "過去問分析に基づく教材補強相談"
 ];
-const AI_TARGET_TYPES = ["単元", "レッスン", "通関業法カリキュラム", "通関業法ドリル結果", "関税法等カリキュラム", "関税法等ドリル結果", "通関実務カリキュラム", "通関実務ドリル結果", "弱点別ドリル結果", "演習ログ", "過去問ログ", "実務ログ", "復習対象", "総合模試結果", "最新模試結果", "横断弱点", "全体サマリー"];
+const AI_TARGET_TYPES = ["単元", "レッスン", "補強パック", "補強対象マップ", "通関業法カリキュラム", "通関業法ドリル結果", "関税法等カリキュラム", "関税法等ドリル結果", "通関実務カリキュラム", "通関実務ドリル結果", "弱点別ドリル結果", "演習ログ", "過去問ログ", "実務ログ", "復習対象", "総合模試結果", "最新模試結果", "横断弱点", "全体サマリー"];
 const STUDY_DURATIONS = ["15分", "30分", "1時間", "2時間", "じっくり"];
 const AI_ANALYSIS_POINTS = {
   "回答添削": ["結論は合っているか", "理由づけは正しいか", "用語の使い方は正しいか", "条文・制度理解にズレはないか", "本試験ならどこで失点しそうか", "より良い回答にするにはどう修正すべきか"],
@@ -82,7 +83,8 @@ const AI_ANALYSIS_POINTS = {
   "総合学習相談": ["現在の学習状況", "合格可能性を上げるうえでの優先課題", "科目別の危険度", "復習優先順位", "今週やるべきこと", "アプリへの記録方法の改善案"],
   "学習データ確認": ["TSUKAN YOBIKOの学習データ状況を確認してください", "進捗・ドリル・模試・ログに不自然な点がないか", "記録が不足している領域", "次に記録すべき情報"],
   "復習優先度整理": ["ドリル結果と模試結果から、次に何を復習すべきか整理してください", "科目別の優先順位", "弱点タグ別の危険度", "今日から3日間の復習順"],
-  "バックアップJSON確認": ["バックアップJSONの内容を見て、不自然な点がないか確認してください", "件数の偏り", "欠損していそうなデータ", "復元前に注意すべき点"]
+  "バックアップJSON確認": ["バックアップJSONの内容を見て、不自然な点がないか確認してください", "件数の偏り", "欠損していそうなデータ", "復元前に注意すべき点"],
+  "過去問分析に基づく教材補強相談": ["対象年度", "対象科目", "対象問題", "論点", "弱点タグ", "現在の補強状況", "不足している内容", "追加すべき講義", "確認問題", "ひっかけ問題", "弱点別ドリル"]
 };
 const AI_OUTPUT_FORMATS = {
   default: ["総評", "良い点", "問題点", "弱点タグ候補", "本試験での危険ポイント", "次に復習すべきこと", "A判定に上げる条件"],
@@ -132,7 +134,9 @@ const DATA_FILE_STATUS = {
   lessons: Array.isArray(window.TSUKAN_LESSONS) && Array.isArray(window.TSUKAN_COURSES),
   questionBank: Array.isArray(window.TSUKAN_QUESTION_BANK),
   mockExams: Boolean(window.TSUKAN_MOCK_EXAM_MODES) && Array.isArray(window.TSUKAN_MOCK_EXAM_QUESTIONS),
-  weaknessGroups: Array.isArray(window.TSUKAN_WEAKNESS_GROUPS)
+  weaknessGroups: Array.isArray(window.TSUKAN_WEAKNESS_GROUPS),
+  reinforcementPacks: Array.isArray(window.TSUKAN_REINFORCEMENT_PACKS),
+  reinforcementMap: Boolean(window.TSUKAN_PAST_EXAM_ANALYSIS_SUMMARY)
 };
 const WEAKNESS_TAGS = Array.isArray(window.TSUKAN_WEAKNESS_TAGS) ? window.TSUKAN_WEAKNESS_TAGS : [];
 const PRACTICAL_WEAKNESS_TAGS = Array.isArray(window.TSUKAN_PRACTICAL_WEAKNESS_TAGS) ? window.TSUKAN_PRACTICAL_WEAKNESS_TAGS : [];
@@ -144,6 +148,9 @@ const CURRICULUM_COURSES = Array.isArray(window.TSUKAN_COURSES) ? window.TSUKAN_
 const CURRICULUM_LESSONS = Array.isArray(window.TSUKAN_LESSONS) ? window.TSUKAN_LESSONS : [];
 const MOCK_EXAM_QUESTIONS = Array.isArray(window.TSUKAN_MOCK_EXAM_QUESTIONS) ? window.TSUKAN_MOCK_EXAM_QUESTIONS : [];
 const QUESTION_BANK = Array.isArray(window.TSUKAN_QUESTION_BANK) ? window.TSUKAN_QUESTION_BANK : [];
+const REINFORCEMENT_PACKS = Array.isArray(window.TSUKAN_REINFORCEMENT_PACKS) ? window.TSUKAN_REINFORCEMENT_PACKS : [];
+const PAST_EXAM_ANALYSIS_SUMMARY = window.TSUKAN_PAST_EXAM_ANALYSIS_SUMMARY && typeof window.TSUKAN_PAST_EXAM_ANALYSIS_SUMMARY === "object" ? window.TSUKAN_PAST_EXAM_ANALYSIS_SUMMARY : { reinforcementTargets: [] };
+const REINFORCEMENT_TARGETS = Array.isArray(PAST_EXAM_ANALYSIS_SUMMARY.reinforcementTargets) ? PAST_EXAM_ANALYSIS_SUMMARY.reinforcementTargets : [];
 
 function getQuestionBank() {
   return Array.isArray(window.TSUKAN_QUESTION_BANK) ? window.TSUKAN_QUESTION_BANK : QUESTION_BANK;
@@ -880,7 +887,7 @@ function normalizeAiSettings(item) {
     enabled: false,
     endpointUrl: "",
     lastTestedAt: String(item?.lastTestedAt || ""),
-    lastStatus: "v3.0でも廃止",
+    lastStatus: "v3.1でも廃止",
     lastError: ""
   };
 }
@@ -1036,7 +1043,7 @@ function sanitizeAiSettings(settings) {
     enabled: false,
     endpointUrl: "",
     lastTestedAt: "",
-    lastStatus: "v3.0でも廃止",
+    lastStatus: "v3.1でも廃止",
     lastError: ""
   };
 }
@@ -3054,7 +3061,7 @@ function renderDrillView() {
     "通関業法10問", "通関業法ランダム", "通関業法順番", "通関業法ひっかけ",
     "関税法等10問", "関税法等20問", "関税法等ランダム", "関税法等順番", "関税法等ひっかけ",
     "輸出入申告ドリル", "保税地域ドリル", "保税運送ドリル", "納税申告・更正ドリル", "納期限・加算税ドリル", "課税価格ドリル", "減免税ドリル", "輸入禁止貨物・原産地表示ドリル", "罰則ドリル",
-    "弱点タグ別ドリル", "関税法等ドリル",
+    "弱点タグ別ドリル", "ひっかけ問題ドリル", "関税法等ドリル",
     "通関実務10問", "通関実務20問", "通関実務ランダム", "通関実務順番", "通関実務ひっかけ", "通関実務ドリル",
     "手順ドリル", "計算過程ドリル", "資料読取ドリル",
     "インボイス読取ドリル", "輸出申告ドリル", "輸入申告ドリル", "品目分類ドリル", "統計品目番号ドリル", "通関実務課税価格ドリル", "加算要素・不算入要素ドリル", "為替換算ドリル", "関税額計算ドリル", "消費税・地方消費税ドリル", "端数処理ドリル", "税率適用ドリル", "NACCS入力ドリル", "資料読取論点ドリル", "時間配分ドリル"
@@ -3076,7 +3083,7 @@ function renderDrillView() {
     { title: "手順ドリル", subject: "通関実務", mode: "手順ドリル", reason: "申告書・資料読取の処理順を固定" },
     { title: "計算過程ドリル", subject: "通関実務", mode: "計算過程ドリル", reason: "課税価格、関税額、消費税の考え方を確認" },
     { title: "資料読取ドリル", subject: "通関実務", mode: "資料読取ドリル", reason: "インボイス・条件・レート表の読み落とし対策" },
-    { title: "ひっかけ総点検", subject: "横断", mode: "通関業法ひっかけ", reason: "主体・期限・手続区分の読み違い対策" }
+    { title: "ひっかけ総点検", subject: "横断", mode: "ひっかけ問題ドリル", reason: "主体・期限・手続区分の読み違い対策" }
   ];
   const content = `
     <div class="drill-entry-grid">
@@ -4718,6 +4725,9 @@ function renderAnalysisView() {
   document.querySelector("#analysisCurriculum").innerHTML = renderCurriculumAnalysis();
   document.querySelector("#analysisMockExam").innerHTML = renderMockExamAnalysis();
   document.querySelector("#analysisQuestionBank").innerHTML = renderDrillBankAnalysis();
+  document.querySelector("#analysisReinforcementSummary").innerHTML = renderReinforcementSummary();
+  document.querySelector("#analysisReinforcementPacks").innerHTML = renderReinforcementPacks();
+  document.querySelector("#analysisReinforcementMap").innerHTML = renderReinforcementMap();
   document.querySelector("#analysisRetryTargets").innerHTML = renderRetryTargets(analysis.retryTargets);
   document.querySelector("#analysisAiUsage").innerHTML = renderAiUsage(analysis.aiUsage);
 }
@@ -6244,6 +6254,126 @@ function renderWeaknessRanking(items) {
   `;
 }
 
+function getReinforcementStats() {
+  const pastLessons = CURRICULUM_LESSONS.filter((lesson) => lesson.lessonSource === "past_exam_analysis");
+  const pastQuestions = QUESTION_BANK.filter((question) => question.questionSource === "past_exam_analysis");
+  const subjectCounts = rankFromValues(REINFORCEMENT_PACKS.map((pack) => pack.targetSubject || pack.sourceSubject).filter(Boolean));
+  const tagCounts = rankFromValues(REINFORCEMENT_PACKS.flatMap((pack) => pack.detectedWeaknessTags || []));
+  const statusCounts = rankFromValues(REINFORCEMENT_TARGETS.map((target) => target.status || "未着手"));
+  return {
+    packCount: REINFORCEMENT_PACKS.length,
+    pastLessonCount: pastLessons.length,
+    pastQuestionCount: pastQuestions.length,
+    subjectCounts,
+    tagCounts,
+    reinforcedTopicCount: REINFORCEMENT_TARGETS.filter((target) => target.status === "補強済").length,
+    notStartedTopicCount: REINFORCEMENT_TARGETS.filter((target) => target.status === "未着手").length,
+    recheckTopicCount: REINFORCEMENT_TARGETS.filter((target) => target.status === "要再検証").length,
+    plannedTopicCount: REINFORCEMENT_TARGETS.filter((target) => target.status === "補強予定" || target.status === "分析中").length
+  };
+}
+
+function renderReinforcementSummary() {
+  const stats = getReinforcementStats();
+  const rows = [
+    ["補強パック数", `${stats.packCount}件`],
+    ["過去問分析由来レッスン数", `${stats.pastLessonCount}件`],
+    ["過去問分析由来問題数", `${stats.pastQuestionCount}問`],
+    ["補強済論点数", `${stats.reinforcedTopicCount}件`],
+    ["未着手論点数", `${stats.notStartedTopicCount}件`],
+    ["要再検証論点数", `${stats.recheckTopicCount}件`]
+  ];
+  return `
+    <div class="analysis-stat-grid">
+      ${rows.map(([label, value]) => `
+        <div class="analysis-stat">
+          <span>${escapeHtml(label)}</span>
+          <strong>${escapeHtml(value)}</strong>
+        </div>
+      `).join("")}
+    </div>
+    <div class="analysis-card-grid two-col">
+      <article class="analysis-card">
+        <h4>科目別補強数</h4>
+        <p>${escapeHtml(stats.subjectCounts.map((item) => `${item.label}:${item.count}`).join(" / ") || "未登録")}</p>
+      </article>
+      <article class="analysis-card">
+        <h4>弱点タグ別補強数</h4>
+        <p>${escapeHtml(stats.tagCounts.map((item) => `${item.label}:${item.count}`).join(" / ") || "未登録")}</p>
+      </article>
+    </div>
+    <div class="analysis-card">
+      <h4>教材化方針</h4>
+      <p class="muted">${escapeHtml(PAST_EXAM_ANALYSIS_SUMMARY.policy || "過去問本文を大量保存せず、論点・弱点・ひっかけパターンとして教材化します。")}</p>
+    </div>
+  `;
+}
+
+function renderReinforcementPacks() {
+  if (!REINFORCEMENT_PACKS.length) return `<p class="muted">教材補強パックはまだ登録されていません。</p>`;
+  return `
+    <div class="reinforcement-pack-list">
+      ${REINFORCEMENT_PACKS.map((pack) => `
+        <article class="analysis-card reinforcement-pack-card">
+          <div class="analysis-card-top">
+            <div>
+              <p class="eyebrow">${escapeHtml(pack.sourceExam || "過去問分析")}</p>
+              <h4>${escapeHtml(pack.packName)}</h4>
+            </div>
+            <span class="badge priority">${escapeHtml(pack.priority || "未設定")}</span>
+          </div>
+          <dl class="analysis-facts compact">
+            <div><dt>対象年度</dt><dd>${escapeHtml(String(pack.sourceYear || ""))}</dd></div>
+            <div><dt>対象科目</dt><dd>${escapeHtml(pack.targetSubject || pack.sourceSubject || "")}</dd></div>
+            <div><dt>対象問題</dt><dd>${escapeHtml(pack.sourceQuestionNo || "")}</dd></div>
+            <div><dt>補強論点</dt><dd>${escapeHtml(pack.targetTopic || "")}</dd></div>
+            <div><dt>追加レッスン数</dt><dd>${normalizeArray(pack.lessonIdsAdded).length}</dd></div>
+            <div><dt>追加問題数</dt><dd>${normalizeArray(pack.questionIdsAdded).length}</dd></div>
+            <div><dt>状態</dt><dd>${escapeHtml(pack.status || "未設定")}</dd></div>
+            <div><dt>弱点タグ</dt><dd>${escapeHtml(normalizeArray(pack.detectedWeaknessTags).join(" / "))}</dd></div>
+          </dl>
+          <p class="muted">${escapeHtml(pack.summary || "")}</p>
+        </article>
+      `).join("")}
+    </div>
+  `;
+}
+
+function renderReinforcementMap() {
+  if (!REINFORCEMENT_TARGETS.length) return `<p class="muted">全範囲補強マップはまだ登録されていません。</p>`;
+  const subjects = rankFromValues(REINFORCEMENT_TARGETS.map((target) => target.subject)).map((item) => item.label);
+  return subjects.map((subject) => {
+    const targets = REINFORCEMENT_TARGETS.filter((target) => target.subject === subject);
+    const done = targets.filter((target) => target.status === "補強済").length;
+    return `
+      <details class="reinforcement-subject-map details-panel" ${subject === "関税法等" ? "open" : ""}>
+        <summary>${escapeHtml(subject)} ${done}/${targets.length}論点 補強済</summary>
+        <div class="details-body reinforcement-map-grid">
+          ${targets.map((target) => `
+            <article class="analysis-card reinforcement-topic-card">
+              <div class="analysis-card-top">
+                <div>
+                  <p class="eyebrow">${escapeHtml(target.subject)}</p>
+                  <h4>${escapeHtml(target.topic)}</h4>
+                </div>
+                <span class="badge ${target.status === "補強済" ? "ok" : target.status === "要再検証" ? "danger" : target.priority === "高" ? "priority" : "normal"}">${escapeHtml(target.status)}</span>
+              </div>
+              <dl class="analysis-facts compact">
+                <div><dt>優先度</dt><dd>${escapeHtml(target.priority)}</dd></div>
+                <div><dt>補強パック数</dt><dd>${normalizeArray(target.reinforcementPackIds).length}</dd></div>
+                <div><dt>レッスン数</dt><dd>${normalizeArray(target.lessonIds).length}</dd></div>
+                <div><dt>問題数</dt><dd>${normalizeArray(target.questionIds).length}</dd></div>
+                <div><dt>弱点タグ</dt><dd>${escapeHtml(normalizeArray(target.weaknessTags).join(" / "))}</dd></div>
+              </dl>
+              <p class="muted">${escapeHtml(target.memo || "")}</p>
+            </article>
+          `).join("")}
+        </div>
+      </details>
+    `;
+  }).join("");
+}
+
 function renderUnitRiskRanking(items) {
   if (!items.length) return `<p class="muted">単元データがありません。</p>`;
   const todayUnitIds = new Set((state.todayMenu || generateTodayMenu(getTodayPlan().selectedDuration)).allItems.map((item) => item.relatedUnitId).filter(Boolean));
@@ -7399,7 +7529,7 @@ function renderAiTargetSelect() {
   const label = document.querySelector("#aiTargetSelectLabel");
   const hint = document.querySelector("#aiTargetHint");
   const options = getAiTargetOptions(state.aiForm.targetType);
-  const needsSelect = ["単元", "レッスン", "演習ログ", "過去問ログ", "実務ログ", "総合模試結果"].includes(state.aiForm.targetType);
+  const needsSelect = ["単元", "レッスン", "補強パック", "補強対象マップ", "演習ログ", "過去問ログ", "実務ログ", "総合模試結果"].includes(state.aiForm.targetType);
   label.classList.toggle("is-hidden", !needsSelect);
   hint.textContent = needsSelect ? "" : state.aiForm.targetType === "通関業法カリキュラム"
     ? "通関業法20レッスンの進捗、誤答、弱点タグ、ミニ模試、復習対象を使います。"
@@ -7407,6 +7537,10 @@ function renderAiTargetSelect() {
     ? "関税法等30レッスンの進捗、誤答、弱点タグ、ミニ模試、保税・納税・課税価格の苦手状況を使います。"
     : state.aiForm.targetType === "通関実務カリキュラム"
     ? "通関実務30レッスンの進捗、誤答、弱点タグ、ミニ模試、品目分類・課税価格・申告書・税額計算・時間配分の苦手状況を使います。"
+    : state.aiForm.targetType === "補強パック"
+    ? "登録済みの教材補強パックを使い、追加すべき講義・確認問題・ひっかけ問題を相談します。"
+    : state.aiForm.targetType === "補強対象マップ"
+    ? "全範囲補強マップの論点、状態、弱点タグ、未補強項目を使います。"
     : state.aiForm.targetType === "復習対象"
     ? "現在の復習対象単元を最大10件まで使います。"
     : state.aiForm.targetType === "最新模試結果"
@@ -7436,6 +7570,12 @@ function getAiTargetOptions(targetType) {
   }
   if (targetType === "レッスン") {
     return CURRICULUM_LESSONS.map((lesson) => ({ value: lesson.id, label: `${lesson.subject} / ${lesson.title}` }));
+  }
+  if (targetType === "補強パック") {
+    return REINFORCEMENT_PACKS.map((pack) => ({ value: pack.id, label: `${pack.sourceYear || ""} / ${pack.targetSubject || pack.sourceSubject || ""} / ${pack.targetTopic || pack.packName}` }));
+  }
+  if (targetType === "補強対象マップ") {
+    return REINFORCEMENT_TARGETS.map((target) => ({ value: target.id, label: `${target.subject} / ${target.topic} / ${target.status}` }));
   }
   if (targetType === "演習ログ") {
     return [...state.practiceLogs].sort(comparePracticeLogs).map((log) => ({
@@ -7943,6 +8083,17 @@ function applyAiQuickAction(kind) {
   if (kind === "lesson") {
     const lesson = getRecommendedLesson()?.lesson || CURRICULUM_LESSONS[0];
     if (lesson) openAiForLesson(lesson.id);
+    return;
+  }
+  if (kind === "reinforcement") {
+    state.aiForm.promptType = "過去問分析に基づく教材補強相談";
+    state.aiForm.targetType = REINFORCEMENT_PACKS.length ? "補強パック" : "補強対象マップ";
+    state.aiForm.targetId = REINFORCEMENT_PACKS[0]?.id || REINFORCEMENT_TARGETS[0]?.id || "";
+    state.aiForm.additionalConditions = "過去問本文の丸写しはせず、論点・弱点・ひっかけパターンをアプリ内講義、確認問題、弱点別ドリル、模試へ変換する提案にしてください。";
+    state.aiForm.promptText = "";
+    prepareAiPromptDraft();
+    switchView("ai");
+    renderAiView();
   }
 }
 
@@ -7982,6 +8133,26 @@ function generateAiPrompt() {
 }
 
 function buildAiPromptText(promptType, target, additionalConditions) {
+  if (promptType === "過去問分析に基づく教材補強相談") {
+    return [
+      "私は通関士試験学習アプリTSUKAN YOBIKOを作っています。",
+      "過去問10年分を分析し、アプリ内教材・ドリル・模試を補強して、通関士試験の全範囲で完答可能レベルを目指しています。",
+      "",
+      "以下の補強パックまたは補強対象論点について、追加すべき講義・確認問題・ひっかけ問題・弱点別ドリルを提案してください。",
+      "",
+      "【補強対象データ】",
+      target.body,
+      "",
+      "【提案してほしい内容】",
+      bulletLines(["追加すべき講義", "確認問題", "ひっかけ問題", "弱点別ドリル", "模試に入れるべき問題タイプ", "優先して補強すべき不足内容"]),
+      "",
+      "【追加条件】",
+      additionalConditions.trim() || "特になし",
+      "",
+      "【禁止事項】",
+      bulletLines(["過去問本文をそのまま複製しない", "市販教材や解説をコピーしない", "論点・弱点・ひっかけパターンとして教材化する", "アプリ内で外部通信やAPI利用を前提にしない"])
+    ].join("\n");
+  }
   const points = ["総合模試結果", "最新模試結果", "横断弱点"].includes(state.aiForm.targetType)
     ? ["模試モードと正答率の評価", "A/B/C判定の妥当性", "科目別正答率の弱い順", "間違えた問題の共通原因", "弱点タグの優先順位", "関連レッスンの復習順", "次に復習すべき候補", "30分・1時間での復習指示"]
     : state.aiForm.targetType === "通関業法カリキュラム"
@@ -8026,6 +8197,14 @@ function buildAiTargetData() {
   if (state.aiForm.targetType === "レッスン") {
     const lesson = getLessonById(state.aiForm.targetId) || CURRICULUM_LESSONS[0];
     return lesson ? { id: lesson.id, title: lesson.title, body: buildLessonPromptData(lesson) } : null;
+  }
+  if (state.aiForm.targetType === "補強パック") {
+    const pack = REINFORCEMENT_PACKS.find((item) => item.id === state.aiForm.targetId) || REINFORCEMENT_PACKS[0];
+    return pack ? { id: pack.id, title: pack.packName, body: buildReinforcementPackPromptData(pack) } : null;
+  }
+  if (state.aiForm.targetType === "補強対象マップ") {
+    const target = REINFORCEMENT_TARGETS.find((item) => item.id === state.aiForm.targetId) || REINFORCEMENT_TARGETS[0];
+    return target ? { id: target.id, title: `${target.subject} / ${target.topic}`, body: buildReinforcementTargetPromptData(target) } : null;
   }
   if (state.aiForm.targetType === "演習ログ") {
     const log = state.practiceLogs.find((item) => item.id === state.aiForm.targetId) || state.practiceLogs[0];
@@ -8142,6 +8321,38 @@ function buildLessonPromptData(lesson) {
     ["復習対象かどうか", progress.reviewNeeded ? "復習対象" : "対象外"],
     ["状態", progress.status],
     ["最終学習日", progress.lastStudiedAt]
+  ]);
+}
+
+function buildReinforcementPackPromptData(pack) {
+  return keyValueLines([
+    ["対象年度", pack.sourceYear || ""],
+    ["対象科目", pack.targetSubject || pack.sourceSubject || ""],
+    ["対象問題", pack.sourceQuestionNo || ""],
+    ["論点", pack.targetTopic || ""],
+    ["弱点タグ", normalizeArray(pack.detectedWeaknessTags).join(" / ")],
+    ["現在の補強状況", pack.status || ""],
+    ["追加済みレッスン", normalizeArray(pack.lessonIdsAdded).join(" / ")],
+    ["追加済み問題", normalizeArray(pack.questionIdsAdded).join(" / ")],
+    ["不足している内容", "10年分過去問分析から、同論点の講義、確認問題、ひっかけ問題、弱点別ドリルへの追加候補を洗い出したい。"],
+    ["注意", "過去問本文や市販教材の解説を丸写しせず、論点・弱点・ひっかけパターンとして教材化する。"]
+  ]);
+}
+
+function buildReinforcementTargetPromptData(target) {
+  const packs = normalizeArray(target.reinforcementPackIds).map((id) => REINFORCEMENT_PACKS.find((pack) => pack.id === id)?.packName || id);
+  return keyValueLines([
+    ["対象年度", "10年分分析から順次設定"],
+    ["対象科目", target.subject],
+    ["対象問題", "年度別・問題別分析で紐づけ予定"],
+    ["論点", target.topic],
+    ["弱点タグ", normalizeArray(target.weaknessTags).join(" / ")],
+    ["現在の補強状況", target.status],
+    ["優先度", target.priority],
+    ["関連補強パック", packs.join(" / ") || "未登録"],
+    ["追加済みレッスン", normalizeArray(target.lessonIds).join(" / ") || "未登録"],
+    ["追加済み問題", normalizeArray(target.questionIds).join(" / ") || "未登録"],
+    ["不足している内容", target.memo || "講義・確認問題・ひっかけ問題・弱点別ドリルを追加する候補を検討したい。"]
   ]);
 }
 
@@ -8665,7 +8876,7 @@ function resolveAiSubject(target) {
 }
 
 async function postAiApiRequest(payload) {
-  throw new Error("v3.0ではアプリ内通信を行いません。相談文をコピーして外部ChatGPTに貼り付けてください。");
+  throw new Error("v3.1ではアプリ内通信を行いません。相談文をコピーして外部ChatGPTに貼り付けてください。");
 }
 
 function buildAiConnectionHint(prefix) {
@@ -8673,7 +8884,7 @@ function buildAiConnectionHint(prefix) {
   return [
     prefix,
     "外部API設定は使いません。",
-    "v3.0では外部通信を行わないため、相談文をコピーして外部ChatGPTに貼り付けてください。"
+    "v3.1では外部通信を行わないため、相談文をコピーして外部ChatGPTに貼り付けてください。"
   ].join(" ");
 }
 
@@ -8691,9 +8902,9 @@ function inferAiHealthUrl(endpointUrl) {
 
 async function checkAiWorkerHealth() {
   const result = document.querySelector("#aiConnectionTestResult");
-  state.aiSettings.lastStatus = "v3.0でも廃止";
+  state.aiSettings.lastStatus = "v3.1でも廃止";
   state.aiSettings.lastError = "";
-  if (result) result.textContent = "v3.0ではアプリ内通信を行いません。";
+  if (result) result.textContent = "v3.1ではアプリ内通信を行いません。";
   saveUnits();
   renderSettings();
 }
@@ -8708,7 +8919,7 @@ async function sendCurrentAiPromptToApi() {
     return;
   }
   state.aiForm.apiStatus = "コピー用";
-  state.aiForm.apiError = "v3.0ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
+  state.aiForm.apiError = "v3.1ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
   renderAiResponse();
   await copyAiPrompt();
 }
@@ -8718,7 +8929,7 @@ async function askAiTutor() {
   const { target, promptText } = generateAiTutorPrompt();
   if (!promptText) return;
   state.aiTutorForm.apiStatus = "コピー用";
-  state.aiTutorForm.apiError = "v3.0ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
+  state.aiTutorForm.apiError = "v3.1ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
   saveAiTutorAnalysis({ target, sentViaApi: false });
   renderAiTutorView();
   showToast("相談文を生成しました。");
@@ -8749,7 +8960,7 @@ async function runAiSuggestion() {
   const { target, promptText } = generateAiSuggestionPrompt();
   if (!promptText) return;
   state.aiSuggestionForm.apiStatus = "コピー用";
-  state.aiSuggestionForm.apiError = "v3.0ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
+  state.aiSuggestionForm.apiError = "v3.1ではアプリ内通信は行いません。コピーして外部ChatGPTに貼り付けてください。";
   saveAiSuggestionAnalysis({ target, sentViaApi: false });
   renderAiSuggestionView();
   showToast("相談文を生成しました。");
@@ -9043,9 +9254,9 @@ function saveCurrentAiResponse() {
 async function testAiConnection() {
   const result = document.querySelector("#aiConnectionTestResult");
   state.aiSettings.lastTestedAt = new Date().toISOString();
-  state.aiSettings.lastStatus = "v3.0でも廃止";
+  state.aiSettings.lastStatus = "v3.1でも廃止";
   state.aiSettings.lastError = "";
-  if (result) result.textContent = "v3.0ではアプリ内通信を行いません。";
+  if (result) result.textContent = "v3.1ではアプリ内通信を行いません。";
   saveUnits();
   renderSettings();
 }

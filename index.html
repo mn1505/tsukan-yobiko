@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="TSUKAN YOBIKO v3.0.1 - ローカル予備校版 完成">
+    <meta name="description" content="TSUKAN YOBIKO v3.1 - 過去問10年分分析に基づく教材補強基盤版">
     <meta name="theme-color" content="#1f5f5b">
     <title>TSUKAN YOBIKO</title>
     <link rel="stylesheet" href="style.css">
@@ -15,7 +15,7 @@
           <p class="eyebrow">通関士試験 個人予備校</p>
           <h1>TSUKAN YOBIKO</h1>
         </div>
-        <span class="version-pill">TSUKAN YOBIKO v3.0.1</span>
+        <span class="version-pill">TSUKAN YOBIKO v3.1</span>
       </header>
 
       <main class="app-main">
@@ -24,7 +24,7 @@
             <div>
               <p class="eyebrow" id="homeTodayDate">Today</p>
               <h2 id="home-title">TSUKAN YOBIKO</h2>
-              <p class="home-version-label">ローカル予備校版 完成</p>
+              <p class="home-version-label">過去問10年分分析に基づく教材補強基盤版</p>
               <p id="homeLearningState" class="muted">学習状態を確認中</p>
             </div>
             <div class="home-priority">
@@ -658,6 +658,7 @@
                 <button class="ghost-button" type="button" data-ai-quick="weak">苦手レッスンを相談</button>
                 <button class="ghost-button" type="button" data-ai-quick="tags">弱点タグから復習計画</button>
                 <button class="ghost-button" type="button" data-ai-quick="lesson">レッスン質問</button>
+                <button class="ghost-button" type="button" data-ai-quick="reinforcement">教材補強相談</button>
               </div>
               <div class="ai-form">
                 <label>
@@ -810,6 +811,21 @@
           <details class="panel details-panel">
             <summary>問題バンク分析</summary>
             <div id="analysisQuestionBank" class="analysis-section-body"></div>
+          </details>
+
+          <details class="panel details-panel" open>
+            <summary>過去問分析による教材補強</summary>
+            <div id="analysisReinforcementSummary" class="analysis-section-body"></div>
+          </details>
+
+          <details class="panel details-panel">
+            <summary>教材補強パック</summary>
+            <div id="analysisReinforcementPacks" class="analysis-section-body"></div>
+          </details>
+
+          <details class="panel details-panel">
+            <summary>全範囲補強マップ</summary>
+            <div id="analysisReinforcementMap" class="analysis-section-body"></div>
           </details>
 
           <details class="panel details-panel">
@@ -984,8 +1000,8 @@
               </div>
               <dl class="info-list">
                 <div><dt>アプリ名</dt><dd>TSUKAN YOBIKO</dd></div>
-                <div><dt>現在のバージョン</dt><dd>v3.0.1</dd></div>
-                <div><dt>状態</dt><dd>ローカル予備校版完成</dd></div>
+                <div><dt>現在のバージョン</dt><dd>v3.1</dd></div>
+                <div><dt>状態</dt><dd>過去問10年分分析に基づく教材補強基盤版</dd></div>
                 <div><dt>AI API</dt><dd>使用しない</dd></div>
                 <div><dt>外部通信</dt><dd>なし</dd></div>
                 <div><dt>保存方式</dt><dd>localStorage + JSONバックアップ</dd></div>
@@ -1135,6 +1151,7 @@
                 <li>ブラウザデータ削除・端末変更でデータが失われる可能性があります。</li>
                 <li>定期的にJSONバックアップを取ってください。</li>
                 <li>過去問データはユーザーがJSONとして取り込みます。</li>
+                <li>v3.1：過去問10年分分析に基づく教材補強基盤版</li>
                 <li>v3.0.1：ドリル開始ボタンと問題バンク参照の安定化</li>
                 <li>v3.0：ローカル予備校版完成</li>
               </ul>
@@ -1158,6 +1175,8 @@
     <script src="data/question-bank.js"></script>
     <script src="data/mock-exams.js"></script>
     <script src="data/weakness-groups.js"></script>
+    <script src="data/reinforcement-packs.js"></script>
+    <script src="data/past-exam-analysis-summary.js"></script>
     <script src="script.js"></script>
   </body>
 </html>

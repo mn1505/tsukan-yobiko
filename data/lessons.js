@@ -1,4 +1,4 @@
-// TSUKAN YOBIKO v2.6 data: lessons
+// TSUKAN YOBIKO v3.1 data: lessons
 // Static JS data file for GitHub Pages/local file usage.
 (function () {
   "use strict";
@@ -101,6 +101,7 @@ const CURRICULUM_COURSES = [
       "lesson-kanzeihou-customs-value-exclusions",
       "lesson-kanzeihou-exemption-reduction",
       "lesson-kanzeihou-duty-refund",
+      "lesson-kanzeihou-refund-additional-money",
       "lesson-kanzeihou-foreign-exchange-law",
       "lesson-kanzeihou-penalties-confiscation",
       "lesson-kanzeihou-trap-review",
@@ -445,8 +446,76 @@ function makeKanzeihouMiniExamLesson() {
   });
 }
 
+function makeRefundAdditionalMoneyLesson() {
+  const lesson = makeLesson({
+    id: "lesson-kanzeihou-refund-additional-money",
+    courseId: "course-kanzeihou-intro",
+    subject: "関税法等",
+    title: "還付加算金",
+    order: 27.5,
+    level: "標準",
+    estimatedMinutes: 20,
+    relatedUnitId: "u010",
+    intro: "還付加算金は、関税の過誤納金が還付されるときに、還付すべき金額に加算される金額です。延滞税とは逆向きの性格を持つため、納付遅れの負担と混同しないことが重要です。",
+    goal: "還付加算金の制度趣旨、計算期間、終期、割合、過納金の発生原因別の基準日を説明でき、支払決定日・支払命令日・納期限・納付日の混同を見抜ける状態を目標にします。",
+    lecture: "まず結論は、還付加算金は「還付すべき金額に加算するもの」です。関税を納める側が遅れたときに問題になる延滞税とは逆に、過誤納金を国が還付する場面で、一定期間に対応する金額を上乗せする制度として整理します。\n\n計算期間では、終期が特に狙われます。終期は「還付のため支払決定をする日」です。「支払命令をする日」と書かれたら、似た語句ですがひっかけとして警戒します。割合は年7.3%の割合であり、年3.0%や年14.6%など、別制度の数字と混ぜられやすい点にも注意します。\n\n起算・基準日は、過納金がどの原因で生じたかによって変わります。更正・決定・賦課決定により生じた過納金、更正の請求に基づく更正により生じた過納金、納税申告後の減額更正により生じた過納金を同じ箱に入れないでください。更正の請求に基づく更正では、請求があった日の翌日から一定期間を経過する日と、更正があった日の翌日から一定期間を経過する日など、比較して基準を決める発想が出ます。\n\n本試験型の空欄補充では、1月、3月、1年、納期限、納付日、支払決定日、支払命令日が入れ替えられます。文脈が「いつから」なのか、「いつまで」なのか、「何に加算するのか」を先に固定して読むと、数字や時点語のひっかけに耐えやすくなります。",
+    keyPoints: [
+      "還付加算金は「還付すべき金額に加算するもの」",
+      "終期は「還付のため支払決定をする日」",
+      "割合は「年7.3%」",
+      "更正の請求に基づく更正では比較が必要",
+      "納期限・納付日・支払命令日との混同が頻出"
+    ],
+    confusingPoints: [
+      "延滞税と還付加算金",
+      "支払決定日と支払命令日",
+      "納期限と納付日",
+      "1月、3月、1年の期間",
+      "更正の請求あり/なし"
+    ],
+    traps: [
+      "「支払命令をする日」はひっかけ",
+      "「年3.0%」や「年14.6%」はひっかけ",
+      "「納期限」と「納付があった日」は文脈で使い分ける",
+      "更正の請求に基づく更正では、単純に更正日だけを見ない"
+    ],
+    examTips: [
+      "問題文の過納金がどの原因で発生したかを最初に確認する",
+      "終期を問う空欄では支払決定日か支払命令日かを必ず見分ける",
+      "割合の数字は延滞税・加算税の数字と混同しない",
+      "1月、3月、1年は起算点とセットで読む"
+    ],
+    penaltyTips: [
+      "延滞税は納付遅れ、還付加算金は還付される過誤納金への加算として、方向を逆に整理します。"
+    ],
+    principleExceptions: [
+      "原則は過誤納金の還付に加算する制度。起算・基準日は過納金の発生原因ごとに分けます。"
+    ],
+    distinctions: [
+      "更正・決定・賦課決定による過納金、更正の請求に基づく更正による過納金、納税申告後の減額更正による過納金を区別します。"
+    ],
+    timeLimits: [
+      "終期は還付のため支払決定をする日。1月、3月、1年、納期限、納付日、支払決定日を混同しません。"
+    ],
+    miniSummary: "還付加算金は、還付すべき金額に加算する制度です。終期、割合、原因別の起算・基準日を分けると、空欄補充と正誤問題のひっかけに対応できます。",
+    questions: [
+      makeQuestion("q1", "還付加算金は、関税の過誤納金を還付する場合に、還付すべき金額に加算される金額として整理する。", ["正しい", "誤り"], "正しい", "還付加算金は還付すべき金額に加算するものです。延滞税とは方向が逆です。", "延滞税のように納税者が追加で納めるものとして読ませる選択肢に注意します。", "還付加算金", "truefalse"),
+      makeQuestion("q2", "還付加算金の計算期間の終期として最も注意すべきものはどれか。", ["還付のため支払決定をする日", "支払命令をする日", "納期限", "輸入許可の日"], "還付のため支払決定をする日", "終期は還付のため支払決定をする日です。", "支払命令をする日という似た表現はひっかけです。", "支払決定日・支払命令日混同", "single"),
+      makeQuestion("q3", "還付加算金の割合は、年3.0%または年14.6%として覚えればよい。", ["正しい", "誤り"], "誤り", "還付加算金の割合は年7.3%として押さえます。", "別制度の数字を混ぜたひっかけです。", "選択肢読解", "truefalse")
+    ]
+  });
+  return {
+    ...lesson,
+    lessonSource: "past_exam_analysis",
+    sourceExamYears: [2025],
+    sourceExamQuestions: ["第59回 関税法等 第1問"],
+    reinforcementPackId: "reinforce-59-kanzeihou-q1-refund-interest"
+  };
+}
+
 const KANZEIHOU_LESSONS = [
   ...KANZEIHOU_TOPICS.map(makeKanzeihouLesson),
+  makeRefundAdditionalMoneyLesson(),
   makeKanzeihouMiniExamLesson()
 ];
 

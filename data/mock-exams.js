@@ -1,4 +1,4 @@
-// TSUKAN YOBIKO v2.6 data: mock exams
+// TSUKAN YOBIKO v3.1 data: mock exams
 // Static JS data file for GitHub Pages/local file usage.
 (function () {
   "use strict";
@@ -44,7 +44,7 @@ const MOCK_EXAM_MODES = {
     composition: { "ひっかけ": 20 }
   }
 };
-const TRAP_WEAKNESS_TAGS = ["選択肢読解", "義務規定と罰則の混同", "申告・許可・承認・届出の混同", "主体の混同", "権限者の混同", "期限・期間", "期間・期限", "課税価格", "加算要素", "不算入要素", "端数処理"];
+const TRAP_WEAKNESS_TAGS = ["選択肢読解", "義務規定と罰則の混同", "申告・許可・承認・届出の混同", "主体の混同", "権限者の混同", "期限・期間", "期間・期限", "還付加算金", "還付・過誤納金", "支払決定日・支払命令日混同", "納税申告・更正", "課税価格", "加算要素", "不算入要素", "端数処理"];
 function makeMockQuestion(id, subject, topic, type, question, choices, answer, explanation, trapExplanation, weaknessTag, relatedLessonId) {
   return { id, subject, topic, type, question, choices, answer, explanation, trapExplanation, weaknessTag, relatedLessonId };
 }
