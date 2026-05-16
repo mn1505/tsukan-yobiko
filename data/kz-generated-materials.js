@@ -8,8 +8,15 @@
   const formats = ["語句選択", "複数選択", "択一"];
   const examNos = [51, 52, 53, 54, 55, 56, 57, 58, 59];
   const questionNos = Array.from({ length: 15 }, (_, index) => index + 1);
+  const sourceLabel = "過去問分析由来";
+  const lawRevisionFields = {
+    lawRevisionCheckRequired: true,
+    lawRevisionStatus: "unchecked",
+    lawRevisionCheckedAt: "",
+    lawRevisionMemo: "数字・期限・対象範囲は現行法確認"
+  };
 
-  const packSpecs = [
+  let packSpecs = [
     {
       packId: "KZ-PACK-001",
       packName: "課税価格・輸入取引・加算要素パック",
@@ -19,7 +26,7 @@
       checkCount: 20,
       trapCount: 15,
       drillTypes: ["加算/非加算判定", "評価方法選択", "通関実務連携計算"],
-      weaknessTags: ["課税価格", "加算要素", "不算入要素", "輸入取引", "評価方法の順序", "通関実務連携計算"]
+      weaknessTags: ["課税価格", "輸入取引", "加算要素", "不算入要素", "課税価格計算"]
     },
     {
       packId: "KZ-PACK-002",
@@ -52,7 +59,7 @@
       checkCount: 25,
       trapCount: 20,
       drillTypes: ["提出要否判定", "輸入申告先判定", "BP承認判定"],
-      weaknessTags: ["輸入申告", "原産地表示", "外為法", "申告・許可・承認・届出の混同", "EPA・WTO税率"]
+      weaknessTags: ["輸入申告", "原産地証明", "EPA", "外為法", "申告・許可・承認・届出の混同"]
     },
     {
       packId: "KZ-PACK-005",
@@ -63,7 +70,7 @@
       checkCount: 25,
       trapCount: 20,
       drillTypes: ["保税地域分類", "許可/承認/届出判定", "亡失責任判定"],
-      weaknessTags: ["保税地域", "保税運送", "納税義務者", "許可・承認・届出の混同", "亡失責任"]
+      weaknessTags: ["保税地域", "保税運送", "納税義務者", "許可・承認・届出の混同"]
     },
     {
       packId: "KZ-PACK-006",
@@ -85,7 +92,7 @@
       checkCount: 20,
       trapCount: 18,
       drillTypes: ["制度選択", "期限比較", "用途外使用判定"],
-      weaknessTags: ["減免税", "戻し税", "用途外使用", "期間・期限", "制度比較"]
+      weaknessTags: ["減免税", "戻し税", "用途外使用", "期間・期限"]
     },
     {
       packId: "KZ-PACK-008",
@@ -96,7 +103,7 @@
       checkCount: 20,
       trapCount: 15,
       drillTypes: ["通則番号判定", "分類手順", "通関実務連携"],
-      weaknessTags: ["品目分類", "関税率表の通則", "税番", "分類手順", "通関実務連携"]
+      weaknessTags: ["品目分類", "関税率表の通則", "HS分類", "税番"]
     },
     {
       packId: "KZ-PACK-009",
@@ -118,7 +125,7 @@
       checkCount: 20,
       trapCount: 15,
       drillTypes: ["特恵適用要件", "不当廉売関税判定"],
-      weaknessTags: ["特恵関税", "特殊関税", "原産地表示", "期間・期限"]
+      weaknessTags: ["特恵関税", "原産地証明", "期間・期限"]
     },
     {
       packId: "KZ-PACK-011",
@@ -129,7 +136,7 @@
       checkCount: 18,
       trapCount: 15,
       drillTypes: ["主体比較", "承認取消", "申告先判定"],
-      weaknessTags: ["AEO", "特例輸入者", "主体の混同", "承認取消"]
+      weaknessTags: ["AEO", "特例輸入者", "主体の混同"]
     },
     {
       packId: "KZ-PACK-012",
@@ -143,6 +150,19 @@
       weaknessTags: ["NACCS入力", "ATA・通関手帳", "特例法", "暗記不足"]
     }
   ];
+
+  packSpecs = packSpecs.map((pack) => ({
+    ...pack,
+    subject: pack.subject || "関税法等",
+    sourceExamQuestions: Array.isArray(pack.sourceExamQuestions) ? pack.sourceExamQuestions : [],
+    checkQuestions: pack.checkQuestions || pack.checkCount,
+    trapQuestions: pack.trapQuestions || pack.trapCount,
+    drills: pack.drills || pack.drillTypes,
+    miniMockQuestions: pack.miniMockQuestions || 10,
+    sourceLabel,
+    ...lawRevisionFields,
+    ...pack
+  }));
 
   const priorityByQuestion = [1, 2, 3, 4, 5, 6, 7, 8].reduce((map, no) => ({ ...map, [no]: "A" }), {});
 
@@ -178,7 +198,8 @@
       sourceExamQuestions: [],
       reinforcementPackId: packId,
       materialKind: kind,
-      lawRevisionCheckRequired: true
+      sourceLabel,
+      ...lawRevisionFields
     };
   }
 
@@ -191,7 +212,9 @@
       answer: "主体・時期・効果を分ける",
       explanation: `${topic}は、誰が、いつ、どの手続をし、どの効果が生じるかを分けると判断しやすくなります。`,
       trapExplanation: "正しい用語が含まれていても、主体・時期・効果を入れ替えた文は誤りになります。",
-      weaknessTag: tag
+      weaknessTag: tag,
+      sourceLabel,
+      ...lawRevisionFields
     };
   }
 
@@ -211,7 +234,11 @@
         lessonSource: "past_exam_analysis",
         sourceExamRange: "第51回〜第59回",
         reinforcementPackId: pack.packId,
-        lawRevisionCheckRequired: true,
+        sourceLabel: pack.sourceLabel,
+        lawRevisionCheckRequired: pack.lawRevisionCheckRequired,
+        lawRevisionStatus: pack.lawRevisionStatus,
+        lawRevisionCheckedAt: pack.lawRevisionCheckedAt,
+        lawRevisionMemo: pack.lawRevisionMemo,
         weaknessTag: tag,
         intro: `${title}では、${topic}を丸暗記ではなく判断軸で整理します。`,
         goal: `${pack.packName}の頻出論点を、選択肢の入れ替えに耐える形で説明できる状態を目標にします。`,
@@ -328,9 +355,18 @@
       weaknessTags: pack.weaknessTags,
       relatedPackIds: [pack.packId],
       priority: priorityByQuestion[questionNo] || pack.priority,
-      lawRevisionCheckRequired: true,
+      sourceLabel: pack.sourceLabel,
+      lawRevisionCheckRequired: pack.lawRevisionCheckRequired,
+      lawRevisionStatus: pack.lawRevisionStatus,
+      lawRevisionCheckedAt: pack.lawRevisionCheckedAt,
+      lawRevisionMemo: pack.lawRevisionMemo,
       note
     };
+  }));
+
+  packSpecs = packSpecs.map((pack) => ({
+    ...pack,
+    sourceExamQuestions: examAnalysis.filter((item) => item.relatedPackIds.includes(pack.packId)).map((item) => item.id)
   }));
 
   const generatedLessons = packSpecs.flatMap(buildLessons);
@@ -346,10 +382,15 @@
     return {
       packId: pack.packId,
       packName: pack.packName,
-      subject: "関税法等",
+      subject: pack.subject,
       targetTopics: pack.targetTopics,
-      sourceExamQuestions: examAnalysis.filter((item) => item.relatedPackIds.includes(pack.packId)).map((item) => item.id),
+      sourceExamQuestions: pack.sourceExamQuestions,
       reason: "第51回以降の関税法等で繰り返し問われる論点・ひっかけ・弱点タグを横断補強するため。",
+      lectures: pack.lectures,
+      checkQuestions: pack.checkQuestions,
+      trapQuestions: pack.trapQuestions,
+      drills: pack.drills,
+      miniMockQuestions: pack.miniMockQuestions,
       lectureIds,
       checkQuestionIds,
       trapQuestionIds,
@@ -357,8 +398,11 @@
       mockQuestionIds,
       weaknessTags: pack.weaknessTags,
       priority: pack.priority,
-      lawRevisionCheckRequired: true,
-      sourceLabel: "過去問分析由来"
+      sourceLabel: pack.sourceLabel,
+      lawRevisionCheckRequired: pack.lawRevisionCheckRequired,
+      lawRevisionStatus: pack.lawRevisionStatus,
+      lawRevisionCheckedAt: pack.lawRevisionCheckedAt,
+      lawRevisionMemo: pack.lawRevisionMemo
     };
   });
 
@@ -369,8 +413,11 @@
     subject: "関税法等",
     weaknessTags: pack.weaknessTags,
     questionIds: [...pack.checkQuestionIds, ...pack.trapQuestionIds].filter((_, qIndex) => qIndex % pack.drillIds.length === index),
-    sourceLabel: "過去問分析由来",
-    lawRevisionCheckRequired: true
+    sourceLabel: pack.sourceLabel,
+    lawRevisionCheckRequired: pack.lawRevisionCheckRequired,
+    lawRevisionStatus: pack.lawRevisionStatus,
+    lawRevisionCheckedAt: pack.lawRevisionCheckedAt,
+    lawRevisionMemo: pack.lawRevisionMemo
   })));
 
   window.TSUKAN_KZ_EXAM_ANALYSIS = examAnalysis;
@@ -385,8 +432,11 @@
     mockName: `${pack.packName} ミニ模試`,
     subject: "関税法等",
     questionIds: pack.mockQuestionIds,
-    sourceLabel: "過去問分析由来",
-    lawRevisionCheckRequired: true
+    sourceLabel: pack.sourceLabel,
+    lawRevisionCheckRequired: pack.lawRevisionCheckRequired,
+    lawRevisionStatus: pack.lawRevisionStatus,
+    lawRevisionCheckedAt: pack.lawRevisionCheckedAt,
+    lawRevisionMemo: pack.lawRevisionMemo
   }));
 
   if (Array.isArray(window.TSUKAN_COURSES)) {
@@ -414,7 +464,11 @@
       relatedLessonId: question.lessonId,
       questionSource: question.questionSource,
       reinforcementPackId: question.reinforcementPackId,
-      lawRevisionCheckRequired: true
+      sourceLabel: question.sourceLabel,
+      lawRevisionCheckRequired: question.lawRevisionCheckRequired,
+      lawRevisionStatus: question.lawRevisionStatus,
+      lawRevisionCheckedAt: question.lawRevisionCheckedAt,
+      lawRevisionMemo: question.lawRevisionMemo
     })));
   }
   if (Array.isArray(window.TSUKAN_REINFORCEMENT_PACKS)) {
@@ -434,7 +488,11 @@
       drillTagsAdded: pack.weaknessTags,
       priority: pack.priority,
       status: "implemented",
-      lawRevisionCheckRequired: true
+      sourceLabel: pack.sourceLabel,
+      lawRevisionCheckRequired: pack.lawRevisionCheckRequired,
+      lawRevisionStatus: pack.lawRevisionStatus,
+      lawRevisionCheckedAt: pack.lawRevisionCheckedAt,
+      lawRevisionMemo: pack.lawRevisionMemo
     })));
   }
 })();
