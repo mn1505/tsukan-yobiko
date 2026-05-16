@@ -1,0 +1,242 @@
+[
+  {
+    "mockId": "KZ-PACK-001-MINI-MOCK",
+    "packId": "KZ-PACK-001",
+    "mockName": "課税価格・輸入取引・加算要素パック ミニ模試",
+    "subject": "関税法等",
+    "questionIds": [
+      "mock-kz-pack-001-001",
+      "mock-kz-pack-001-002",
+      "mock-kz-pack-001-003",
+      "mock-kz-pack-001-004",
+      "mock-kz-pack-001-005",
+      "mock-kz-pack-001-006",
+      "mock-kz-pack-001-007",
+      "mock-kz-pack-001-008",
+      "mock-kz-pack-001-009",
+      "mock-kz-pack-001-010"
+    ],
+    "sourceLabel": "過去問分析由来",
+    "lawRevisionCheckRequired": true
+  },
+  {
+    "mockId": "KZ-PACK-002-MINI-MOCK",
+    "packId": "KZ-PACK-002",
+    "mockName": "納期限・法定納期限・延滞税・加算税パック ミニ模試",
+    "subject": "関税法等",
+    "questionIds": [
+      "mock-kz-pack-002-001",
+      "mock-kz-pack-002-002",
+      "mock-kz-pack-002-003",
+      "mock-kz-pack-002-004",
+      "mock-kz-pack-002-005",
+      "mock-kz-pack-002-006",
+      "mock-kz-pack-002-007",
+      "mock-kz-pack-002-008",
+      "mock-kz-pack-002-009",
+      "mock-kz-pack-002-010"
+    ],
+    "sourceLabel": "過去問分析由来",
+    "lawRevisionCheckRequired": true
+  },
+  {
+    "mockId": "KZ-PACK-003-MINI-MOCK",
+    "packId": "KZ-PACK-003",
+    "mockName": "申告納税・賦課課税・修正申告・更正請求パック ミニ模試",
+    "subject": "関税法等",
+    "questionIds": [
+      "mock-kz-pack-003-001",
+      "mock-kz-pack-003-002",
+      "mock-kz-pack-003-003",
+      "mock-kz-pack-003-004",
+      "mock-kz-pack-003-005",
+      "mock-kz-pack-003-006",
+      "mock-kz-pack-003-007",
+      "mock-kz-pack-003-008",
+      "mock-kz-pack-003-009",
+      "mock-kz-pack-003-010"
+    ],
+    "sourceLabel": "過去問分析由来",
+    "lawRevisionCheckRequired": true
+  },
+  {
+    "mockId": "KZ-PACK-004-MINI-MOCK",
+    "packId": "KZ-PACK-004",
+    "mockName": "輸入通関・EPA・原産地証明・他法令確認パック ミニ模試",
+    "subject": "関税法等",
+    "questionIds": [
+      "mock-kz-pack-004-001",
+      "mock-kz-pack-004-002",
+      "mock-kz-pack-004-003",
+      "mock-kz-pack-004-004",
+      "mock-kz-pack-004-005",
+      "mock-kz-pack-004-006",
+      "mock-kz-pack-004-007",
+      "mock-kz-pack-004-008",
+      "mock-kz-pack-004-009",
+      "mock-kz-pack-004-010"
+    ],
+    "sourceLabel": "過去問分析由来",
+    "lawRevisionCheckRequired": true
+  },
+  {
+    "mockId": "KZ-PACK-005-MINI-MOCK",
+    "packId": "KZ-PACK-005",
+    "mockName": "保税地域・保税蔵置場・保税運送パック ミニ模試",
+    "subject": "関税法等",
+    "questionIds": [
+      "mock-kz-pack-005-001",
+      "mock-kz-pack-005-002",
+      "mock-kz-pack-005-003",
+      "mock-kz-pack-005-004",
+      "mock-kz-pack-005-005",
+      "mock-kz-pack-005-006",
+      "mock-kz-pack-005-007",
+      "mock-kz-pack-005-008",
+      "mock-kz-pack-005-009",
+      "mock-kz-pack-005-010"
+    ],
+    "sourceLabel": "過去問分析由来",
+    "lawRevisionCheckRequired": true
+  },
+  {
+    "mockId": "KZ-PACK-006-MINI-MOCK",
+    "packId": "KZ-PACK-006",
+    "mockName": "輸出入禁止貨物・知財認定手続パック ミニ模試",
+    "subject": "関税法等",
+    "questionIds": [
+      "mock-kz-pack-006-001",
+      "mock-kz-pack-006-002",
+      "mock-kz-pack-006-003",
+      "mock-kz-pack-006-004",
+      "mock-kz-pack-006-005",
+      "mock-kz-pack-006-006",
+      "mock-kz-pack-006-007",
+      "mock-kz-pack-006-008",
+      "mock-kz-pack-006-009",
+      "mock-kz-pack-006-010"
+    ],
+    "sourceLabel": "過去問分析由来",
+    "lawRevisionCheckRequired": true
+  },
+  {
+    "mockId": "KZ-PACK-007-MINI-MOCK",
+    "packId": "KZ-PACK-007",
+    "mockName": "関税の軽減・免除・払戻しパック ミニ模試",
+    "subject": "関税法等",
+    "questionIds": [
+      "mock-kz-pack-007-001",
+      "mock-kz-pack-007-002",
+      "mock-kz-pack-007-003",
+      "mock-kz-pack-007-004",
+      "mock-kz-pack-007-005",
+      "mock-kz-pack-007-006",
+      "mock-kz-pack-007-007",
+      "mock-kz-pack-007-008",
+      "mock-kz-pack-007-009",
+      "mock-kz-pack-007-010"
+    ],
+    "sourceLabel": "過去問分析由来",
+    "lawRevisionCheckRequired": true
+  },
+  {
+    "mockId": "KZ-PACK-008-MINI-MOCK",
+    "packId": "KZ-PACK-008",
+    "mockName": "関税率表の解釈通則・HS分類基礎パック ミニ模試",
+    "subject": "関税法等",
+    "questionIds": [
+      "mock-kz-pack-008-001",
+      "mock-kz-pack-008-002",
+      "mock-kz-pack-008-003",
+      "mock-kz-pack-008-004",
+      "mock-kz-pack-008-005",
+      "mock-kz-pack-008-006",
+      "mock-kz-pack-008-007",
+      "mock-kz-pack-008-008",
+      "mock-kz-pack-008-009",
+      "mock-kz-pack-008-010"
+    ],
+    "sourceLabel": "過去問分析由来",
+    "lawRevisionCheckRequired": true
+  },
+  {
+    "mockId": "KZ-PACK-009-MINI-MOCK",
+    "packId": "KZ-PACK-009",
+    "mockName": "外為法・輸出許可・輸入承認パック ミニ模試",
+    "subject": "関税法等",
+    "questionIds": [
+      "mock-kz-pack-009-001",
+      "mock-kz-pack-009-002",
+      "mock-kz-pack-009-003",
+      "mock-kz-pack-009-004",
+      "mock-kz-pack-009-005",
+      "mock-kz-pack-009-006",
+      "mock-kz-pack-009-007",
+      "mock-kz-pack-009-008",
+      "mock-kz-pack-009-009",
+      "mock-kz-pack-009-010"
+    ],
+    "sourceLabel": "過去問分析由来",
+    "lawRevisionCheckRequired": true
+  },
+  {
+    "mockId": "KZ-PACK-010-MINI-MOCK",
+    "packId": "KZ-PACK-010",
+    "mockName": "特恵関税・特殊関税・暫定措置法パック ミニ模試",
+    "subject": "関税法等",
+    "questionIds": [
+      "mock-kz-pack-010-001",
+      "mock-kz-pack-010-002",
+      "mock-kz-pack-010-003",
+      "mock-kz-pack-010-004",
+      "mock-kz-pack-010-005",
+      "mock-kz-pack-010-006",
+      "mock-kz-pack-010-007",
+      "mock-kz-pack-010-008",
+      "mock-kz-pack-010-009",
+      "mock-kz-pack-010-010"
+    ],
+    "sourceLabel": "過去問分析由来",
+    "lawRevisionCheckRequired": true
+  },
+  {
+    "mockId": "KZ-PACK-011-MINI-MOCK",
+    "packId": "KZ-PACK-011",
+    "mockName": "AEO・特例輸入者・特定輸出者パック ミニ模試",
+    "subject": "関税法等",
+    "questionIds": [
+      "mock-kz-pack-011-001",
+      "mock-kz-pack-011-002",
+      "mock-kz-pack-011-003",
+      "mock-kz-pack-011-004",
+      "mock-kz-pack-011-005",
+      "mock-kz-pack-011-006",
+      "mock-kz-pack-011-007",
+      "mock-kz-pack-011-008",
+      "mock-kz-pack-011-009",
+      "mock-kz-pack-011-010"
+    ],
+    "sourceLabel": "過去問分析由来",
+    "lawRevisionCheckRequired": true
+  },
+  {
+    "mockId": "KZ-PACK-012-MINI-MOCK",
+    "packId": "KZ-PACK-012",
+    "mockName": "NACCS法・ATA・コンテナ特例法パック ミニ模試",
+    "subject": "関税法等",
+    "questionIds": [
+      "mock-kz-pack-012-001",
+      "mock-kz-pack-012-002",
+      "mock-kz-pack-012-003",
+      "mock-kz-pack-012-004",
+      "mock-kz-pack-012-005",
+      "mock-kz-pack-012-006",
+      "mock-kz-pack-012-007",
+      "mock-kz-pack-012-008",
+      "mock-kz-pack-012-009",
+      "mock-kz-pack-012-010"
+    ],
+    "sourceLabel": "過去問分析由来",
+    "lawRevisionCheckRequired": true
+  }
+]

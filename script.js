@@ -151,6 +151,10 @@ const QUESTION_BANK = Array.isArray(window.TSUKAN_QUESTION_BANK) ? window.TSUKAN
 const REINFORCEMENT_PACKS = Array.isArray(window.TSUKAN_REINFORCEMENT_PACKS) ? window.TSUKAN_REINFORCEMENT_PACKS : [];
 const PAST_EXAM_ANALYSIS_SUMMARY = window.TSUKAN_PAST_EXAM_ANALYSIS_SUMMARY && typeof window.TSUKAN_PAST_EXAM_ANALYSIS_SUMMARY === "object" ? window.TSUKAN_PAST_EXAM_ANALYSIS_SUMMARY : { reinforcementTargets: [] };
 const REINFORCEMENT_TARGETS = Array.isArray(PAST_EXAM_ANALYSIS_SUMMARY.reinforcementTargets) ? PAST_EXAM_ANALYSIS_SUMMARY.reinforcementTargets : [];
+const KZ_EXAM_ANALYSIS = Array.isArray(window.TSUKAN_KZ_EXAM_ANALYSIS) ? window.TSUKAN_KZ_EXAM_ANALYSIS : [];
+const KZ_MATERIAL_PACKS = Array.isArray(window.TSUKAN_KZ_MATERIAL_PACKS) ? window.TSUKAN_KZ_MATERIAL_PACKS : [];
+const KZ_WEAKNESS_DRILLS = Array.isArray(window.TSUKAN_KZ_WEAKNESS_DRILLS) ? window.TSUKAN_KZ_WEAKNESS_DRILLS : [];
+const KZ_MINI_MOCK_SETS = Array.isArray(window.TSUKAN_KZ_MINI_MOCK_SETS) ? window.TSUKAN_KZ_MINI_MOCK_SETS : [];
 
 function getQuestionBank() {
   return Array.isArray(window.TSUKAN_QUESTION_BANK) ? window.TSUKAN_QUESTION_BANK : QUESTION_BANK;
@@ -224,6 +228,11 @@ const state = {
     status: "すべて",
     understanding: "すべて",
     reviewOnly: false
+  },
+  materialPackFilters: {
+    priority: "すべて",
+    weakness: "すべて",
+    search: ""
   },
   lessonActionMessage: {
     lessonId: "",
@@ -2587,6 +2596,7 @@ function render() {
   renderTodayView();
   renderLearningView();
   renderDrillView();
+  renderMaterialPackView();
   renderFilters();
   renderUnitList();
   renderPracticeView();
@@ -3054,6 +3064,100 @@ function renderLearningView() {
   renderDrillView();
 }
 
+function renderMaterialPackView() {
+  const list = document.querySelector("#materialPackList");
+  if (!list) return;
+  const priorities = ["すべて", "A", "B", "C"];
+  const tags = ["すべて", ...new Set(KZ_MATERIAL_PACKS.flatMap((pack) => pack.weaknessTags || []).filter(Boolean))].sort((a, b) => a === "すべて" ? -1 : b === "すべて" ? 1 : a.localeCompare(b, "ja"));
+  fillSelect("#packPriorityFilter", priorities, state.materialPackFilters.priority);
+  fillSelect("#packWeaknessFilter", tags, state.materialPackFilters.weakness);
+  const searchInput = document.querySelector("#packSearchInput");
+  if (searchInput) searchInput.value = state.materialPackFilters.search;
+
+  const search = state.materialPackFilters.search.trim().toLowerCase();
+  const filtered = KZ_MATERIAL_PACKS.filter((pack) => {
+    const haystack = [pack.packId, pack.packName, pack.reason, ...(pack.targetTopics || []), ...(pack.weaknessTags || [])].join(" ").toLowerCase();
+    return (state.materialPackFilters.priority === "すべて" || pack.priority === state.materialPackFilters.priority) &&
+      (state.materialPackFilters.weakness === "すべて" || normalizeArray(pack.weaknessTags).includes(state.materialPackFilters.weakness)) &&
+      (!search || haystack.includes(search));
+  });
+
+  const resultCount = document.querySelector("#packResultCount");
+  if (resultCount) {
+    const aCount = KZ_MATERIAL_PACKS.filter((pack) => pack.priority === "A").length;
+    resultCount.textContent = `${filtered.length}件表示 / 優先度A ${aCount}本 / 分析 ${KZ_EXAM_ANALYSIS.length}問`;
+  }
+
+  list.innerHTML = filtered.length
+    ? filtered.map(renderMaterialPackCard).join("")
+    : `<div class="empty-state"><p class="muted">条件に合う教材パックはありません。</p></div>`;
+}
+
+function renderMaterialPackCard(pack) {
+  const lessons = normalizeArray(pack.lectureIds).map((id) => getLessonById(id)).filter(Boolean);
+  const checkCount = normalizeArray(pack.checkQuestionIds).length;
+  const trapCount = normalizeArray(pack.trapQuestionIds).length;
+  const mock = KZ_MINI_MOCK_SETS.find((item) => item.packId === pack.packId);
+  return `
+    <article class="lesson-card material-pack-card">
+      <div>
+        <p class="eyebrow">${escapeHtml(pack.packId)} / ${escapeHtml(pack.subject)}</p>
+        <h4>${escapeHtml(pack.packName)}</h4>
+        <p>${escapeHtml(pack.reason || "")}</p>
+        <div class="badge-row">
+          <span class="badge priority">優先度 ${escapeHtml(pack.priority)}</span>
+          <span class="badge">過去問分析由来</span>
+          ${pack.lawRevisionCheckRequired ? `<span class="badge danger">要現行法確認</span>` : ""}
+        </div>
+      </div>
+      <dl class="review-facts compact">
+        <div><dt>対象論点</dt><dd>${escapeHtml(normalizeArray(pack.targetTopics).slice(0, 8).join(" / "))}</dd></div>
+        <div><dt>弱点タグ</dt><dd>${escapeHtml(normalizeArray(pack.weaknessTags).join(" / "))}</dd></div>
+        <div><dt>講義</dt><dd>${lessons.length}本</dd></div>
+        <div><dt>確認問題</dt><dd>${checkCount}問</dd></div>
+        <div><dt>ひっかけ問題</dt><dd>${trapCount}問</dd></div>
+        <div><dt>分析元</dt><dd>${normalizeArray(pack.sourceExamQuestions).length}問分</dd></div>
+      </dl>
+      <div class="card-actions">
+        ${lessons[0] ? `<button class="primary-button" type="button" data-open-lesson="${escapeAttribute(lessons[0].id)}">講義</button>` : ""}
+        <button class="ghost-button" type="button" data-start-pack-drill="${escapeAttribute(pack.packId)}" data-pack-drill-type="check">確認問題</button>
+        <button class="ghost-button" type="button" data-start-pack-drill="${escapeAttribute(pack.packId)}" data-pack-drill-type="trap">ひっかけ問題</button>
+        <button class="ghost-button" type="button" data-start-weakness-drill="${escapeAttribute(normalizeArray(pack.weaknessTags)[0] || "")}" data-weakness-type="tag" data-weakness-count="10">弱点別ドリル</button>
+        <button class="ghost-button" type="button" data-start-pack-drill="${escapeAttribute(pack.packId)}" data-pack-drill-type="mock">${escapeHtml(mock ? "ミニ模試" : "ミニ模試")}</button>
+      </div>
+    </article>
+  `;
+}
+
+function startMaterialPackDrill(packId, type = "check") {
+  const pack = KZ_MATERIAL_PACKS.find((item) => item.packId === packId);
+  if (!pack) return;
+  const ids = type === "trap" ? pack.trapQuestionIds : type === "mock" ? pack.mockQuestionIds : pack.checkQuestionIds;
+  const bank = getQuestionBank();
+  const byId = new Map(bank.map((question) => [question.id, question]));
+  const questions = normalizeArray(ids).map((id) => byId.get(id)).filter(Boolean);
+  if (!questions.length) {
+    showDrillStartMessage("この教材パックの問題が見つかりません。教材データの読み込み状態を確認してください。");
+    switchView("drill");
+    renderDrillView();
+    return;
+  }
+  const labels = { check: "確認問題", trap: "ひっかけ問題", mock: "ミニ模試" };
+  state.drill.mode = `${pack.packId} ${labels[type] || "ドリル"}`;
+  state.drill.currentQuestionId = questions[0].id;
+  state.drill.selectedAnswer = "";
+  state.drill.graded = false;
+  state.drill.sessionQuestionIds = questions.map((question) => question.id);
+  state.drill.answers = [];
+  state.drill.startedAt = new Date().toISOString();
+  state.drill.targetWeaknessTag = "";
+  state.drill.targetWeaknessGroup = "";
+  state.drill.message = "";
+  switchView("drill");
+  renderDrillView();
+  scrollToActiveQuestion("drill");
+}
+
 function renderDrillView() {
   const hosts = ["#drillArea", "#drillAreaStandalone"].map((selector) => document.querySelector(selector)).filter(Boolean);
   if (!hosts.length) return;
@@ -3066,7 +3170,7 @@ function renderDrillView() {
     "手順ドリル", "計算過程ドリル", "資料読取ドリル",
     "インボイス読取ドリル", "輸出申告ドリル", "輸入申告ドリル", "品目分類ドリル", "統計品目番号ドリル", "通関実務課税価格ドリル", "加算要素・不算入要素ドリル", "為替換算ドリル", "関税額計算ドリル", "消費税・地方消費税ドリル", "端数処理ドリル", "税率適用ドリル", "NACCS入力ドリル", "資料読取論点ドリル", "時間配分ドリル"
   ];
-  if (!modes.includes(state.drill.mode) && !isWeaknessDrillMode(state.drill.mode)) state.drill.mode = "通関業法10問";
+  if (!modes.includes(state.drill.mode) && !isWeaknessDrillMode(state.drill.mode) && !state.drill.sessionQuestionIds?.length) state.drill.mode = "通関業法10問";
   ensureDrillSession();
   const questions = getDrillQuestions(state.drill.mode);
   const current = questions.find((question) => question.id === state.drill.currentQuestionId) || questions[0];
@@ -11036,6 +11140,18 @@ function attachEvents() {
     state.lessonFilters.reviewOnly = event.target.checked;
     renderLearningView();
   });
+  document.querySelector("#packPriorityFilter")?.addEventListener("change", (event) => {
+    state.materialPackFilters.priority = event.target.value;
+    renderMaterialPackView();
+  });
+  document.querySelector("#packWeaknessFilter")?.addEventListener("change", (event) => {
+    state.materialPackFilters.weakness = event.target.value;
+    renderMaterialPackView();
+  });
+  document.querySelector("#packSearchInput")?.addEventListener("input", (event) => {
+    state.materialPackFilters.search = event.target.value;
+    renderMaterialPackView();
+  });
   document.querySelector("#practiceLogForm")?.addEventListener("submit", (event) => {
     event.preventDefault();
     savePracticeLogFromForm();
@@ -11362,6 +11478,11 @@ function attachEvents() {
         startWeaknessDrillButton.dataset.weaknessType || "tag",
         startWeaknessDrillButton.dataset.weaknessCount || "5"
       );
+      return;
+    }
+    const startPackDrillButton = event.target.closest("[data-start-pack-drill]");
+    if (startPackDrillButton) {
+      startMaterialPackDrill(startPackDrillButton.dataset.startPackDrill, startPackDrillButton.dataset.packDrillType || "check");
       return;
     }
     const courseFilterButton = event.target.closest("[data-course-filter]");

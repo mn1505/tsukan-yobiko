@@ -242,6 +242,37 @@
           </section>
         </section>
 
+        <section id="view-material-packs" class="view" aria-labelledby="material-packs-title">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Kanzeihou Packs</p>
+              <h2 id="material-packs-title">教材パック</h2>
+            </div>
+          </div>
+
+          <section class="panel">
+            <div class="panel-heading">
+              <h3>過去問分析由来パック</h3>
+            </div>
+            <div class="filters pack-filters">
+              <label>
+                優先度
+                <select id="packPriorityFilter"></select>
+              </label>
+              <label>
+                弱点タグ
+                <select id="packWeaknessFilter"></select>
+              </label>
+              <label>
+                検索
+                <input id="packSearchInput" type="search" placeholder="パック名・論点・弱点タグを検索">
+              </label>
+            </div>
+            <p id="packResultCount" class="result-count" aria-live="polite"></p>
+            <div id="materialPackList" class="lesson-list"></div>
+          </section>
+        </section>
+
         <section id="view-records" class="view" aria-labelledby="records-title">
           <div class="section-heading">
             <div>
@@ -1165,6 +1196,7 @@
         <button class="nav-button" type="button" data-view="today">今日</button>
         <button class="nav-button" type="button" data-view="learning">学習</button>
         <button class="nav-button" type="button" data-view="drill">ドリル</button>
+        <button class="nav-button" type="button" data-view="material-packs">教材</button>
         <button class="nav-button" type="button" data-view="review">復習</button>
         <button class="nav-button" type="button" data-view="settings">設定</button>
       </nav>
@@ -1177,6 +1209,7 @@
     <script src="data/weakness-groups.js"></script>
     <script src="data/reinforcement-packs.js"></script>
     <script src="data/past-exam-analysis-summary.js"></script>
+    <script src="data/kz-generated-materials.js"></script>
     <script src="script.js"></script>
   </body>
 </html>

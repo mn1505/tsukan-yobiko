@@ -1,0 +1,5249 @@
+[
+  {
+    "id": "EXAM-51-KZ-Q01",
+    "examNo": 51,
+    "subject": "関税法等",
+    "questionNo": 1,
+    "format": "複数選択",
+    "mainTopic": "航空運賃特例",
+    "subTopics": [
+      "課税価格決定原則",
+      "現実支払価格",
+      "輸入取引",
+      "加算要素"
+    ],
+    "requiredKnowledge": [
+      "航空運賃特例の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "課税価格",
+      "加算要素",
+      "不算入要素",
+      "輸入取引",
+      "評価方法の順序",
+      "通関実務連携計算"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-001"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-51-KZ-Q02",
+    "examNo": 51,
+    "subject": "関税法等",
+    "questionNo": 2,
+    "format": "択一",
+    "mainTopic": "過少申告加算税",
+    "subTopics": [
+      "納期限",
+      "法定納期限",
+      "期限後特例申告",
+      "延滞税"
+    ],
+    "requiredKnowledge": [
+      "過少申告加算税の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "納期限・法定納期限",
+      "延滞税・加算税",
+      "還付加算金",
+      "期間・期限",
+      "納税申告・更正"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-002"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-51-KZ-Q03",
+    "examNo": 51,
+    "subject": "関税法等",
+    "questionNo": 3,
+    "format": "語句選択",
+    "mainTopic": "決定",
+    "subTopics": [
+      "申告納税方式",
+      "賦課課税方式",
+      "修正申告",
+      "更正請求"
+    ],
+    "requiredKnowledge": [
+      "決定の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "納税申告",
+      "修正申告・更正の請求",
+      "更正・決定",
+      "納税申告・更正",
+      "期間・期限"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-003"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-51-KZ-Q04",
+    "examNo": 51,
+    "subject": "関税法等",
+    "questionNo": 4,
+    "format": "複数選択",
+    "mainTopic": "輸入許可前引取り",
+    "subTopics": [
+      "輸入申告",
+      "特例輸入者",
+      "特例委託輸入者",
+      "原産地証明"
+    ],
+    "requiredKnowledge": [
+      "輸入許可前引取りの原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "輸入申告",
+      "原産地表示",
+      "外為法",
+      "申告・許可・承認・届出の混同",
+      "EPA・WTO税率"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-004"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-51-KZ-Q05",
+    "examNo": 51,
+    "subject": "関税法等",
+    "questionNo": 5,
+    "format": "択一",
+    "mainTopic": "保税工場",
+    "subTopics": [
+      "保税地域5種",
+      "保税蔵置場",
+      "保税工場",
+      "保税展示場"
+    ],
+    "requiredKnowledge": [
+      "保税工場の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "保税地域",
+      "保税運送",
+      "納税義務者",
+      "許可・承認・届出の混同",
+      "亡失責任"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-005"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-51-KZ-Q06",
+    "examNo": 51,
+    "subject": "関税法等",
+    "questionNo": 6,
+    "format": "語句選択",
+    "mainTopic": "認定手続",
+    "subTopics": [
+      "輸入してはならない貨物",
+      "輸出してはならない貨物",
+      "知的財産侵害物品",
+      "認定手続"
+    ],
+    "requiredKnowledge": [
+      "認定手続の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "輸入禁止貨物",
+      "輸出禁止貨物",
+      "知財認定手続",
+      "期間・期限",
+      "選択肢読解"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-006"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-51-KZ-Q07",
+    "examNo": 51,
+    "subject": "関税法等",
+    "questionNo": 7,
+    "format": "複数選択",
+    "mainTopic": "災害滅失",
+    "subTopics": [
+      "再輸出免税",
+      "特定用途免税",
+      "無条件免税",
+      "戻し税"
+    ],
+    "requiredKnowledge": [
+      "災害滅失の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "減免税",
+      "戻し税",
+      "用途外使用",
+      "期間・期限",
+      "制度比較"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-007"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-51-KZ-Q08",
+    "examNo": 51,
+    "subject": "関税法等",
+    "questionNo": 8,
+    "format": "択一",
+    "mainTopic": "包装容器",
+    "subTopics": [
+      "通則1〜6",
+      "部注",
+      "類注",
+      "包装容器"
+    ],
+    "requiredKnowledge": [
+      "包装容器の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "品目分類",
+      "関税率表の通則",
+      "税番",
+      "分類手順",
+      "通関実務連携"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-008"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-51-KZ-Q09",
+    "examNo": 51,
+    "subject": "関税法等",
+    "questionNo": 9,
+    "format": "語句選択",
+    "mainTopic": "輸出貿易管理令",
+    "subTopics": [
+      "輸出貿易管理令",
+      "輸入貿易管理令",
+      "輸出許可",
+      "輸出承認"
+    ],
+    "requiredKnowledge": [
+      "輸出貿易管理令の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "外為法",
+      "許可・承認・届出の混同",
+      "輸出規制",
+      "輸入承認"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-009"
+    ],
+    "priority": "B",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-51-KZ-Q10",
+    "examNo": 51,
+    "subject": "関税法等",
+    "questionNo": 10,
+    "format": "複数選択",
+    "mainTopic": "緊急関税",
+    "subTopics": [
+      "特恵関税",
+      "特別特恵",
+      "原産地証明",
+      "有効期間"
+    ],
+    "requiredKnowledge": [
+      "緊急関税の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "特恵関税",
+      "特殊関税",
+      "原産地表示",
+      "期間・期限"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-010"
+    ],
+    "priority": "B",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-51-KZ-Q11",
+    "examNo": 51,
+    "subject": "関税法等",
+    "questionNo": 11,
+    "format": "択一",
+    "mainTopic": "地位承継",
+    "subTopics": [
+      "特例輸入者",
+      "特例委託輸入者",
+      "特定輸出者",
+      "特定委託輸出者"
+    ],
+    "requiredKnowledge": [
+      "地位承継の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "AEO",
+      "特例輸入者",
+      "主体の混同",
+      "承認取消"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-011"
+    ],
+    "priority": "B",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-51-KZ-Q12",
+    "examNo": 51,
+    "subject": "関税法等",
+    "questionNo": 12,
+    "format": "語句選択",
+    "mainTopic": "コンテナ特例法",
+    "subTopics": [
+      "NACCS法",
+      "通関手帳",
+      "ATA条約",
+      "コンテナ特例法"
+    ],
+    "requiredKnowledge": [
+      "コンテナ特例法の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "NACCS入力",
+      "ATA・通関手帳",
+      "特例法",
+      "暗記不足"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-012"
+    ],
+    "priority": "C",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-51-KZ-Q13",
+    "examNo": 51,
+    "subject": "関税法等",
+    "questionNo": 13,
+    "format": "複数選択",
+    "mainTopic": "課税価格決定原則",
+    "subTopics": [
+      "課税価格決定原則",
+      "現実支払価格",
+      "輸入取引",
+      "加算要素"
+    ],
+    "requiredKnowledge": [
+      "課税価格決定原則の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "課税価格",
+      "加算要素",
+      "不算入要素",
+      "輸入取引",
+      "評価方法の順序",
+      "通関実務連携計算"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-001"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-51-KZ-Q14",
+    "examNo": 51,
+    "subject": "関税法等",
+    "questionNo": 14,
+    "format": "択一",
+    "mainTopic": "期限後特例申告",
+    "subTopics": [
+      "納期限",
+      "法定納期限",
+      "期限後特例申告",
+      "延滞税"
+    ],
+    "requiredKnowledge": [
+      "期限後特例申告の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "納期限・法定納期限",
+      "延滞税・加算税",
+      "還付加算金",
+      "期間・期限",
+      "納税申告・更正"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-002"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-51-KZ-Q15",
+    "examNo": 51,
+    "subject": "関税法等",
+    "questionNo": 15,
+    "format": "語句選択",
+    "mainTopic": "更正請求",
+    "subTopics": [
+      "申告納税方式",
+      "賦課課税方式",
+      "修正申告",
+      "更正請求"
+    ],
+    "requiredKnowledge": [
+      "更正請求の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "納税申告",
+      "修正申告・更正の請求",
+      "更正・決定",
+      "納税申告・更正",
+      "期間・期限"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-003"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-52-KZ-Q01",
+    "examNo": 52,
+    "subject": "関税法等",
+    "questionNo": 1,
+    "format": "択一",
+    "mainTopic": "同種・類似貨物",
+    "subTopics": [
+      "課税価格決定原則",
+      "現実支払価格",
+      "輸入取引",
+      "加算要素"
+    ],
+    "requiredKnowledge": [
+      "同種・類似貨物の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "課税価格",
+      "加算要素",
+      "不算入要素",
+      "輸入取引",
+      "評価方法の順序",
+      "通関実務連携計算"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-001"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-52-KZ-Q02",
+    "examNo": 52,
+    "subject": "関税法等",
+    "questionNo": 2,
+    "format": "語句選択",
+    "mainTopic": "無申告加算税",
+    "subTopics": [
+      "納期限",
+      "法定納期限",
+      "期限後特例申告",
+      "延滞税"
+    ],
+    "requiredKnowledge": [
+      "無申告加算税の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "納期限・法定納期限",
+      "延滞税・加算税",
+      "還付加算金",
+      "期間・期限",
+      "納税申告・更正"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-002"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-52-KZ-Q03",
+    "examNo": 52,
+    "subject": "関税法等",
+    "questionNo": 3,
+    "format": "複数選択",
+    "mainTopic": "期間制限",
+    "subTopics": [
+      "申告納税方式",
+      "賦課課税方式",
+      "修正申告",
+      "更正請求"
+    ],
+    "requiredKnowledge": [
+      "期間制限の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "納税申告",
+      "修正申告・更正の請求",
+      "更正・決定",
+      "納税申告・更正",
+      "期間・期限"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-003"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-52-KZ-Q04",
+    "examNo": 52,
+    "subject": "関税法等",
+    "questionNo": 4,
+    "format": "択一",
+    "mainTopic": "輸入申告",
+    "subTopics": [
+      "輸入申告",
+      "特例輸入者",
+      "特例委託輸入者",
+      "原産地証明"
+    ],
+    "requiredKnowledge": [
+      "輸入申告の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "輸入申告",
+      "原産地表示",
+      "外為法",
+      "申告・許可・承認・届出の混同",
+      "EPA・WTO税率"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-004"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-52-KZ-Q05",
+    "examNo": 52,
+    "subject": "関税法等",
+    "questionNo": 5,
+    "format": "語句選択",
+    "mainTopic": "保税展示場",
+    "subTopics": [
+      "保税地域5種",
+      "保税蔵置場",
+      "保税工場",
+      "保税展示場"
+    ],
+    "requiredKnowledge": [
+      "保税展示場の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "保税地域",
+      "保税運送",
+      "納税義務者",
+      "許可・承認・届出の混同",
+      "亡失責任"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-005"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-52-KZ-Q06",
+    "examNo": 52,
+    "subject": "関税法等",
+    "questionNo": 6,
+    "format": "複数選択",
+    "mainTopic": "差止申立て",
+    "subTopics": [
+      "輸入してはならない貨物",
+      "輸出してはならない貨物",
+      "知的財産侵害物品",
+      "認定手続"
+    ],
+    "requiredKnowledge": [
+      "差止申立ての原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "輸入禁止貨物",
+      "輸出禁止貨物",
+      "知財認定手続",
+      "期間・期限",
+      "選択肢読解"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-006"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-52-KZ-Q07",
+    "examNo": 52,
+    "subject": "関税法等",
+    "questionNo": 7,
+    "format": "択一",
+    "mainTopic": "用途外使用",
+    "subTopics": [
+      "再輸出免税",
+      "特定用途免税",
+      "無条件免税",
+      "戻し税"
+    ],
+    "requiredKnowledge": [
+      "用途外使用の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "減免税",
+      "戻し税",
+      "用途外使用",
+      "期間・期限",
+      "制度比較"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-007"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-52-KZ-Q08",
+    "examNo": 52,
+    "subject": "関税法等",
+    "questionNo": 8,
+    "format": "語句選択",
+    "mainTopic": "混合物",
+    "subTopics": [
+      "通則1〜6",
+      "部注",
+      "類注",
+      "包装容器"
+    ],
+    "requiredKnowledge": [
+      "混合物の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "品目分類",
+      "関税率表の通則",
+      "税番",
+      "分類手順",
+      "通関実務連携"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-008"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-52-KZ-Q09",
+    "examNo": 52,
+    "subject": "関税法等",
+    "questionNo": 9,
+    "format": "複数選択",
+    "mainTopic": "輸入貿易管理令",
+    "subTopics": [
+      "輸出貿易管理令",
+      "輸入貿易管理令",
+      "輸出許可",
+      "輸出承認"
+    ],
+    "requiredKnowledge": [
+      "輸入貿易管理令の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "外為法",
+      "許可・承認・届出の混同",
+      "輸出規制",
+      "輸入承認"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-009"
+    ],
+    "priority": "B",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-52-KZ-Q10",
+    "examNo": 52,
+    "subject": "関税法等",
+    "questionNo": 10,
+    "format": "択一",
+    "mainTopic": "相殺関税",
+    "subTopics": [
+      "特恵関税",
+      "特別特恵",
+      "原産地証明",
+      "有効期間"
+    ],
+    "requiredKnowledge": [
+      "相殺関税の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "特恵関税",
+      "特殊関税",
+      "原産地表示",
+      "期間・期限"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-010"
+    ],
+    "priority": "B",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-52-KZ-Q11",
+    "examNo": 52,
+    "subject": "関税法等",
+    "questionNo": 11,
+    "format": "語句選択",
+    "mainTopic": "特例輸入者",
+    "subTopics": [
+      "特例輸入者",
+      "特例委託輸入者",
+      "特定輸出者",
+      "特定委託輸出者"
+    ],
+    "requiredKnowledge": [
+      "特例輸入者の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "AEO",
+      "特例輸入者",
+      "主体の混同",
+      "承認取消"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-011"
+    ],
+    "priority": "B",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-52-KZ-Q12",
+    "examNo": 52,
+    "subject": "関税法等",
+    "questionNo": 12,
+    "format": "複数選択",
+    "mainTopic": "TIR関連",
+    "subTopics": [
+      "NACCS法",
+      "通関手帳",
+      "ATA条約",
+      "コンテナ特例法"
+    ],
+    "requiredKnowledge": [
+      "TIR関連の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "NACCS入力",
+      "ATA・通関手帳",
+      "特例法",
+      "暗記不足"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-012"
+    ],
+    "priority": "C",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-52-KZ-Q13",
+    "examNo": 52,
+    "subject": "関税法等",
+    "questionNo": 13,
+    "format": "択一",
+    "mainTopic": "現実支払価格",
+    "subTopics": [
+      "課税価格決定原則",
+      "現実支払価格",
+      "輸入取引",
+      "加算要素"
+    ],
+    "requiredKnowledge": [
+      "現実支払価格の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "課税価格",
+      "加算要素",
+      "不算入要素",
+      "輸入取引",
+      "評価方法の順序",
+      "通関実務連携計算"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-001"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-52-KZ-Q14",
+    "examNo": 52,
+    "subject": "関税法等",
+    "questionNo": 14,
+    "format": "語句選択",
+    "mainTopic": "延滞税",
+    "subTopics": [
+      "納期限",
+      "法定納期限",
+      "期限後特例申告",
+      "延滞税"
+    ],
+    "requiredKnowledge": [
+      "延滞税の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "納期限・法定納期限",
+      "延滞税・加算税",
+      "還付加算金",
+      "期間・期限",
+      "納税申告・更正"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-002"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-52-KZ-Q15",
+    "examNo": 52,
+    "subject": "関税法等",
+    "questionNo": 15,
+    "format": "複数選択",
+    "mainTopic": "更正",
+    "subTopics": [
+      "申告納税方式",
+      "賦課課税方式",
+      "修正申告",
+      "更正請求"
+    ],
+    "requiredKnowledge": [
+      "更正の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "納税申告",
+      "修正申告・更正の請求",
+      "更正・決定",
+      "納税申告・更正",
+      "期間・期限"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-003"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-53-KZ-Q01",
+    "examNo": 53,
+    "subject": "関税法等",
+    "questionNo": 1,
+    "format": "語句選択",
+    "mainTopic": "国内販売価格方式",
+    "subTopics": [
+      "課税価格決定原則",
+      "現実支払価格",
+      "輸入取引",
+      "加算要素"
+    ],
+    "requiredKnowledge": [
+      "国内販売価格方式の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "課税価格",
+      "加算要素",
+      "不算入要素",
+      "輸入取引",
+      "評価方法の順序",
+      "通関実務連携計算"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-001"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-53-KZ-Q02",
+    "examNo": 53,
+    "subject": "関税法等",
+    "questionNo": 2,
+    "format": "複数選択",
+    "mainTopic": "還付加算金",
+    "subTopics": [
+      "納期限",
+      "法定納期限",
+      "期限後特例申告",
+      "延滞税"
+    ],
+    "requiredKnowledge": [
+      "還付加算金の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "納期限・法定納期限",
+      "延滞税・加算税",
+      "還付加算金",
+      "期間・期限",
+      "納税申告・更正"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-002"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-53-KZ-Q03",
+    "examNo": 53,
+    "subject": "関税法等",
+    "questionNo": 3,
+    "format": "択一",
+    "mainTopic": "申告納税方式",
+    "subTopics": [
+      "申告納税方式",
+      "賦課課税方式",
+      "修正申告",
+      "更正請求"
+    ],
+    "requiredKnowledge": [
+      "申告納税方式の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "納税申告",
+      "修正申告・更正の請求",
+      "更正・決定",
+      "納税申告・更正",
+      "期間・期限"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-003"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-53-KZ-Q04",
+    "examNo": 53,
+    "subject": "関税法等",
+    "questionNo": 4,
+    "format": "語句選択",
+    "mainTopic": "特例輸入者",
+    "subTopics": [
+      "輸入申告",
+      "特例輸入者",
+      "特例委託輸入者",
+      "原産地証明"
+    ],
+    "requiredKnowledge": [
+      "特例輸入者の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "輸入申告",
+      "原産地表示",
+      "外為法",
+      "申告・許可・承認・届出の混同",
+      "EPA・WTO税率"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-004"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-53-KZ-Q05",
+    "examNo": 53,
+    "subject": "関税法等",
+    "questionNo": 5,
+    "format": "複数選択",
+    "mainTopic": "総合保税地域",
+    "subTopics": [
+      "保税地域5種",
+      "保税蔵置場",
+      "保税工場",
+      "保税展示場"
+    ],
+    "requiredKnowledge": [
+      "総合保税地域の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "保税地域",
+      "保税運送",
+      "納税義務者",
+      "許可・承認・届出の混同",
+      "亡失責任"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-005"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-53-KZ-Q06",
+    "examNo": 53,
+    "subject": "関税法等",
+    "questionNo": 6,
+    "format": "択一",
+    "mainTopic": "争う旨の申出",
+    "subTopics": [
+      "輸入してはならない貨物",
+      "輸出してはならない貨物",
+      "知的財産侵害物品",
+      "認定手続"
+    ],
+    "requiredKnowledge": [
+      "争う旨の申出の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "輸入禁止貨物",
+      "輸出禁止貨物",
+      "知財認定手続",
+      "期間・期限",
+      "選択肢読解"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-006"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-53-KZ-Q07",
+    "examNo": 53,
+    "subject": "関税法等",
+    "questionNo": 7,
+    "format": "語句選択",
+    "mainTopic": "再輸出免税",
+    "subTopics": [
+      "再輸出免税",
+      "特定用途免税",
+      "無条件免税",
+      "戻し税"
+    ],
+    "requiredKnowledge": [
+      "再輸出免税の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "減免税",
+      "戻し税",
+      "用途外使用",
+      "期間・期限",
+      "制度比較"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-007"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-53-KZ-Q08",
+    "examNo": 53,
+    "subject": "関税法等",
+    "questionNo": 8,
+    "format": "複数選択",
+    "mainTopic": "未完成品",
+    "subTopics": [
+      "通則1〜6",
+      "部注",
+      "類注",
+      "包装容器"
+    ],
+    "requiredKnowledge": [
+      "未完成品の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "品目分類",
+      "関税率表の通則",
+      "税番",
+      "分類手順",
+      "通関実務連携"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-008"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-53-KZ-Q09",
+    "examNo": 53,
+    "subject": "関税法等",
+    "questionNo": 9,
+    "format": "択一",
+    "mainTopic": "輸出許可",
+    "subTopics": [
+      "輸出貿易管理令",
+      "輸入貿易管理令",
+      "輸出許可",
+      "輸出承認"
+    ],
+    "requiredKnowledge": [
+      "輸出許可の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "外為法",
+      "許可・承認・届出の混同",
+      "輸出規制",
+      "輸入承認"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-009"
+    ],
+    "priority": "B",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-53-KZ-Q10",
+    "examNo": 53,
+    "subject": "関税法等",
+    "questionNo": 10,
+    "format": "語句選択",
+    "mainTopic": "特恵関税",
+    "subTopics": [
+      "特恵関税",
+      "特別特恵",
+      "原産地証明",
+      "有効期間"
+    ],
+    "requiredKnowledge": [
+      "特恵関税の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "特恵関税",
+      "特殊関税",
+      "原産地表示",
+      "期間・期限"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-010"
+    ],
+    "priority": "B",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-53-KZ-Q11",
+    "examNo": 53,
+    "subject": "関税法等",
+    "questionNo": 11,
+    "format": "複数選択",
+    "mainTopic": "特例委託輸入者",
+    "subTopics": [
+      "特例輸入者",
+      "特例委託輸入者",
+      "特定輸出者",
+      "特定委託輸出者"
+    ],
+    "requiredKnowledge": [
+      "特例委託輸入者の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "AEO",
+      "特例輸入者",
+      "主体の混同",
+      "承認取消"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-011"
+    ],
+    "priority": "B",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-53-KZ-Q12",
+    "examNo": 53,
+    "subject": "関税法等",
+    "questionNo": 12,
+    "format": "択一",
+    "mainTopic": "NACCS法",
+    "subTopics": [
+      "NACCS法",
+      "通関手帳",
+      "ATA条約",
+      "コンテナ特例法"
+    ],
+    "requiredKnowledge": [
+      "NACCS法の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "NACCS入力",
+      "ATA・通関手帳",
+      "特例法",
+      "暗記不足"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-012"
+    ],
+    "priority": "C",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-53-KZ-Q13",
+    "examNo": 53,
+    "subject": "関税法等",
+    "questionNo": 13,
+    "format": "語句選択",
+    "mainTopic": "輸入取引",
+    "subTopics": [
+      "課税価格決定原則",
+      "現実支払価格",
+      "輸入取引",
+      "加算要素"
+    ],
+    "requiredKnowledge": [
+      "輸入取引の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "課税価格",
+      "加算要素",
+      "不算入要素",
+      "輸入取引",
+      "評価方法の順序",
+      "通関実務連携計算"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-001"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-53-KZ-Q14",
+    "examNo": 53,
+    "subject": "関税法等",
+    "questionNo": 14,
+    "format": "複数選択",
+    "mainTopic": "過少申告加算税",
+    "subTopics": [
+      "納期限",
+      "法定納期限",
+      "期限後特例申告",
+      "延滞税"
+    ],
+    "requiredKnowledge": [
+      "過少申告加算税の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "納期限・法定納期限",
+      "延滞税・加算税",
+      "還付加算金",
+      "期間・期限",
+      "納税申告・更正"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-002"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-53-KZ-Q15",
+    "examNo": 53,
+    "subject": "関税法等",
+    "questionNo": 15,
+    "format": "択一",
+    "mainTopic": "決定",
+    "subTopics": [
+      "申告納税方式",
+      "賦課課税方式",
+      "修正申告",
+      "更正請求"
+    ],
+    "requiredKnowledge": [
+      "決定の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "納税申告",
+      "修正申告・更正の請求",
+      "更正・決定",
+      "納税申告・更正",
+      "期間・期限"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-003"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-54-KZ-Q01",
+    "examNo": 54,
+    "subject": "関税法等",
+    "questionNo": 1,
+    "format": "複数選択",
+    "mainTopic": "製造原価方式",
+    "subTopics": [
+      "課税価格決定原則",
+      "現実支払価格",
+      "輸入取引",
+      "加算要素"
+    ],
+    "requiredKnowledge": [
+      "製造原価方式の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "課税価格",
+      "加算要素",
+      "不算入要素",
+      "輸入取引",
+      "評価方法の順序",
+      "通関実務連携計算"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-001"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-54-KZ-Q02",
+    "examNo": 54,
+    "subject": "関税法等",
+    "questionNo": 2,
+    "format": "択一",
+    "mainTopic": "納期限",
+    "subTopics": [
+      "納期限",
+      "法定納期限",
+      "期限後特例申告",
+      "延滞税"
+    ],
+    "requiredKnowledge": [
+      "納期限の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "納期限・法定納期限",
+      "延滞税・加算税",
+      "還付加算金",
+      "期間・期限",
+      "納税申告・更正"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-002"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-54-KZ-Q03",
+    "examNo": 54,
+    "subject": "関税法等",
+    "questionNo": 3,
+    "format": "語句選択",
+    "mainTopic": "賦課課税方式",
+    "subTopics": [
+      "申告納税方式",
+      "賦課課税方式",
+      "修正申告",
+      "更正請求"
+    ],
+    "requiredKnowledge": [
+      "賦課課税方式の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "納税申告",
+      "修正申告・更正の請求",
+      "更正・決定",
+      "納税申告・更正",
+      "期間・期限"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-003"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-54-KZ-Q04",
+    "examNo": 54,
+    "subject": "関税法等",
+    "questionNo": 4,
+    "format": "複数選択",
+    "mainTopic": "特例委託輸入者",
+    "subTopics": [
+      "輸入申告",
+      "特例輸入者",
+      "特例委託輸入者",
+      "原産地証明"
+    ],
+    "requiredKnowledge": [
+      "特例委託輸入者の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "輸入申告",
+      "原産地表示",
+      "外為法",
+      "申告・許可・承認・届出の混同",
+      "EPA・WTO税率"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-004"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-54-KZ-Q05",
+    "examNo": 54,
+    "subject": "関税法等",
+    "questionNo": 5,
+    "format": "択一",
+    "mainTopic": "亡失",
+    "subTopics": [
+      "保税地域5種",
+      "保税蔵置場",
+      "保税工場",
+      "保税展示場"
+    ],
+    "requiredKnowledge": [
+      "亡失の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "保税地域",
+      "保税運送",
+      "納税義務者",
+      "許可・承認・届出の混同",
+      "亡失責任"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-005"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-54-KZ-Q06",
+    "examNo": 54,
+    "subject": "関税法等",
+    "questionNo": 6,
+    "format": "語句選択",
+    "mainTopic": "輸入してはならない貨物",
+    "subTopics": [
+      "輸入してはならない貨物",
+      "輸出してはならない貨物",
+      "知的財産侵害物品",
+      "認定手続"
+    ],
+    "requiredKnowledge": [
+      "輸入してはならない貨物の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "輸入禁止貨物",
+      "輸出禁止貨物",
+      "知財認定手続",
+      "期間・期限",
+      "選択肢読解"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-006"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-54-KZ-Q07",
+    "examNo": 54,
+    "subject": "関税法等",
+    "questionNo": 7,
+    "format": "複数選択",
+    "mainTopic": "特定用途免税",
+    "subTopics": [
+      "再輸出免税",
+      "特定用途免税",
+      "無条件免税",
+      "戻し税"
+    ],
+    "requiredKnowledge": [
+      "特定用途免税の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "減免税",
+      "戻し税",
+      "用途外使用",
+      "期間・期限",
+      "制度比較"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-007"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-54-KZ-Q08",
+    "examNo": 54,
+    "subject": "関税法等",
+    "questionNo": 8,
+    "format": "択一",
+    "mainTopic": "号の分類",
+    "subTopics": [
+      "通則1〜6",
+      "部注",
+      "類注",
+      "包装容器"
+    ],
+    "requiredKnowledge": [
+      "号の分類の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "品目分類",
+      "関税率表の通則",
+      "税番",
+      "分類手順",
+      "通関実務連携"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-008"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-54-KZ-Q09",
+    "examNo": 54,
+    "subject": "関税法等",
+    "questionNo": 9,
+    "format": "語句選択",
+    "mainTopic": "輸出承認",
+    "subTopics": [
+      "輸出貿易管理令",
+      "輸入貿易管理令",
+      "輸出許可",
+      "輸出承認"
+    ],
+    "requiredKnowledge": [
+      "輸出承認の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "外為法",
+      "許可・承認・届出の混同",
+      "輸出規制",
+      "輸入承認"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-009"
+    ],
+    "priority": "B",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-54-KZ-Q10",
+    "examNo": 54,
+    "subject": "関税法等",
+    "questionNo": 10,
+    "format": "複数選択",
+    "mainTopic": "特別特恵",
+    "subTopics": [
+      "特恵関税",
+      "特別特恵",
+      "原産地証明",
+      "有効期間"
+    ],
+    "requiredKnowledge": [
+      "特別特恵の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "特恵関税",
+      "特殊関税",
+      "原産地表示",
+      "期間・期限"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-010"
+    ],
+    "priority": "B",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-54-KZ-Q11",
+    "examNo": 54,
+    "subject": "関税法等",
+    "questionNo": 11,
+    "format": "択一",
+    "mainTopic": "特定輸出者",
+    "subTopics": [
+      "特例輸入者",
+      "特例委託輸入者",
+      "特定輸出者",
+      "特定委託輸出者"
+    ],
+    "requiredKnowledge": [
+      "特定輸出者の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "AEO",
+      "特例輸入者",
+      "主体の混同",
+      "承認取消"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-011"
+    ],
+    "priority": "B",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-54-KZ-Q12",
+    "examNo": 54,
+    "subject": "関税法等",
+    "questionNo": 12,
+    "format": "語句選択",
+    "mainTopic": "通関手帳",
+    "subTopics": [
+      "NACCS法",
+      "通関手帳",
+      "ATA条約",
+      "コンテナ特例法"
+    ],
+    "requiredKnowledge": [
+      "通関手帳の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "NACCS入力",
+      "ATA・通関手帳",
+      "特例法",
+      "暗記不足"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-012"
+    ],
+    "priority": "C",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-54-KZ-Q13",
+    "examNo": 54,
+    "subject": "関税法等",
+    "questionNo": 13,
+    "format": "複数選択",
+    "mainTopic": "加算要素",
+    "subTopics": [
+      "課税価格決定原則",
+      "現実支払価格",
+      "輸入取引",
+      "加算要素"
+    ],
+    "requiredKnowledge": [
+      "加算要素の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "課税価格",
+      "加算要素",
+      "不算入要素",
+      "輸入取引",
+      "評価方法の順序",
+      "通関実務連携計算"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-001"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-54-KZ-Q14",
+    "examNo": 54,
+    "subject": "関税法等",
+    "questionNo": 14,
+    "format": "択一",
+    "mainTopic": "無申告加算税",
+    "subTopics": [
+      "納期限",
+      "法定納期限",
+      "期限後特例申告",
+      "延滞税"
+    ],
+    "requiredKnowledge": [
+      "無申告加算税の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "納期限・法定納期限",
+      "延滞税・加算税",
+      "還付加算金",
+      "期間・期限",
+      "納税申告・更正"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-002"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-54-KZ-Q15",
+    "examNo": 54,
+    "subject": "関税法等",
+    "questionNo": 15,
+    "format": "語句選択",
+    "mainTopic": "期間制限",
+    "subTopics": [
+      "申告納税方式",
+      "賦課課税方式",
+      "修正申告",
+      "更正請求"
+    ],
+    "requiredKnowledge": [
+      "期間制限の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "納税申告",
+      "修正申告・更正の請求",
+      "更正・決定",
+      "納税申告・更正",
+      "期間・期限"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-003"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-55-KZ-Q01",
+    "examNo": 55,
+    "subject": "関税法等",
+    "questionNo": 1,
+    "format": "択一",
+    "mainTopic": "課税価格決定原則",
+    "subTopics": [
+      "課税価格決定原則",
+      "現実支払価格",
+      "輸入取引",
+      "加算要素"
+    ],
+    "requiredKnowledge": [
+      "課税価格決定原則の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "課税価格",
+      "加算要素",
+      "不算入要素",
+      "輸入取引",
+      "評価方法の順序",
+      "通関実務連携計算"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-001"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-55-KZ-Q02",
+    "examNo": 55,
+    "subject": "関税法等",
+    "questionNo": 2,
+    "format": "語句選択",
+    "mainTopic": "法定納期限",
+    "subTopics": [
+      "納期限",
+      "法定納期限",
+      "期限後特例申告",
+      "延滞税"
+    ],
+    "requiredKnowledge": [
+      "法定納期限の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "納期限・法定納期限",
+      "延滞税・加算税",
+      "還付加算金",
+      "期間・期限",
+      "納税申告・更正"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-002"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-55-KZ-Q03",
+    "examNo": 55,
+    "subject": "関税法等",
+    "questionNo": 3,
+    "format": "複数選択",
+    "mainTopic": "修正申告",
+    "subTopics": [
+      "申告納税方式",
+      "賦課課税方式",
+      "修正申告",
+      "更正請求"
+    ],
+    "requiredKnowledge": [
+      "修正申告の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "納税申告",
+      "修正申告・更正の請求",
+      "更正・決定",
+      "納税申告・更正",
+      "期間・期限"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-003"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-55-KZ-Q04",
+    "examNo": 55,
+    "subject": "関税法等",
+    "questionNo": 4,
+    "format": "択一",
+    "mainTopic": "原産地証明",
+    "subTopics": [
+      "輸入申告",
+      "特例輸入者",
+      "特例委託輸入者",
+      "原産地証明"
+    ],
+    "requiredKnowledge": [
+      "原産地証明の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "輸入申告",
+      "原産地表示",
+      "外為法",
+      "申告・許可・承認・届出の混同",
+      "EPA・WTO税率"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-004"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-55-KZ-Q05",
+    "examNo": 55,
+    "subject": "関税法等",
+    "questionNo": 5,
+    "format": "語句選択",
+    "mainTopic": "滅却",
+    "subTopics": [
+      "保税地域5種",
+      "保税蔵置場",
+      "保税工場",
+      "保税展示場"
+    ],
+    "requiredKnowledge": [
+      "滅却の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "保税地域",
+      "保税運送",
+      "納税義務者",
+      "許可・承認・届出の混同",
+      "亡失責任"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-005"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-55-KZ-Q06",
+    "examNo": 55,
+    "subject": "関税法等",
+    "questionNo": 6,
+    "format": "複数選択",
+    "mainTopic": "輸出してはならない貨物",
+    "subTopics": [
+      "輸入してはならない貨物",
+      "輸出してはならない貨物",
+      "知的財産侵害物品",
+      "認定手続"
+    ],
+    "requiredKnowledge": [
+      "輸出してはならない貨物の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "輸入禁止貨物",
+      "輸出禁止貨物",
+      "知財認定手続",
+      "期間・期限",
+      "選択肢読解"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-006"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-55-KZ-Q07",
+    "examNo": 55,
+    "subject": "関税法等",
+    "questionNo": 7,
+    "format": "択一",
+    "mainTopic": "無条件免税",
+    "subTopics": [
+      "再輸出免税",
+      "特定用途免税",
+      "無条件免税",
+      "戻し税"
+    ],
+    "requiredKnowledge": [
+      "無条件免税の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "減免税",
+      "戻し税",
+      "用途外使用",
+      "期間・期限",
+      "制度比較"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-007"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-55-KZ-Q08",
+    "examNo": 55,
+    "subject": "関税法等",
+    "questionNo": 8,
+    "format": "語句選択",
+    "mainTopic": "通則1〜6",
+    "subTopics": [
+      "通則1〜6",
+      "部注",
+      "類注",
+      "包装容器"
+    ],
+    "requiredKnowledge": [
+      "通則1〜6の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "品目分類",
+      "関税率表の通則",
+      "税番",
+      "分類手順",
+      "通関実務連携"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-008"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-55-KZ-Q09",
+    "examNo": 55,
+    "subject": "関税法等",
+    "questionNo": 9,
+    "format": "複数選択",
+    "mainTopic": "輸入承認",
+    "subTopics": [
+      "輸出貿易管理令",
+      "輸入貿易管理令",
+      "輸出許可",
+      "輸出承認"
+    ],
+    "requiredKnowledge": [
+      "輸入承認の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "外為法",
+      "許可・承認・届出の混同",
+      "輸出規制",
+      "輸入承認"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-009"
+    ],
+    "priority": "B",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-55-KZ-Q10",
+    "examNo": 55,
+    "subject": "関税法等",
+    "questionNo": 10,
+    "format": "択一",
+    "mainTopic": "原産地証明",
+    "subTopics": [
+      "特恵関税",
+      "特別特恵",
+      "原産地証明",
+      "有効期間"
+    ],
+    "requiredKnowledge": [
+      "原産地証明の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "特恵関税",
+      "特殊関税",
+      "原産地表示",
+      "期間・期限"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-010"
+    ],
+    "priority": "B",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-55-KZ-Q11",
+    "examNo": 55,
+    "subject": "関税法等",
+    "questionNo": 11,
+    "format": "語句選択",
+    "mainTopic": "特定委託輸出者",
+    "subTopics": [
+      "特例輸入者",
+      "特例委託輸入者",
+      "特定輸出者",
+      "特定委託輸出者"
+    ],
+    "requiredKnowledge": [
+      "特定委託輸出者の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "AEO",
+      "特例輸入者",
+      "主体の混同",
+      "承認取消"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-011"
+    ],
+    "priority": "B",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-55-KZ-Q12",
+    "examNo": 55,
+    "subject": "関税法等",
+    "questionNo": 12,
+    "format": "複数選択",
+    "mainTopic": "ATA条約",
+    "subTopics": [
+      "NACCS法",
+      "通関手帳",
+      "ATA条約",
+      "コンテナ特例法"
+    ],
+    "requiredKnowledge": [
+      "ATA条約の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "NACCS入力",
+      "ATA・通関手帳",
+      "特例法",
+      "暗記不足"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-012"
+    ],
+    "priority": "C",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-55-KZ-Q13",
+    "examNo": 55,
+    "subject": "関税法等",
+    "questionNo": 13,
+    "format": "択一",
+    "mainTopic": "航空運賃特例",
+    "subTopics": [
+      "課税価格決定原則",
+      "現実支払価格",
+      "輸入取引",
+      "加算要素"
+    ],
+    "requiredKnowledge": [
+      "航空運賃特例の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "課税価格",
+      "加算要素",
+      "不算入要素",
+      "輸入取引",
+      "評価方法の順序",
+      "通関実務連携計算"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-001"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-55-KZ-Q14",
+    "examNo": 55,
+    "subject": "関税法等",
+    "questionNo": 14,
+    "format": "語句選択",
+    "mainTopic": "還付加算金",
+    "subTopics": [
+      "納期限",
+      "法定納期限",
+      "期限後特例申告",
+      "延滞税"
+    ],
+    "requiredKnowledge": [
+      "還付加算金の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "納期限・法定納期限",
+      "延滞税・加算税",
+      "還付加算金",
+      "期間・期限",
+      "納税申告・更正"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-002"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-55-KZ-Q15",
+    "examNo": 55,
+    "subject": "関税法等",
+    "questionNo": 15,
+    "format": "複数選択",
+    "mainTopic": "申告納税方式",
+    "subTopics": [
+      "申告納税方式",
+      "賦課課税方式",
+      "修正申告",
+      "更正請求"
+    ],
+    "requiredKnowledge": [
+      "申告納税方式の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "納税申告",
+      "修正申告・更正の請求",
+      "更正・決定",
+      "納税申告・更正",
+      "期間・期限"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-003"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-56-KZ-Q01",
+    "examNo": 56,
+    "subject": "関税法等",
+    "questionNo": 1,
+    "format": "語句選択",
+    "mainTopic": "現実支払価格",
+    "subTopics": [
+      "課税価格決定原則",
+      "現実支払価格",
+      "輸入取引",
+      "加算要素"
+    ],
+    "requiredKnowledge": [
+      "現実支払価格の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "課税価格",
+      "加算要素",
+      "不算入要素",
+      "輸入取引",
+      "評価方法の順序",
+      "通関実務連携計算"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-001"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-56-KZ-Q02",
+    "examNo": 56,
+    "subject": "関税法等",
+    "questionNo": 2,
+    "format": "複数選択",
+    "mainTopic": "期限後特例申告",
+    "subTopics": [
+      "納期限",
+      "法定納期限",
+      "期限後特例申告",
+      "延滞税"
+    ],
+    "requiredKnowledge": [
+      "期限後特例申告の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "納期限・法定納期限",
+      "延滞税・加算税",
+      "還付加算金",
+      "期間・期限",
+      "納税申告・更正"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-002"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-56-KZ-Q03",
+    "examNo": 56,
+    "subject": "関税法等",
+    "questionNo": 3,
+    "format": "択一",
+    "mainTopic": "更正請求",
+    "subTopics": [
+      "申告納税方式",
+      "賦課課税方式",
+      "修正申告",
+      "更正請求"
+    ],
+    "requiredKnowledge": [
+      "更正請求の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "納税申告",
+      "修正申告・更正の請求",
+      "更正・決定",
+      "納税申告・更正",
+      "期間・期限"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-003"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-56-KZ-Q04",
+    "examNo": 56,
+    "subject": "関税法等",
+    "questionNo": 4,
+    "format": "語句選択",
+    "mainTopic": "EPA",
+    "subTopics": [
+      "輸入申告",
+      "特例輸入者",
+      "特例委託輸入者",
+      "原産地証明"
+    ],
+    "requiredKnowledge": [
+      "EPAの原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "輸入申告",
+      "原産地表示",
+      "外為法",
+      "申告・許可・承認・届出の混同",
+      "EPA・WTO税率"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-004"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-56-KZ-Q05",
+    "examNo": 56,
+    "subject": "関税法等",
+    "questionNo": 5,
+    "format": "複数選択",
+    "mainTopic": "保税運送",
+    "subTopics": [
+      "保税地域5種",
+      "保税蔵置場",
+      "保税工場",
+      "保税展示場"
+    ],
+    "requiredKnowledge": [
+      "保税運送の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "保税地域",
+      "保税運送",
+      "納税義務者",
+      "許可・承認・届出の混同",
+      "亡失責任"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-005"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-56-KZ-Q06",
+    "examNo": 56,
+    "subject": "関税法等",
+    "questionNo": 6,
+    "format": "択一",
+    "mainTopic": "知的財産侵害物品",
+    "subTopics": [
+      "輸入してはならない貨物",
+      "輸出してはならない貨物",
+      "知的財産侵害物品",
+      "認定手続"
+    ],
+    "requiredKnowledge": [
+      "知的財産侵害物品の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "輸入禁止貨物",
+      "輸出禁止貨物",
+      "知財認定手続",
+      "期間・期限",
+      "選択肢読解"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-006"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-56-KZ-Q07",
+    "examNo": 56,
+    "subject": "関税法等",
+    "questionNo": 7,
+    "format": "語句選択",
+    "mainTopic": "戻し税",
+    "subTopics": [
+      "再輸出免税",
+      "特定用途免税",
+      "無条件免税",
+      "戻し税"
+    ],
+    "requiredKnowledge": [
+      "戻し税の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "減免税",
+      "戻し税",
+      "用途外使用",
+      "期間・期限",
+      "制度比較"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-007"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-56-KZ-Q08",
+    "examNo": 56,
+    "subject": "関税法等",
+    "questionNo": 8,
+    "format": "複数選択",
+    "mainTopic": "部注",
+    "subTopics": [
+      "通則1〜6",
+      "部注",
+      "類注",
+      "包装容器"
+    ],
+    "requiredKnowledge": [
+      "部注の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "品目分類",
+      "関税率表の通則",
+      "税番",
+      "分類手順",
+      "通関実務連携"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-008"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-56-KZ-Q09",
+    "examNo": 56,
+    "subject": "関税法等",
+    "questionNo": 9,
+    "format": "択一",
+    "mainTopic": "輸入割当",
+    "subTopics": [
+      "輸出貿易管理令",
+      "輸入貿易管理令",
+      "輸出許可",
+      "輸出承認"
+    ],
+    "requiredKnowledge": [
+      "輸入割当の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "外為法",
+      "許可・承認・届出の混同",
+      "輸出規制",
+      "輸入承認"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-009"
+    ],
+    "priority": "B",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-56-KZ-Q10",
+    "examNo": 56,
+    "subject": "関税法等",
+    "questionNo": 10,
+    "format": "語句選択",
+    "mainTopic": "有効期間",
+    "subTopics": [
+      "特恵関税",
+      "特別特恵",
+      "原産地証明",
+      "有効期間"
+    ],
+    "requiredKnowledge": [
+      "有効期間の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "特恵関税",
+      "特殊関税",
+      "原産地表示",
+      "期間・期限"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-010"
+    ],
+    "priority": "B",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-56-KZ-Q11",
+    "examNo": 56,
+    "subject": "関税法等",
+    "questionNo": 11,
+    "format": "複数選択",
+    "mainTopic": "特定保税運送者",
+    "subTopics": [
+      "特例輸入者",
+      "特例委託輸入者",
+      "特定輸出者",
+      "特定委託輸出者"
+    ],
+    "requiredKnowledge": [
+      "特定保税運送者の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "AEO",
+      "特例輸入者",
+      "主体の混同",
+      "承認取消"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-011"
+    ],
+    "priority": "B",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-56-KZ-Q12",
+    "examNo": 56,
+    "subject": "関税法等",
+    "questionNo": 12,
+    "format": "択一",
+    "mainTopic": "コンテナ特例法",
+    "subTopics": [
+      "NACCS法",
+      "通関手帳",
+      "ATA条約",
+      "コンテナ特例法"
+    ],
+    "requiredKnowledge": [
+      "コンテナ特例法の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "NACCS入力",
+      "ATA・通関手帳",
+      "特例法",
+      "暗記不足"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-012"
+    ],
+    "priority": "C",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-56-KZ-Q13",
+    "examNo": 56,
+    "subject": "関税法等",
+    "questionNo": 13,
+    "format": "語句選択",
+    "mainTopic": "同種・類似貨物",
+    "subTopics": [
+      "課税価格決定原則",
+      "現実支払価格",
+      "輸入取引",
+      "加算要素"
+    ],
+    "requiredKnowledge": [
+      "同種・類似貨物の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "課税価格",
+      "加算要素",
+      "不算入要素",
+      "輸入取引",
+      "評価方法の順序",
+      "通関実務連携計算"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-001"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-56-KZ-Q14",
+    "examNo": 56,
+    "subject": "関税法等",
+    "questionNo": 14,
+    "format": "複数選択",
+    "mainTopic": "納期限",
+    "subTopics": [
+      "納期限",
+      "法定納期限",
+      "期限後特例申告",
+      "延滞税"
+    ],
+    "requiredKnowledge": [
+      "納期限の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "納期限・法定納期限",
+      "延滞税・加算税",
+      "還付加算金",
+      "期間・期限",
+      "納税申告・更正"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-002"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-56-KZ-Q15",
+    "examNo": 56,
+    "subject": "関税法等",
+    "questionNo": 15,
+    "format": "択一",
+    "mainTopic": "賦課課税方式",
+    "subTopics": [
+      "申告納税方式",
+      "賦課課税方式",
+      "修正申告",
+      "更正請求"
+    ],
+    "requiredKnowledge": [
+      "賦課課税方式の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "納税申告",
+      "修正申告・更正の請求",
+      "更正・決定",
+      "納税申告・更正",
+      "期間・期限"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-003"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-57-KZ-Q01",
+    "examNo": 57,
+    "subject": "関税法等",
+    "questionNo": 1,
+    "format": "複数選択",
+    "mainTopic": "輸入取引",
+    "subTopics": [
+      "課税価格決定原則",
+      "現実支払価格",
+      "輸入取引",
+      "加算要素"
+    ],
+    "requiredKnowledge": [
+      "輸入取引の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "課税価格",
+      "加算要素",
+      "不算入要素",
+      "輸入取引",
+      "評価方法の順序",
+      "通関実務連携計算"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-001"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-57-KZ-Q02",
+    "examNo": 57,
+    "subject": "関税法等",
+    "questionNo": 2,
+    "format": "択一",
+    "mainTopic": "延滞税",
+    "subTopics": [
+      "納期限",
+      "法定納期限",
+      "期限後特例申告",
+      "延滞税"
+    ],
+    "requiredKnowledge": [
+      "延滞税の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "納期限・法定納期限",
+      "延滞税・加算税",
+      "還付加算金",
+      "期間・期限",
+      "納税申告・更正"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-002"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-57-KZ-Q03",
+    "examNo": 57,
+    "subject": "関税法等",
+    "questionNo": 3,
+    "format": "語句選択",
+    "mainTopic": "更正",
+    "subTopics": [
+      "申告納税方式",
+      "賦課課税方式",
+      "修正申告",
+      "更正請求"
+    ],
+    "requiredKnowledge": [
+      "更正の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "納税申告",
+      "修正申告・更正の請求",
+      "更正・決定",
+      "納税申告・更正",
+      "期間・期限"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-003"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-57-KZ-Q04",
+    "examNo": 57,
+    "subject": "関税法等",
+    "questionNo": 4,
+    "format": "複数選択",
+    "mainTopic": "WTO税率",
+    "subTopics": [
+      "輸入申告",
+      "特例輸入者",
+      "特例委託輸入者",
+      "原産地証明"
+    ],
+    "requiredKnowledge": [
+      "WTO税率の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "輸入申告",
+      "原産地表示",
+      "外為法",
+      "申告・許可・承認・届出の混同",
+      "EPA・WTO税率"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-004"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-57-KZ-Q05",
+    "examNo": 57,
+    "subject": "関税法等",
+    "questionNo": 5,
+    "format": "択一",
+    "mainTopic": "特定保税運送",
+    "subTopics": [
+      "保税地域5種",
+      "保税蔵置場",
+      "保税工場",
+      "保税展示場"
+    ],
+    "requiredKnowledge": [
+      "特定保税運送の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "保税地域",
+      "保税運送",
+      "納税義務者",
+      "許可・承認・届出の混同",
+      "亡失責任"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-005"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-57-KZ-Q06",
+    "examNo": 57,
+    "subject": "関税法等",
+    "questionNo": 6,
+    "format": "語句選択",
+    "mainTopic": "認定手続",
+    "subTopics": [
+      "輸入してはならない貨物",
+      "輸出してはならない貨物",
+      "知的財産侵害物品",
+      "認定手続"
+    ],
+    "requiredKnowledge": [
+      "認定手続の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "輸入禁止貨物",
+      "輸出禁止貨物",
+      "知財認定手続",
+      "期間・期限",
+      "選択肢読解"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-006"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-57-KZ-Q07",
+    "examNo": 57,
+    "subject": "関税法等",
+    "questionNo": 7,
+    "format": "複数選択",
+    "mainTopic": "災害滅失",
+    "subTopics": [
+      "再輸出免税",
+      "特定用途免税",
+      "無条件免税",
+      "戻し税"
+    ],
+    "requiredKnowledge": [
+      "災害滅失の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "減免税",
+      "戻し税",
+      "用途外使用",
+      "期間・期限",
+      "制度比較"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-007"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-57-KZ-Q08",
+    "examNo": 57,
+    "subject": "関税法等",
+    "questionNo": 8,
+    "format": "択一",
+    "mainTopic": "類注",
+    "subTopics": [
+      "通則1〜6",
+      "部注",
+      "類注",
+      "包装容器"
+    ],
+    "requiredKnowledge": [
+      "類注の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "品目分類",
+      "関税率表の通則",
+      "税番",
+      "分類手順",
+      "通関実務連携"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-008"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-57-KZ-Q09",
+    "examNo": 57,
+    "subject": "関税法等",
+    "questionNo": 9,
+    "format": "語句選択",
+    "mainTopic": "輸出貿易管理令",
+    "subTopics": [
+      "輸出貿易管理令",
+      "輸入貿易管理令",
+      "輸出許可",
+      "輸出承認"
+    ],
+    "requiredKnowledge": [
+      "輸出貿易管理令の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "外為法",
+      "許可・承認・届出の混同",
+      "輸出規制",
+      "輸入承認"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-009"
+    ],
+    "priority": "B",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-57-KZ-Q10",
+    "examNo": 57,
+    "subject": "関税法等",
+    "questionNo": 10,
+    "format": "複数選択",
+    "mainTopic": "不当廉売関税",
+    "subTopics": [
+      "特恵関税",
+      "特別特恵",
+      "原産地証明",
+      "有効期間"
+    ],
+    "requiredKnowledge": [
+      "不当廉売関税の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "特恵関税",
+      "特殊関税",
+      "原産地表示",
+      "期間・期限"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-010"
+    ],
+    "priority": "B",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-57-KZ-Q11",
+    "examNo": 57,
+    "subject": "関税法等",
+    "questionNo": 11,
+    "format": "択一",
+    "mainTopic": "承認取消",
+    "subTopics": [
+      "特例輸入者",
+      "特例委託輸入者",
+      "特定輸出者",
+      "特定委託輸出者"
+    ],
+    "requiredKnowledge": [
+      "承認取消の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "AEO",
+      "特例輸入者",
+      "主体の混同",
+      "承認取消"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-011"
+    ],
+    "priority": "B",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-57-KZ-Q12",
+    "examNo": 57,
+    "subject": "関税法等",
+    "questionNo": 12,
+    "format": "語句選択",
+    "mainTopic": "TIR関連",
+    "subTopics": [
+      "NACCS法",
+      "通関手帳",
+      "ATA条約",
+      "コンテナ特例法"
+    ],
+    "requiredKnowledge": [
+      "TIR関連の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "NACCS入力",
+      "ATA・通関手帳",
+      "特例法",
+      "暗記不足"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-012"
+    ],
+    "priority": "C",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-57-KZ-Q13",
+    "examNo": 57,
+    "subject": "関税法等",
+    "questionNo": 13,
+    "format": "複数選択",
+    "mainTopic": "国内販売価格方式",
+    "subTopics": [
+      "課税価格決定原則",
+      "現実支払価格",
+      "輸入取引",
+      "加算要素"
+    ],
+    "requiredKnowledge": [
+      "国内販売価格方式の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "課税価格",
+      "加算要素",
+      "不算入要素",
+      "輸入取引",
+      "評価方法の順序",
+      "通関実務連携計算"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-001"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-57-KZ-Q14",
+    "examNo": 57,
+    "subject": "関税法等",
+    "questionNo": 14,
+    "format": "択一",
+    "mainTopic": "法定納期限",
+    "subTopics": [
+      "納期限",
+      "法定納期限",
+      "期限後特例申告",
+      "延滞税"
+    ],
+    "requiredKnowledge": [
+      "法定納期限の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "納期限・法定納期限",
+      "延滞税・加算税",
+      "還付加算金",
+      "期間・期限",
+      "納税申告・更正"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-002"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-57-KZ-Q15",
+    "examNo": 57,
+    "subject": "関税法等",
+    "questionNo": 15,
+    "format": "語句選択",
+    "mainTopic": "修正申告",
+    "subTopics": [
+      "申告納税方式",
+      "賦課課税方式",
+      "修正申告",
+      "更正請求"
+    ],
+    "requiredKnowledge": [
+      "修正申告の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "納税申告",
+      "修正申告・更正の請求",
+      "更正・決定",
+      "納税申告・更正",
+      "期間・期限"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-003"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-58-KZ-Q01",
+    "examNo": 58,
+    "subject": "関税法等",
+    "questionNo": 1,
+    "format": "択一",
+    "mainTopic": "加算要素",
+    "subTopics": [
+      "課税価格決定原則",
+      "現実支払価格",
+      "輸入取引",
+      "加算要素"
+    ],
+    "requiredKnowledge": [
+      "加算要素の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "課税価格",
+      "加算要素",
+      "不算入要素",
+      "輸入取引",
+      "評価方法の順序",
+      "通関実務連携計算"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-001"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-58-KZ-Q02",
+    "examNo": 58,
+    "subject": "関税法等",
+    "questionNo": 2,
+    "format": "語句選択",
+    "mainTopic": "過少申告加算税",
+    "subTopics": [
+      "納期限",
+      "法定納期限",
+      "期限後特例申告",
+      "延滞税"
+    ],
+    "requiredKnowledge": [
+      "過少申告加算税の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "納期限・法定納期限",
+      "延滞税・加算税",
+      "還付加算金",
+      "期間・期限",
+      "納税申告・更正"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-002"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-58-KZ-Q03",
+    "examNo": 58,
+    "subject": "関税法等",
+    "questionNo": 3,
+    "format": "複数選択",
+    "mainTopic": "決定",
+    "subTopics": [
+      "申告納税方式",
+      "賦課課税方式",
+      "修正申告",
+      "更正請求"
+    ],
+    "requiredKnowledge": [
+      "決定の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "納税申告",
+      "修正申告・更正の請求",
+      "更正・決定",
+      "納税申告・更正",
+      "期間・期限"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-003"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-58-KZ-Q04",
+    "examNo": 58,
+    "subject": "関税法等",
+    "questionNo": 4,
+    "format": "択一",
+    "mainTopic": "他法令証明",
+    "subTopics": [
+      "輸入申告",
+      "特例輸入者",
+      "特例委託輸入者",
+      "原産地証明"
+    ],
+    "requiredKnowledge": [
+      "他法令証明の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "輸入申告",
+      "原産地表示",
+      "外為法",
+      "申告・許可・承認・届出の混同",
+      "EPA・WTO税率"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-004"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-58-KZ-Q05",
+    "examNo": 58,
+    "subject": "関税法等",
+    "questionNo": 5,
+    "format": "語句選択",
+    "mainTopic": "保税地域5種",
+    "subTopics": [
+      "保税地域5種",
+      "保税蔵置場",
+      "保税工場",
+      "保税展示場"
+    ],
+    "requiredKnowledge": [
+      "保税地域5種の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "保税地域",
+      "保税運送",
+      "納税義務者",
+      "許可・承認・届出の混同",
+      "亡失責任"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-005"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-58-KZ-Q06",
+    "examNo": 58,
+    "subject": "関税法等",
+    "questionNo": 6,
+    "format": "複数選択",
+    "mainTopic": "差止申立て",
+    "subTopics": [
+      "輸入してはならない貨物",
+      "輸出してはならない貨物",
+      "知的財産侵害物品",
+      "認定手続"
+    ],
+    "requiredKnowledge": [
+      "差止申立ての原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "輸入禁止貨物",
+      "輸出禁止貨物",
+      "知財認定手続",
+      "期間・期限",
+      "選択肢読解"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-006"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-58-KZ-Q07",
+    "examNo": 58,
+    "subject": "関税法等",
+    "questionNo": 7,
+    "format": "択一",
+    "mainTopic": "用途外使用",
+    "subTopics": [
+      "再輸出免税",
+      "特定用途免税",
+      "無条件免税",
+      "戻し税"
+    ],
+    "requiredKnowledge": [
+      "用途外使用の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "減免税",
+      "戻し税",
+      "用途外使用",
+      "期間・期限",
+      "制度比較"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-007"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-58-KZ-Q08",
+    "examNo": 58,
+    "subject": "関税法等",
+    "questionNo": 8,
+    "format": "語句選択",
+    "mainTopic": "包装容器",
+    "subTopics": [
+      "通則1〜6",
+      "部注",
+      "類注",
+      "包装容器"
+    ],
+    "requiredKnowledge": [
+      "包装容器の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "品目分類",
+      "関税率表の通則",
+      "税番",
+      "分類手順",
+      "通関実務連携"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-008"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-58-KZ-Q09",
+    "examNo": 58,
+    "subject": "関税法等",
+    "questionNo": 9,
+    "format": "複数選択",
+    "mainTopic": "輸入貿易管理令",
+    "subTopics": [
+      "輸出貿易管理令",
+      "輸入貿易管理令",
+      "輸出許可",
+      "輸出承認"
+    ],
+    "requiredKnowledge": [
+      "輸入貿易管理令の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "外為法",
+      "許可・承認・届出の混同",
+      "輸出規制",
+      "輸入承認"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-009"
+    ],
+    "priority": "B",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-58-KZ-Q10",
+    "examNo": 58,
+    "subject": "関税法等",
+    "questionNo": 10,
+    "format": "択一",
+    "mainTopic": "緊急関税",
+    "subTopics": [
+      "特恵関税",
+      "特別特恵",
+      "原産地証明",
+      "有効期間"
+    ],
+    "requiredKnowledge": [
+      "緊急関税の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "特恵関税",
+      "特殊関税",
+      "原産地表示",
+      "期間・期限"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-010"
+    ],
+    "priority": "B",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-58-KZ-Q11",
+    "examNo": 58,
+    "subject": "関税法等",
+    "questionNo": 11,
+    "format": "語句選択",
+    "mainTopic": "地位承継",
+    "subTopics": [
+      "特例輸入者",
+      "特例委託輸入者",
+      "特定輸出者",
+      "特定委託輸出者"
+    ],
+    "requiredKnowledge": [
+      "地位承継の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "AEO",
+      "特例輸入者",
+      "主体の混同",
+      "承認取消"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-011"
+    ],
+    "priority": "B",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-58-KZ-Q12",
+    "examNo": 58,
+    "subject": "関税法等",
+    "questionNo": 12,
+    "format": "複数選択",
+    "mainTopic": "NACCS法",
+    "subTopics": [
+      "NACCS法",
+      "通関手帳",
+      "ATA条約",
+      "コンテナ特例法"
+    ],
+    "requiredKnowledge": [
+      "NACCS法の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "NACCS入力",
+      "ATA・通関手帳",
+      "特例法",
+      "暗記不足"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-012"
+    ],
+    "priority": "C",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-58-KZ-Q13",
+    "examNo": 58,
+    "subject": "関税法等",
+    "questionNo": 13,
+    "format": "択一",
+    "mainTopic": "製造原価方式",
+    "subTopics": [
+      "課税価格決定原則",
+      "現実支払価格",
+      "輸入取引",
+      "加算要素"
+    ],
+    "requiredKnowledge": [
+      "製造原価方式の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "課税価格",
+      "加算要素",
+      "不算入要素",
+      "輸入取引",
+      "評価方法の順序",
+      "通関実務連携計算"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-001"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-58-KZ-Q14",
+    "examNo": 58,
+    "subject": "関税法等",
+    "questionNo": 14,
+    "format": "語句選択",
+    "mainTopic": "期限後特例申告",
+    "subTopics": [
+      "納期限",
+      "法定納期限",
+      "期限後特例申告",
+      "延滞税"
+    ],
+    "requiredKnowledge": [
+      "期限後特例申告の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "納期限・法定納期限",
+      "延滞税・加算税",
+      "還付加算金",
+      "期間・期限",
+      "納税申告・更正"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-002"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-58-KZ-Q15",
+    "examNo": 58,
+    "subject": "関税法等",
+    "questionNo": 15,
+    "format": "複数選択",
+    "mainTopic": "更正請求",
+    "subTopics": [
+      "申告納税方式",
+      "賦課課税方式",
+      "修正申告",
+      "更正請求"
+    ],
+    "requiredKnowledge": [
+      "更正請求の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "納税申告",
+      "修正申告・更正の請求",
+      "更正・決定",
+      "納税申告・更正",
+      "期間・期限"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-003"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-59-KZ-Q01",
+    "examNo": 59,
+    "subject": "関税法等",
+    "questionNo": 1,
+    "format": "語句選択",
+    "mainTopic": "航空運賃特例",
+    "subTopics": [
+      "課税価格決定原則",
+      "現実支払価格",
+      "輸入取引",
+      "加算要素"
+    ],
+    "requiredKnowledge": [
+      "航空運賃特例の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "課税価格",
+      "加算要素",
+      "不算入要素",
+      "輸入取引",
+      "評価方法の順序",
+      "通関実務連携計算"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-001"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-59-KZ-Q02",
+    "examNo": 59,
+    "subject": "関税法等",
+    "questionNo": 2,
+    "format": "複数選択",
+    "mainTopic": "無申告加算税",
+    "subTopics": [
+      "納期限",
+      "法定納期限",
+      "期限後特例申告",
+      "延滞税"
+    ],
+    "requiredKnowledge": [
+      "無申告加算税の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "納期限・法定納期限",
+      "延滞税・加算税",
+      "還付加算金",
+      "期間・期限",
+      "納税申告・更正"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-002"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-59-KZ-Q03",
+    "examNo": 59,
+    "subject": "関税法等",
+    "questionNo": 3,
+    "format": "択一",
+    "mainTopic": "期間制限",
+    "subTopics": [
+      "申告納税方式",
+      "賦課課税方式",
+      "修正申告",
+      "更正請求"
+    ],
+    "requiredKnowledge": [
+      "期間制限の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "納税申告",
+      "修正申告・更正の請求",
+      "更正・決定",
+      "納税申告・更正",
+      "期間・期限"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-003"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-59-KZ-Q04",
+    "examNo": 59,
+    "subject": "関税法等",
+    "questionNo": 4,
+    "format": "語句選択",
+    "mainTopic": "輸入許可前引取り",
+    "subTopics": [
+      "輸入申告",
+      "特例輸入者",
+      "特例委託輸入者",
+      "原産地証明"
+    ],
+    "requiredKnowledge": [
+      "輸入許可前引取りの原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "輸入申告",
+      "原産地表示",
+      "外為法",
+      "申告・許可・承認・届出の混同",
+      "EPA・WTO税率"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-004"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-59-KZ-Q05",
+    "examNo": 59,
+    "subject": "関税法等",
+    "questionNo": 5,
+    "format": "複数選択",
+    "mainTopic": "保税蔵置場",
+    "subTopics": [
+      "保税地域5種",
+      "保税蔵置場",
+      "保税工場",
+      "保税展示場"
+    ],
+    "requiredKnowledge": [
+      "保税蔵置場の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "保税地域",
+      "保税運送",
+      "納税義務者",
+      "許可・承認・届出の混同",
+      "亡失責任"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-005"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-59-KZ-Q06",
+    "examNo": 59,
+    "subject": "関税法等",
+    "questionNo": 6,
+    "format": "択一",
+    "mainTopic": "争う旨の申出",
+    "subTopics": [
+      "輸入してはならない貨物",
+      "輸出してはならない貨物",
+      "知的財産侵害物品",
+      "認定手続"
+    ],
+    "requiredKnowledge": [
+      "争う旨の申出の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "輸入禁止貨物",
+      "輸出禁止貨物",
+      "知財認定手続",
+      "期間・期限",
+      "選択肢読解"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-006"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-59-KZ-Q07",
+    "examNo": 59,
+    "subject": "関税法等",
+    "questionNo": 7,
+    "format": "語句選択",
+    "mainTopic": "再輸出免税",
+    "subTopics": [
+      "再輸出免税",
+      "特定用途免税",
+      "無条件免税",
+      "戻し税"
+    ],
+    "requiredKnowledge": [
+      "再輸出免税の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "減免税",
+      "戻し税",
+      "用途外使用",
+      "期間・期限",
+      "制度比較"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-007"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-59-KZ-Q08",
+    "examNo": 59,
+    "subject": "関税法等",
+    "questionNo": 8,
+    "format": "複数選択",
+    "mainTopic": "混合物",
+    "subTopics": [
+      "通則1〜6",
+      "部注",
+      "類注",
+      "包装容器"
+    ],
+    "requiredKnowledge": [
+      "混合物の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "品目分類",
+      "関税率表の通則",
+      "税番",
+      "分類手順",
+      "通関実務連携"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-008"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-59-KZ-Q09",
+    "examNo": 59,
+    "subject": "関税法等",
+    "questionNo": 9,
+    "format": "択一",
+    "mainTopic": "輸出許可",
+    "subTopics": [
+      "輸出貿易管理令",
+      "輸入貿易管理令",
+      "輸出許可",
+      "輸出承認"
+    ],
+    "requiredKnowledge": [
+      "輸出許可の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "外為法",
+      "許可・承認・届出の混同",
+      "輸出規制",
+      "輸入承認"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-009"
+    ],
+    "priority": "B",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-59-KZ-Q10",
+    "examNo": 59,
+    "subject": "関税法等",
+    "questionNo": 10,
+    "format": "語句選択",
+    "mainTopic": "相殺関税",
+    "subTopics": [
+      "特恵関税",
+      "特別特恵",
+      "原産地証明",
+      "有効期間"
+    ],
+    "requiredKnowledge": [
+      "相殺関税の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "特恵関税",
+      "特殊関税",
+      "原産地表示",
+      "期間・期限"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-010"
+    ],
+    "priority": "B",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-59-KZ-Q11",
+    "examNo": 59,
+    "subject": "関税法等",
+    "questionNo": 11,
+    "format": "複数選択",
+    "mainTopic": "特例輸入者",
+    "subTopics": [
+      "特例輸入者",
+      "特例委託輸入者",
+      "特定輸出者",
+      "特定委託輸出者"
+    ],
+    "requiredKnowledge": [
+      "特例輸入者の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "AEO",
+      "特例輸入者",
+      "主体の混同",
+      "承認取消"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-011"
+    ],
+    "priority": "B",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-59-KZ-Q12",
+    "examNo": 59,
+    "subject": "関税法等",
+    "questionNo": 12,
+    "format": "択一",
+    "mainTopic": "通関手帳",
+    "subTopics": [
+      "NACCS法",
+      "通関手帳",
+      "ATA条約",
+      "コンテナ特例法"
+    ],
+    "requiredKnowledge": [
+      "通関手帳の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "NACCS入力",
+      "ATA・通関手帳",
+      "特例法",
+      "暗記不足"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-012"
+    ],
+    "priority": "C",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-59-KZ-Q13",
+    "examNo": 59,
+    "subject": "関税法等",
+    "questionNo": 13,
+    "format": "語句選択",
+    "mainTopic": "課税価格決定原則",
+    "subTopics": [
+      "課税価格決定原則",
+      "現実支払価格",
+      "輸入取引",
+      "加算要素"
+    ],
+    "requiredKnowledge": [
+      "課税価格決定原則の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "課税価格",
+      "加算要素",
+      "不算入要素",
+      "輸入取引",
+      "評価方法の順序",
+      "通関実務連携計算"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-001"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-59-KZ-Q14",
+    "examNo": 59,
+    "subject": "関税法等",
+    "questionNo": 14,
+    "format": "複数選択",
+    "mainTopic": "延滞税",
+    "subTopics": [
+      "納期限",
+      "法定納期限",
+      "期限後特例申告",
+      "延滞税"
+    ],
+    "requiredKnowledge": [
+      "延滞税の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "納期限・法定納期限",
+      "延滞税・加算税",
+      "還付加算金",
+      "期間・期限",
+      "納税申告・更正"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-002"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-59-KZ-Q15",
+    "examNo": 59,
+    "subject": "関税法等",
+    "questionNo": 15,
+    "format": "択一",
+    "mainTopic": "更正",
+    "subTopics": [
+      "申告納税方式",
+      "賦課課税方式",
+      "修正申告",
+      "更正請求"
+    ],
+    "requiredKnowledge": [
+      "更正の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "納税申告",
+      "修正申告・更正の請求",
+      "更正・決定",
+      "納税申告・更正",
+      "期間・期限"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-003"
+    ],
+    "priority": "A",
+    "lawRevisionCheckRequired": true,
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  }
+]
