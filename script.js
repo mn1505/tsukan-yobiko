@@ -3107,7 +3107,7 @@ function renderMaterialPackCard(pack) {
         <div class="badge-row">
           <span class="badge priority">優先度 ${escapeHtml(pack.priority)}</span>
           <span class="badge">過去問分析由来</span>
-          ${pack.lawRevisionCheckRequired ? `<span class="badge danger">要現行法確認</span>` : ""}
+          ${pack.lawRevisionCheckRequired ? `<span class="badge danger">${pack.lawRevisionStatus === "unchecked" ? "法改正チェック未了" : "要現行法確認"}</span>` : ""}
         </div>
       </div>
       <dl class="review-facts compact">
