@@ -5,15 +5,15 @@
     "subject": "関税法等",
     "questionNo": 1,
     "format": "複数選択",
-    "mainTopic": "航空運賃特例",
+    "mainTopic": "加算要素",
     "subTopics": [
-      "課税価格決定原則",
-      "現実支払価格",
+      "課税価格の決定原則",
       "輸入取引",
-      "加算要素"
+      "現実支払価格",
+      "買手と売手"
     ],
     "requiredKnowledge": [
-      "航空運賃特例の原則",
+      "加算要素の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -26,17 +26,25 @@
     ],
     "weaknessTags": [
       "課税価格",
-      "加算要素",
-      "不算入要素",
       "輸入取引",
-      "評価方法の順序",
-      "通関実務連携計算"
+      "現実支払価格",
+      "加算要素",
+      "運賃保険料",
+      "無償提供物品",
+      "ロイヤルティ",
+      "航空運賃特例",
+      "同種類似貨物",
+      "通関実務計算"
     ],
     "relatedPackIds": [
       "KZ-PACK-001"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -45,15 +53,15 @@
     "subject": "関税法等",
     "questionNo": 2,
     "format": "択一",
-    "mainTopic": "過少申告加算税",
+    "mainTopic": "無申告加算税",
     "subTopics": [
       "納期限",
       "法定納期限",
-      "期限後特例申告",
-      "延滞税"
+      "延滞税",
+      "還付加算金"
     ],
     "requiredKnowledge": [
-      "過少申告加算税の原則",
+      "無申告加算税の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -65,17 +73,29 @@
       "例外の削除"
     ],
     "weaknessTags": [
-      "納期限・法定納期限",
-      "延滞税・加算税",
+      "納期限",
+      "法定納期限",
+      "延滞税",
       "還付加算金",
-      "期間・期限",
-      "納税申告・更正"
+      "加算税",
+      "過少申告加算税",
+      "無申告加算税",
+      "重加算税",
+      "特例申告",
+      "期限後特例申告",
+      "少額不徴収",
+      "正当な理由",
+      "日付計算"
     ],
     "relatedPackIds": [
       "KZ-PACK-002"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -84,15 +104,15 @@
     "subject": "関税法等",
     "questionNo": 3,
     "format": "語句選択",
-    "mainTopic": "決定",
+    "mainTopic": "特例申告",
     "subTopics": [
       "申告納税方式",
       "賦課課税方式",
-      "修正申告",
-      "更正請求"
+      "納税申告",
+      "特例申告"
     ],
     "requiredKnowledge": [
-      "決定の原則",
+      "特例申告の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -104,17 +124,30 @@
       "例外の削除"
     ],
     "weaknessTags": [
+      "申告納税方式",
+      "賦課課税方式",
+      "税額確定",
       "納税申告",
-      "修正申告・更正の請求",
-      "更正・決定",
-      "納税申告・更正",
-      "期間・期限"
+      "特例申告",
+      "期限後特例申告",
+      "修正申告",
+      "更正の請求",
+      "更正",
+      "決定",
+      "賦課決定",
+      "過大納付",
+      "不足税額",
+      "便益適用漏れ"
     ],
     "relatedPackIds": [
       "KZ-PACK-003"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -123,15 +156,15 @@
     "subject": "関税法等",
     "questionNo": 4,
     "format": "複数選択",
-    "mainTopic": "輸入許可前引取り",
+    "mainTopic": "輸入してはならない貨物との境界",
     "subTopics": [
       "輸入申告",
+      "輸入の許可",
       "特例輸入者",
-      "特例委託輸入者",
-      "原産地証明"
+      "特例委託輸入者"
     ],
     "requiredKnowledge": [
-      "輸入許可前引取りの原則",
+      "輸入してはならない貨物との境界の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -143,17 +176,30 @@
       "例外の削除"
     ],
     "weaknessTags": [
+      "輸入通関",
       "輸入申告",
-      "原産地表示",
-      "外為法",
-      "申告・許可・承認・届出の混同",
-      "EPA・WTO税率"
+      "輸入許可",
+      "特例輸入者",
+      "特例委託輸入者",
+      "NACCS",
+      "保税地域搬入前申告",
+      "原産地証明",
+      "WTO税率",
+      "EPA",
+      "締約国原産地証明書",
+      "他法令確認",
+      "輸入許可前引取り",
+      "郵便物輸入"
     ],
     "relatedPackIds": [
       "KZ-PACK-004"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -162,15 +208,15 @@
     "subject": "関税法等",
     "questionNo": 5,
     "format": "択一",
-    "mainTopic": "保税工場",
+    "mainTopic": "外国貨物の滅却",
     "subTopics": [
-      "保税地域5種",
+      "保税地域の種類",
+      "指定保税地域",
       "保税蔵置場",
-      "保税工場",
-      "保税展示場"
+      "保税工場"
     ],
     "requiredKnowledge": [
-      "保税工場の原則",
+      "外国貨物の滅却の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -183,16 +229,31 @@
     ],
     "weaknessTags": [
       "保税地域",
+      "指定保税地域",
+      "保税蔵置場",
+      "保税工場",
+      "保税展示場",
+      "総合保税地域",
+      "外国貨物",
+      "蔵置期間",
+      "帳簿管理",
+      "見本一時持出し",
+      "亡失",
+      "滅却",
       "保税運送",
-      "納税義務者",
-      "許可・承認・届出の混同",
-      "亡失責任"
+      "特定保税運送",
+      "難破貨物",
+      "許可承認届出"
     ],
     "relatedPackIds": [
       "KZ-PACK-005"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -201,15 +262,15 @@
     "subject": "関税法等",
     "questionNo": 6,
     "format": "語句選択",
-    "mainTopic": "認定手続",
+    "mainTopic": "育成者権",
     "subTopics": [
       "輸入してはならない貨物",
       "輸出してはならない貨物",
       "知的財産侵害物品",
-      "認定手続"
+      "特許権"
     ],
     "requiredKnowledge": [
-      "認定手続の原則",
+      "育成者権の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -223,15 +284,34 @@
     "weaknessTags": [
       "輸入禁止貨物",
       "輸出禁止貨物",
-      "知財認定手続",
-      "期間・期限",
-      "選択肢読解"
+      "知的財産権",
+      "特許権",
+      "意匠権",
+      "商標権",
+      "著作権",
+      "育成者権",
+      "不正競争防止法",
+      "認定手続",
+      "差止申立て",
+      "争う旨の申出",
+      "積戻し",
+      "没収",
+      "廃棄",
+      "風俗害物品",
+      "児童ポルノ",
+      "規制物品",
+      "他法令確認",
+      "外為法"
     ],
     "relatedPackIds": [
       "KZ-PACK-006"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -240,15 +320,15 @@
     "subject": "関税法等",
     "questionNo": 7,
     "format": "複数選択",
-    "mainTopic": "災害滅失",
+    "mainTopic": "加工又は修繕のため輸出された貨物の減税",
     "subTopics": [
-      "再輸出免税",
-      "特定用途免税",
-      "無条件免税",
-      "戻し税"
+      "関税の軽減",
+      "関税の免除",
+      "関税の払戻し",
+      "再輸出免税"
     ],
     "requiredKnowledge": [
-      "災害滅失の原則",
+      "加工又は修繕のため輸出された貨物の減税の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -260,17 +340,35 @@
       "例外の削除"
     ],
     "weaknessTags": [
-      "減免税",
+      "軽減",
+      "免除",
+      "払戻し",
+      "再輸出免税",
+      "再輸入免税",
+      "無条件免税",
+      "特定用途免税",
       "戻し税",
+      "同一状態再輸出",
+      "違約品",
+      "災害滅失",
+      "変質損傷",
       "用途外使用",
-      "期間・期限",
-      "制度比較"
+      "免税貨物譲渡",
+      "関税徴収",
+      "外国採捕水産物",
+      "期限要件",
+      "届出申告承認",
+      "ATA"
     ],
     "relatedPackIds": [
       "KZ-PACK-007"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -301,15 +399,18 @@
     "weaknessTags": [
       "品目分類",
       "関税率表の通則",
-      "税番",
-      "分類手順",
-      "通関実務連携"
+      "HS分類",
+      "税番"
     ],
     "relatedPackIds": [
       "KZ-PACK-008"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -347,7 +448,11 @@
       "KZ-PACK-009"
     ],
     "priority": "B",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -377,15 +482,18 @@
     ],
     "weaknessTags": [
       "特恵関税",
-      "特殊関税",
-      "原産地表示",
+      "原産地証明",
       "期間・期限"
     ],
     "relatedPackIds": [
       "KZ-PACK-010"
     ],
     "priority": "B",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -416,14 +524,17 @@
     "weaknessTags": [
       "AEO",
       "特例輸入者",
-      "主体の混同",
-      "承認取消"
+      "主体の混同"
     ],
     "relatedPackIds": [
       "KZ-PACK-011"
     ],
     "priority": "B",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -461,7 +572,11 @@
       "KZ-PACK-012"
     ],
     "priority": "C",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -470,15 +585,15 @@
     "subject": "関税法等",
     "questionNo": 13,
     "format": "複数選択",
-    "mainTopic": "課税価格決定原則",
+    "mainTopic": "課税価格の決定原則",
     "subTopics": [
-      "課税価格決定原則",
-      "現実支払価格",
+      "課税価格の決定原則",
       "輸入取引",
-      "加算要素"
+      "現実支払価格",
+      "買手と売手"
     ],
     "requiredKnowledge": [
-      "課税価格決定原則の原則",
+      "課税価格の決定原則の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -491,17 +606,25 @@
     ],
     "weaknessTags": [
       "課税価格",
-      "加算要素",
-      "不算入要素",
       "輸入取引",
-      "評価方法の順序",
-      "通関実務連携計算"
+      "現実支払価格",
+      "加算要素",
+      "運賃保険料",
+      "無償提供物品",
+      "ロイヤルティ",
+      "航空運賃特例",
+      "同種類似貨物",
+      "通関実務計算"
     ],
     "relatedPackIds": [
       "KZ-PACK-001"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -510,15 +633,15 @@
     "subject": "関税法等",
     "questionNo": 14,
     "format": "択一",
-    "mainTopic": "期限後特例申告",
+    "mainTopic": "法定納期限",
     "subTopics": [
       "納期限",
       "法定納期限",
-      "期限後特例申告",
-      "延滞税"
+      "延滞税",
+      "還付加算金"
     ],
     "requiredKnowledge": [
-      "期限後特例申告の原則",
+      "法定納期限の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -530,17 +653,29 @@
       "例外の削除"
     ],
     "weaknessTags": [
-      "納期限・法定納期限",
-      "延滞税・加算税",
+      "納期限",
+      "法定納期限",
+      "延滞税",
       "還付加算金",
-      "期間・期限",
-      "納税申告・更正"
+      "加算税",
+      "過少申告加算税",
+      "無申告加算税",
+      "重加算税",
+      "特例申告",
+      "期限後特例申告",
+      "少額不徴収",
+      "正当な理由",
+      "日付計算"
     ],
     "relatedPackIds": [
       "KZ-PACK-002"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -549,15 +684,15 @@
     "subject": "関税法等",
     "questionNo": 15,
     "format": "語句選択",
-    "mainTopic": "更正請求",
+    "mainTopic": "EPA・特恵税率などの便益適用漏れ",
     "subTopics": [
       "申告納税方式",
       "賦課課税方式",
-      "修正申告",
-      "更正請求"
+      "納税申告",
+      "特例申告"
     ],
     "requiredKnowledge": [
-      "更正請求の原則",
+      "EPA・特恵税率などの便益適用漏れの原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -569,17 +704,30 @@
       "例外の削除"
     ],
     "weaknessTags": [
+      "申告納税方式",
+      "賦課課税方式",
+      "税額確定",
       "納税申告",
-      "修正申告・更正の請求",
-      "更正・決定",
-      "納税申告・更正",
-      "期間・期限"
+      "特例申告",
+      "期限後特例申告",
+      "修正申告",
+      "更正の請求",
+      "更正",
+      "決定",
+      "賦課決定",
+      "過大納付",
+      "不足税額",
+      "便益適用漏れ"
     ],
     "relatedPackIds": [
       "KZ-PACK-003"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -588,15 +736,15 @@
     "subject": "関税法等",
     "questionNo": 1,
     "format": "択一",
-    "mainTopic": "同種・類似貨物",
+    "mainTopic": "運賃・保険料",
     "subTopics": [
-      "課税価格決定原則",
-      "現実支払価格",
+      "課税価格の決定原則",
       "輸入取引",
-      "加算要素"
+      "現実支払価格",
+      "買手と売手"
     ],
     "requiredKnowledge": [
-      "同種・類似貨物の原則",
+      "運賃・保険料の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -609,17 +757,25 @@
     ],
     "weaknessTags": [
       "課税価格",
-      "加算要素",
-      "不算入要素",
       "輸入取引",
-      "評価方法の順序",
-      "通関実務連携計算"
+      "現実支払価格",
+      "加算要素",
+      "運賃保険料",
+      "無償提供物品",
+      "ロイヤルティ",
+      "航空運賃特例",
+      "同種類似貨物",
+      "通関実務計算"
     ],
     "relatedPackIds": [
       "KZ-PACK-001"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -628,15 +784,15 @@
     "subject": "関税法等",
     "questionNo": 2,
     "format": "語句選択",
-    "mainTopic": "無申告加算税",
+    "mainTopic": "重加算税",
     "subTopics": [
       "納期限",
       "法定納期限",
-      "期限後特例申告",
-      "延滞税"
+      "延滞税",
+      "還付加算金"
     ],
     "requiredKnowledge": [
-      "無申告加算税の原則",
+      "重加算税の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -648,17 +804,29 @@
       "例外の削除"
     ],
     "weaknessTags": [
-      "納期限・法定納期限",
-      "延滞税・加算税",
+      "納期限",
+      "法定納期限",
+      "延滞税",
       "還付加算金",
-      "期間・期限",
-      "納税申告・更正"
+      "加算税",
+      "過少申告加算税",
+      "無申告加算税",
+      "重加算税",
+      "特例申告",
+      "期限後特例申告",
+      "少額不徴収",
+      "正当な理由",
+      "日付計算"
     ],
     "relatedPackIds": [
       "KZ-PACK-002"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -667,15 +835,15 @@
     "subject": "関税法等",
     "questionNo": 3,
     "format": "複数選択",
-    "mainTopic": "期間制限",
+    "mainTopic": "期限内特例申告",
     "subTopics": [
       "申告納税方式",
       "賦課課税方式",
-      "修正申告",
-      "更正請求"
+      "納税申告",
+      "特例申告"
     ],
     "requiredKnowledge": [
-      "期間制限の原則",
+      "期限内特例申告の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -687,17 +855,30 @@
       "例外の削除"
     ],
     "weaknessTags": [
+      "申告納税方式",
+      "賦課課税方式",
+      "税額確定",
       "納税申告",
-      "修正申告・更正の請求",
-      "更正・決定",
-      "納税申告・更正",
-      "期間・期限"
+      "特例申告",
+      "期限後特例申告",
+      "修正申告",
+      "更正の請求",
+      "更正",
+      "決定",
+      "賦課決定",
+      "過大納付",
+      "不足税額",
+      "便益適用漏れ"
     ],
     "relatedPackIds": [
       "KZ-PACK-003"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -706,15 +887,15 @@
     "subject": "関税法等",
     "questionNo": 4,
     "format": "択一",
-    "mainTopic": "輸入申告",
+    "mainTopic": "保税蔵置場に置く承認と原産地証明書の関係",
     "subTopics": [
       "輸入申告",
+      "輸入の許可",
       "特例輸入者",
-      "特例委託輸入者",
-      "原産地証明"
+      "特例委託輸入者"
     ],
     "requiredKnowledge": [
-      "輸入申告の原則",
+      "保税蔵置場に置く承認と原産地証明書の関係の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -726,17 +907,30 @@
       "例外の削除"
     ],
     "weaknessTags": [
+      "輸入通関",
       "輸入申告",
-      "原産地表示",
-      "外為法",
-      "申告・許可・承認・届出の混同",
-      "EPA・WTO税率"
+      "輸入許可",
+      "特例輸入者",
+      "特例委託輸入者",
+      "NACCS",
+      "保税地域搬入前申告",
+      "原産地証明",
+      "WTO税率",
+      "EPA",
+      "締約国原産地証明書",
+      "他法令確認",
+      "輸入許可前引取り",
+      "郵便物輸入"
     ],
     "relatedPackIds": [
       "KZ-PACK-004"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -745,15 +939,15 @@
     "subject": "関税法等",
     "questionNo": 5,
     "format": "語句選択",
-    "mainTopic": "保税展示場",
+    "mainTopic": "保税地域の許可取消・業務停止",
     "subTopics": [
-      "保税地域5種",
+      "保税地域の種類",
+      "指定保税地域",
       "保税蔵置場",
-      "保税工場",
-      "保税展示場"
+      "保税工場"
     ],
     "requiredKnowledge": [
-      "保税展示場の原則",
+      "保税地域の許可取消・業務停止の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -766,16 +960,31 @@
     ],
     "weaknessTags": [
       "保税地域",
+      "指定保税地域",
+      "保税蔵置場",
+      "保税工場",
+      "保税展示場",
+      "総合保税地域",
+      "外国貨物",
+      "蔵置期間",
+      "帳簿管理",
+      "見本一時持出し",
+      "亡失",
+      "滅却",
       "保税運送",
-      "納税義務者",
-      "許可・承認・届出の混同",
-      "亡失責任"
+      "特定保税運送",
+      "難破貨物",
+      "許可承認届出"
     ],
     "relatedPackIds": [
       "KZ-PACK-005"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -784,15 +993,15 @@
     "subject": "関税法等",
     "questionNo": 6,
     "format": "複数選択",
-    "mainTopic": "差止申立て",
+    "mainTopic": "回路配置利用権",
     "subTopics": [
       "輸入してはならない貨物",
       "輸出してはならない貨物",
       "知的財産侵害物品",
-      "認定手続"
+      "特許権"
     ],
     "requiredKnowledge": [
-      "差止申立ての原則",
+      "回路配置利用権の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -806,15 +1015,34 @@
     "weaknessTags": [
       "輸入禁止貨物",
       "輸出禁止貨物",
-      "知財認定手続",
-      "期間・期限",
-      "選択肢読解"
+      "知的財産権",
+      "特許権",
+      "意匠権",
+      "商標権",
+      "著作権",
+      "育成者権",
+      "不正競争防止法",
+      "認定手続",
+      "差止申立て",
+      "争う旨の申出",
+      "積戻し",
+      "没収",
+      "廃棄",
+      "風俗害物品",
+      "児童ポルノ",
+      "規制物品",
+      "他法令確認",
+      "外為法"
     ],
     "relatedPackIds": [
       "KZ-PACK-006"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -823,15 +1051,15 @@
     "subject": "関税法等",
     "questionNo": 7,
     "format": "択一",
-    "mainTopic": "用途外使用",
+    "mainTopic": "外国で採捕された水産物等の減免税",
     "subTopics": [
-      "再輸出免税",
-      "特定用途免税",
-      "無条件免税",
-      "戻し税"
+      "関税の軽減",
+      "関税の免除",
+      "関税の払戻し",
+      "再輸出免税"
     ],
     "requiredKnowledge": [
-      "用途外使用の原則",
+      "外国で採捕された水産物等の減免税の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -843,17 +1071,35 @@
       "例外の削除"
     ],
     "weaknessTags": [
-      "減免税",
+      "軽減",
+      "免除",
+      "払戻し",
+      "再輸出免税",
+      "再輸入免税",
+      "無条件免税",
+      "特定用途免税",
       "戻し税",
+      "同一状態再輸出",
+      "違約品",
+      "災害滅失",
+      "変質損傷",
       "用途外使用",
-      "期間・期限",
-      "制度比較"
+      "免税貨物譲渡",
+      "関税徴収",
+      "外国採捕水産物",
+      "期限要件",
+      "届出申告承認",
+      "ATA"
     ],
     "relatedPackIds": [
       "KZ-PACK-007"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -884,15 +1130,18 @@
     "weaknessTags": [
       "品目分類",
       "関税率表の通則",
-      "税番",
-      "分類手順",
-      "通関実務連携"
+      "HS分類",
+      "税番"
     ],
     "relatedPackIds": [
       "KZ-PACK-008"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -930,7 +1179,11 @@
       "KZ-PACK-009"
     ],
     "priority": "B",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -960,15 +1213,18 @@
     ],
     "weaknessTags": [
       "特恵関税",
-      "特殊関税",
-      "原産地表示",
+      "原産地証明",
       "期間・期限"
     ],
     "relatedPackIds": [
       "KZ-PACK-010"
     ],
     "priority": "B",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -999,14 +1255,17 @@
     "weaknessTags": [
       "AEO",
       "特例輸入者",
-      "主体の混同",
-      "承認取消"
+      "主体の混同"
     ],
     "relatedPackIds": [
       "KZ-PACK-011"
     ],
     "priority": "B",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -1044,7 +1303,11 @@
       "KZ-PACK-012"
     ],
     "priority": "C",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -1053,15 +1316,15 @@
     "subject": "関税法等",
     "questionNo": 13,
     "format": "択一",
-    "mainTopic": "現実支払価格",
+    "mainTopic": "輸入取引",
     "subTopics": [
-      "課税価格決定原則",
-      "現実支払価格",
+      "課税価格の決定原則",
       "輸入取引",
-      "加算要素"
+      "現実支払価格",
+      "買手と売手"
     ],
     "requiredKnowledge": [
-      "現実支払価格の原則",
+      "輸入取引の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -1074,17 +1337,25 @@
     ],
     "weaknessTags": [
       "課税価格",
-      "加算要素",
-      "不算入要素",
       "輸入取引",
-      "評価方法の順序",
-      "通関実務連携計算"
+      "現実支払価格",
+      "加算要素",
+      "運賃保険料",
+      "無償提供物品",
+      "ロイヤルティ",
+      "航空運賃特例",
+      "同種類似貨物",
+      "通関実務計算"
     ],
     "relatedPackIds": [
       "KZ-PACK-001"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -1097,8 +1368,8 @@
     "subTopics": [
       "納期限",
       "法定納期限",
-      "期限後特例申告",
-      "延滞税"
+      "延滞税",
+      "還付加算金"
     ],
     "requiredKnowledge": [
       "延滞税の原則",
@@ -1113,17 +1384,29 @@
       "例外の削除"
     ],
     "weaknessTags": [
-      "納期限・法定納期限",
-      "延滞税・加算税",
+      "納期限",
+      "法定納期限",
+      "延滞税",
       "還付加算金",
-      "期間・期限",
-      "納税申告・更正"
+      "加算税",
+      "過少申告加算税",
+      "無申告加算税",
+      "重加算税",
+      "特例申告",
+      "期限後特例申告",
+      "少額不徴収",
+      "正当な理由",
+      "日付計算"
     ],
     "relatedPackIds": [
       "KZ-PACK-002"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -1132,15 +1415,15 @@
     "subject": "関税法等",
     "questionNo": 15,
     "format": "複数選択",
-    "mainTopic": "更正",
+    "mainTopic": "輸入許可前引取り承認貨物の税額確定",
     "subTopics": [
       "申告納税方式",
       "賦課課税方式",
-      "修正申告",
-      "更正請求"
+      "納税申告",
+      "特例申告"
     ],
     "requiredKnowledge": [
-      "更正の原則",
+      "輸入許可前引取り承認貨物の税額確定の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -1152,17 +1435,30 @@
       "例外の削除"
     ],
     "weaknessTags": [
+      "申告納税方式",
+      "賦課課税方式",
+      "税額確定",
       "納税申告",
-      "修正申告・更正の請求",
-      "更正・決定",
-      "納税申告・更正",
-      "期間・期限"
+      "特例申告",
+      "期限後特例申告",
+      "修正申告",
+      "更正の請求",
+      "更正",
+      "決定",
+      "賦課決定",
+      "過大納付",
+      "不足税額",
+      "便益適用漏れ"
     ],
     "relatedPackIds": [
       "KZ-PACK-003"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -1171,15 +1467,15 @@
     "subject": "関税法等",
     "questionNo": 1,
     "format": "語句選択",
-    "mainTopic": "国内販売価格方式",
+    "mainTopic": "仲介料・手数料",
     "subTopics": [
-      "課税価格決定原則",
-      "現実支払価格",
+      "課税価格の決定原則",
       "輸入取引",
-      "加算要素"
+      "現実支払価格",
+      "買手と売手"
     ],
     "requiredKnowledge": [
-      "国内販売価格方式の原則",
+      "仲介料・手数料の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -1192,17 +1488,25 @@
     ],
     "weaknessTags": [
       "課税価格",
-      "加算要素",
-      "不算入要素",
       "輸入取引",
-      "評価方法の順序",
-      "通関実務連携計算"
+      "現実支払価格",
+      "加算要素",
+      "運賃保険料",
+      "無償提供物品",
+      "ロイヤルティ",
+      "航空運賃特例",
+      "同種類似貨物",
+      "通関実務計算"
     ],
     "relatedPackIds": [
       "KZ-PACK-001"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -1211,15 +1515,15 @@
     "subject": "関税法等",
     "questionNo": 2,
     "format": "複数選択",
-    "mainTopic": "還付加算金",
+    "mainTopic": "期限後特例申告",
     "subTopics": [
       "納期限",
       "法定納期限",
-      "期限後特例申告",
-      "延滞税"
+      "延滞税",
+      "還付加算金"
     ],
     "requiredKnowledge": [
-      "還付加算金の原則",
+      "期限後特例申告の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -1231,17 +1535,29 @@
       "例外の削除"
     ],
     "weaknessTags": [
-      "納期限・法定納期限",
-      "延滞税・加算税",
+      "納期限",
+      "法定納期限",
+      "延滞税",
       "還付加算金",
-      "期間・期限",
-      "納税申告・更正"
+      "加算税",
+      "過少申告加算税",
+      "無申告加算税",
+      "重加算税",
+      "特例申告",
+      "期限後特例申告",
+      "少額不徴収",
+      "正当な理由",
+      "日付計算"
     ],
     "relatedPackIds": [
       "KZ-PACK-002"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -1250,15 +1566,15 @@
     "subject": "関税法等",
     "questionNo": 3,
     "format": "択一",
-    "mainTopic": "申告納税方式",
+    "mainTopic": "期限後特例申告",
     "subTopics": [
       "申告納税方式",
       "賦課課税方式",
-      "修正申告",
-      "更正請求"
+      "納税申告",
+      "特例申告"
     ],
     "requiredKnowledge": [
-      "申告納税方式の原則",
+      "期限後特例申告の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -1270,17 +1586,30 @@
       "例外の削除"
     ],
     "weaknessTags": [
+      "申告納税方式",
+      "賦課課税方式",
+      "税額確定",
       "納税申告",
-      "修正申告・更正の請求",
-      "更正・決定",
-      "納税申告・更正",
-      "期間・期限"
+      "特例申告",
+      "期限後特例申告",
+      "修正申告",
+      "更正の請求",
+      "更正",
+      "決定",
+      "賦課決定",
+      "過大納付",
+      "不足税額",
+      "便益適用漏れ"
     ],
     "relatedPackIds": [
       "KZ-PACK-003"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -1289,15 +1618,15 @@
     "subject": "関税法等",
     "questionNo": 4,
     "format": "語句選択",
-    "mainTopic": "特例輸入者",
+    "mainTopic": "輸入申告",
     "subTopics": [
       "輸入申告",
+      "輸入の許可",
       "特例輸入者",
-      "特例委託輸入者",
-      "原産地証明"
+      "特例委託輸入者"
     ],
     "requiredKnowledge": [
-      "特例輸入者の原則",
+      "輸入申告の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -1309,17 +1638,30 @@
       "例外の削除"
     ],
     "weaknessTags": [
+      "輸入通関",
       "輸入申告",
-      "原産地表示",
-      "外為法",
-      "申告・許可・承認・届出の混同",
-      "EPA・WTO税率"
+      "輸入許可",
+      "特例輸入者",
+      "特例委託輸入者",
+      "NACCS",
+      "保税地域搬入前申告",
+      "原産地証明",
+      "WTO税率",
+      "EPA",
+      "締約国原産地証明書",
+      "他法令確認",
+      "輸入許可前引取り",
+      "郵便物輸入"
     ],
     "relatedPackIds": [
       "KZ-PACK-004"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -1328,15 +1670,15 @@
     "subject": "関税法等",
     "questionNo": 5,
     "format": "複数選択",
-    "mainTopic": "総合保税地域",
+    "mainTopic": "保税運送",
     "subTopics": [
-      "保税地域5種",
+      "保税地域の種類",
+      "指定保税地域",
       "保税蔵置場",
-      "保税工場",
-      "保税展示場"
+      "保税工場"
     ],
     "requiredKnowledge": [
-      "総合保税地域の原則",
+      "保税運送の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -1349,16 +1691,31 @@
     ],
     "weaknessTags": [
       "保税地域",
+      "指定保税地域",
+      "保税蔵置場",
+      "保税工場",
+      "保税展示場",
+      "総合保税地域",
+      "外国貨物",
+      "蔵置期間",
+      "帳簿管理",
+      "見本一時持出し",
+      "亡失",
+      "滅却",
       "保税運送",
-      "納税義務者",
-      "許可・承認・届出の混同",
-      "亡失責任"
+      "特定保税運送",
+      "難破貨物",
+      "許可承認届出"
     ],
     "relatedPackIds": [
       "KZ-PACK-005"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -1367,15 +1724,15 @@
     "subject": "関税法等",
     "questionNo": 6,
     "format": "択一",
-    "mainTopic": "争う旨の申出",
+    "mainTopic": "不正競争防止法関係物品",
     "subTopics": [
       "輸入してはならない貨物",
       "輸出してはならない貨物",
       "知的財産侵害物品",
-      "認定手続"
+      "特許権"
     ],
     "requiredKnowledge": [
-      "争う旨の申出の原則",
+      "不正競争防止法関係物品の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -1389,15 +1746,34 @@
     "weaknessTags": [
       "輸入禁止貨物",
       "輸出禁止貨物",
-      "知財認定手続",
-      "期間・期限",
-      "選択肢読解"
+      "知的財産権",
+      "特許権",
+      "意匠権",
+      "商標権",
+      "著作権",
+      "育成者権",
+      "不正競争防止法",
+      "認定手続",
+      "差止申立て",
+      "争う旨の申出",
+      "積戻し",
+      "没収",
+      "廃棄",
+      "風俗害物品",
+      "児童ポルノ",
+      "規制物品",
+      "他法令確認",
+      "外為法"
     ],
     "relatedPackIds": [
       "KZ-PACK-006"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -1406,15 +1782,15 @@
     "subject": "関税法等",
     "questionNo": 7,
     "format": "語句選択",
-    "mainTopic": "再輸出免税",
+    "mainTopic": "用途外使用",
     "subTopics": [
-      "再輸出免税",
-      "特定用途免税",
-      "無条件免税",
-      "戻し税"
+      "関税の軽減",
+      "関税の免除",
+      "関税の払戻し",
+      "再輸出免税"
     ],
     "requiredKnowledge": [
-      "再輸出免税の原則",
+      "用途外使用の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -1426,17 +1802,35 @@
       "例外の削除"
     ],
     "weaknessTags": [
-      "減免税",
+      "軽減",
+      "免除",
+      "払戻し",
+      "再輸出免税",
+      "再輸入免税",
+      "無条件免税",
+      "特定用途免税",
       "戻し税",
+      "同一状態再輸出",
+      "違約品",
+      "災害滅失",
+      "変質損傷",
       "用途外使用",
-      "期間・期限",
-      "制度比較"
+      "免税貨物譲渡",
+      "関税徴収",
+      "外国採捕水産物",
+      "期限要件",
+      "届出申告承認",
+      "ATA"
     ],
     "relatedPackIds": [
       "KZ-PACK-007"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -1467,15 +1861,18 @@
     "weaknessTags": [
       "品目分類",
       "関税率表の通則",
-      "税番",
-      "分類手順",
-      "通関実務連携"
+      "HS分類",
+      "税番"
     ],
     "relatedPackIds": [
       "KZ-PACK-008"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -1513,7 +1910,11 @@
       "KZ-PACK-009"
     ],
     "priority": "B",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -1543,15 +1944,18 @@
     ],
     "weaknessTags": [
       "特恵関税",
-      "特殊関税",
-      "原産地表示",
+      "原産地証明",
       "期間・期限"
     ],
     "relatedPackIds": [
       "KZ-PACK-010"
     ],
     "priority": "B",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -1582,14 +1986,17 @@
     "weaknessTags": [
       "AEO",
       "特例輸入者",
-      "主体の混同",
-      "承認取消"
+      "主体の混同"
     ],
     "relatedPackIds": [
       "KZ-PACK-011"
     ],
     "priority": "B",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -1627,7 +2034,11 @@
       "KZ-PACK-012"
     ],
     "priority": "C",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -1636,15 +2047,15 @@
     "subject": "関税法等",
     "questionNo": 13,
     "format": "語句選択",
-    "mainTopic": "輸入取引",
+    "mainTopic": "現実支払価格",
     "subTopics": [
-      "課税価格決定原則",
-      "現実支払価格",
+      "課税価格の決定原則",
       "輸入取引",
-      "加算要素"
+      "現実支払価格",
+      "買手と売手"
     ],
     "requiredKnowledge": [
-      "輸入取引の原則",
+      "現実支払価格の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -1657,17 +2068,25 @@
     ],
     "weaknessTags": [
       "課税価格",
-      "加算要素",
-      "不算入要素",
       "輸入取引",
-      "評価方法の順序",
-      "通関実務連携計算"
+      "現実支払価格",
+      "加算要素",
+      "運賃保険料",
+      "無償提供物品",
+      "ロイヤルティ",
+      "航空運賃特例",
+      "同種類似貨物",
+      "通関実務計算"
     ],
     "relatedPackIds": [
       "KZ-PACK-001"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -1676,15 +2095,15 @@
     "subject": "関税法等",
     "questionNo": 14,
     "format": "複数選択",
-    "mainTopic": "過少申告加算税",
+    "mainTopic": "還付加算金",
     "subTopics": [
       "納期限",
       "法定納期限",
-      "期限後特例申告",
-      "延滞税"
+      "延滞税",
+      "還付加算金"
     ],
     "requiredKnowledge": [
-      "過少申告加算税の原則",
+      "還付加算金の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -1696,17 +2115,29 @@
       "例外の削除"
     ],
     "weaknessTags": [
-      "納期限・法定納期限",
-      "延滞税・加算税",
+      "納期限",
+      "法定納期限",
+      "延滞税",
       "還付加算金",
-      "期間・期限",
-      "納税申告・更正"
+      "加算税",
+      "過少申告加算税",
+      "無申告加算税",
+      "重加算税",
+      "特例申告",
+      "期限後特例申告",
+      "少額不徴収",
+      "正当な理由",
+      "日付計算"
     ],
     "relatedPackIds": [
       "KZ-PACK-002"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -1715,15 +2146,15 @@
     "subject": "関税法等",
     "questionNo": 15,
     "format": "択一",
-    "mainTopic": "決定",
+    "mainTopic": "申告納税方式",
     "subTopics": [
       "申告納税方式",
       "賦課課税方式",
-      "修正申告",
-      "更正請求"
+      "納税申告",
+      "特例申告"
     ],
     "requiredKnowledge": [
-      "決定の原則",
+      "申告納税方式の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -1735,17 +2166,30 @@
       "例外の削除"
     ],
     "weaknessTags": [
+      "申告納税方式",
+      "賦課課税方式",
+      "税額確定",
       "納税申告",
-      "修正申告・更正の請求",
-      "更正・決定",
-      "納税申告・更正",
-      "期間・期限"
+      "特例申告",
+      "期限後特例申告",
+      "修正申告",
+      "更正の請求",
+      "更正",
+      "決定",
+      "賦課決定",
+      "過大納付",
+      "不足税額",
+      "便益適用漏れ"
     ],
     "relatedPackIds": [
       "KZ-PACK-003"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -1754,15 +2198,15 @@
     "subject": "関税法等",
     "questionNo": 1,
     "format": "複数選択",
-    "mainTopic": "製造原価方式",
+    "mainTopic": "容器・包装費用",
     "subTopics": [
-      "課税価格決定原則",
-      "現実支払価格",
+      "課税価格の決定原則",
       "輸入取引",
-      "加算要素"
+      "現実支払価格",
+      "買手と売手"
     ],
     "requiredKnowledge": [
-      "製造原価方式の原則",
+      "容器・包装費用の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -1775,17 +2219,25 @@
     ],
     "weaknessTags": [
       "課税価格",
-      "加算要素",
-      "不算入要素",
       "輸入取引",
-      "評価方法の順序",
-      "通関実務連携計算"
+      "現実支払価格",
+      "加算要素",
+      "運賃保険料",
+      "無償提供物品",
+      "ロイヤルティ",
+      "航空運賃特例",
+      "同種類似貨物",
+      "通関実務計算"
     ],
     "relatedPackIds": [
       "KZ-PACK-001"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -1794,15 +2246,15 @@
     "subject": "関税法等",
     "questionNo": 2,
     "format": "択一",
-    "mainTopic": "納期限",
+    "mainTopic": "期限内特例申告",
     "subTopics": [
       "納期限",
       "法定納期限",
-      "期限後特例申告",
-      "延滞税"
+      "延滞税",
+      "還付加算金"
     ],
     "requiredKnowledge": [
-      "納期限の原則",
+      "期限内特例申告の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -1814,17 +2266,29 @@
       "例外の削除"
     ],
     "weaknessTags": [
-      "納期限・法定納期限",
-      "延滞税・加算税",
+      "納期限",
+      "法定納期限",
+      "延滞税",
       "還付加算金",
-      "期間・期限",
-      "納税申告・更正"
+      "加算税",
+      "過少申告加算税",
+      "無申告加算税",
+      "重加算税",
+      "特例申告",
+      "期限後特例申告",
+      "少額不徴収",
+      "正当な理由",
+      "日付計算"
     ],
     "relatedPackIds": [
       "KZ-PACK-002"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -1833,15 +2297,15 @@
     "subject": "関税法等",
     "questionNo": 3,
     "format": "語句選択",
-    "mainTopic": "賦課課税方式",
+    "mainTopic": "修正申告",
     "subTopics": [
       "申告納税方式",
       "賦課課税方式",
-      "修正申告",
-      "更正請求"
+      "納税申告",
+      "特例申告"
     ],
     "requiredKnowledge": [
-      "賦課課税方式の原則",
+      "修正申告の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -1853,17 +2317,30 @@
       "例外の削除"
     ],
     "weaknessTags": [
+      "申告納税方式",
+      "賦課課税方式",
+      "税額確定",
       "納税申告",
-      "修正申告・更正の請求",
-      "更正・決定",
-      "納税申告・更正",
-      "期間・期限"
+      "特例申告",
+      "期限後特例申告",
+      "修正申告",
+      "更正の請求",
+      "更正",
+      "決定",
+      "賦課決定",
+      "過大納付",
+      "不足税額",
+      "便益適用漏れ"
     ],
     "relatedPackIds": [
       "KZ-PACK-003"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -1872,15 +2349,15 @@
     "subject": "関税法等",
     "questionNo": 4,
     "format": "複数選択",
-    "mainTopic": "特例委託輸入者",
+    "mainTopic": "輸入の許可",
     "subTopics": [
       "輸入申告",
+      "輸入の許可",
       "特例輸入者",
-      "特例委託輸入者",
-      "原産地証明"
+      "特例委託輸入者"
     ],
     "requiredKnowledge": [
-      "特例委託輸入者の原則",
+      "輸入の許可の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -1892,17 +2369,30 @@
       "例外の削除"
     ],
     "weaknessTags": [
+      "輸入通関",
       "輸入申告",
-      "原産地表示",
-      "外為法",
-      "申告・許可・承認・届出の混同",
-      "EPA・WTO税率"
+      "輸入許可",
+      "特例輸入者",
+      "特例委託輸入者",
+      "NACCS",
+      "保税地域搬入前申告",
+      "原産地証明",
+      "WTO税率",
+      "EPA",
+      "締約国原産地証明書",
+      "他法令確認",
+      "輸入許可前引取り",
+      "郵便物輸入"
     ],
     "relatedPackIds": [
       "KZ-PACK-004"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -1911,15 +2401,15 @@
     "subject": "関税法等",
     "questionNo": 5,
     "format": "択一",
-    "mainTopic": "亡失",
+    "mainTopic": "特定保税運送",
     "subTopics": [
-      "保税地域5種",
+      "保税地域の種類",
+      "指定保税地域",
       "保税蔵置場",
-      "保税工場",
-      "保税展示場"
+      "保税工場"
     ],
     "requiredKnowledge": [
-      "亡失の原則",
+      "特定保税運送の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -1932,16 +2422,31 @@
     ],
     "weaknessTags": [
       "保税地域",
+      "指定保税地域",
+      "保税蔵置場",
+      "保税工場",
+      "保税展示場",
+      "総合保税地域",
+      "外国貨物",
+      "蔵置期間",
+      "帳簿管理",
+      "見本一時持出し",
+      "亡失",
+      "滅却",
       "保税運送",
-      "納税義務者",
-      "許可・承認・届出の混同",
-      "亡失責任"
+      "特定保税運送",
+      "難破貨物",
+      "許可承認届出"
     ],
     "relatedPackIds": [
       "KZ-PACK-005"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -1950,15 +2455,15 @@
     "subject": "関税法等",
     "questionNo": 6,
     "format": "語句選択",
-    "mainTopic": "輸入してはならない貨物",
+    "mainTopic": "風俗を害すべき物品",
     "subTopics": [
       "輸入してはならない貨物",
       "輸出してはならない貨物",
       "知的財産侵害物品",
-      "認定手続"
+      "特許権"
     ],
     "requiredKnowledge": [
-      "輸入してはならない貨物の原則",
+      "風俗を害すべき物品の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -1972,15 +2477,34 @@
     "weaknessTags": [
       "輸入禁止貨物",
       "輸出禁止貨物",
-      "知財認定手続",
-      "期間・期限",
-      "選択肢読解"
+      "知的財産権",
+      "特許権",
+      "意匠権",
+      "商標権",
+      "著作権",
+      "育成者権",
+      "不正競争防止法",
+      "認定手続",
+      "差止申立て",
+      "争う旨の申出",
+      "積戻し",
+      "没収",
+      "廃棄",
+      "風俗害物品",
+      "児童ポルノ",
+      "規制物品",
+      "他法令確認",
+      "外為法"
     ],
     "relatedPackIds": [
       "KZ-PACK-006"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -1989,15 +2513,15 @@
     "subject": "関税法等",
     "questionNo": 7,
     "format": "複数選択",
-    "mainTopic": "特定用途免税",
+    "mainTopic": "免税貨物の譲渡",
     "subTopics": [
-      "再輸出免税",
-      "特定用途免税",
-      "無条件免税",
-      "戻し税"
+      "関税の軽減",
+      "関税の免除",
+      "関税の払戻し",
+      "再輸出免税"
     ],
     "requiredKnowledge": [
-      "特定用途免税の原則",
+      "免税貨物の譲渡の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -2009,17 +2533,35 @@
       "例外の削除"
     ],
     "weaknessTags": [
-      "減免税",
+      "軽減",
+      "免除",
+      "払戻し",
+      "再輸出免税",
+      "再輸入免税",
+      "無条件免税",
+      "特定用途免税",
       "戻し税",
+      "同一状態再輸出",
+      "違約品",
+      "災害滅失",
+      "変質損傷",
       "用途外使用",
-      "期間・期限",
-      "制度比較"
+      "免税貨物譲渡",
+      "関税徴収",
+      "外国採捕水産物",
+      "期限要件",
+      "届出申告承認",
+      "ATA"
     ],
     "relatedPackIds": [
       "KZ-PACK-007"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -2050,15 +2592,18 @@
     "weaknessTags": [
       "品目分類",
       "関税率表の通則",
-      "税番",
-      "分類手順",
-      "通関実務連携"
+      "HS分類",
+      "税番"
     ],
     "relatedPackIds": [
       "KZ-PACK-008"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -2096,7 +2641,11 @@
       "KZ-PACK-009"
     ],
     "priority": "B",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -2126,15 +2675,18 @@
     ],
     "weaknessTags": [
       "特恵関税",
-      "特殊関税",
-      "原産地表示",
+      "原産地証明",
       "期間・期限"
     ],
     "relatedPackIds": [
       "KZ-PACK-010"
     ],
     "priority": "B",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -2165,14 +2717,17 @@
     "weaknessTags": [
       "AEO",
       "特例輸入者",
-      "主体の混同",
-      "承認取消"
+      "主体の混同"
     ],
     "relatedPackIds": [
       "KZ-PACK-011"
     ],
     "priority": "B",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -2210,7 +2765,11 @@
       "KZ-PACK-012"
     ],
     "priority": "C",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -2219,15 +2778,15 @@
     "subject": "関税法等",
     "questionNo": 13,
     "format": "複数選択",
-    "mainTopic": "加算要素",
+    "mainTopic": "買手と売手",
     "subTopics": [
-      "課税価格決定原則",
-      "現実支払価格",
+      "課税価格の決定原則",
       "輸入取引",
-      "加算要素"
+      "現実支払価格",
+      "買手と売手"
     ],
     "requiredKnowledge": [
-      "加算要素の原則",
+      "買手と売手の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -2240,17 +2799,25 @@
     ],
     "weaknessTags": [
       "課税価格",
-      "加算要素",
-      "不算入要素",
       "輸入取引",
-      "評価方法の順序",
-      "通関実務連携計算"
+      "現実支払価格",
+      "加算要素",
+      "運賃保険料",
+      "無償提供物品",
+      "ロイヤルティ",
+      "航空運賃特例",
+      "同種類似貨物",
+      "通関実務計算"
     ],
     "relatedPackIds": [
       "KZ-PACK-001"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -2259,15 +2826,15 @@
     "subject": "関税法等",
     "questionNo": 14,
     "format": "択一",
-    "mainTopic": "無申告加算税",
+    "mainTopic": "過少申告加算税",
     "subTopics": [
       "納期限",
       "法定納期限",
-      "期限後特例申告",
-      "延滞税"
+      "延滞税",
+      "還付加算金"
     ],
     "requiredKnowledge": [
-      "無申告加算税の原則",
+      "過少申告加算税の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -2279,17 +2846,29 @@
       "例外の削除"
     ],
     "weaknessTags": [
-      "納期限・法定納期限",
-      "延滞税・加算税",
+      "納期限",
+      "法定納期限",
+      "延滞税",
       "還付加算金",
-      "期間・期限",
-      "納税申告・更正"
+      "加算税",
+      "過少申告加算税",
+      "無申告加算税",
+      "重加算税",
+      "特例申告",
+      "期限後特例申告",
+      "少額不徴収",
+      "正当な理由",
+      "日付計算"
     ],
     "relatedPackIds": [
       "KZ-PACK-002"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -2298,15 +2877,15 @@
     "subject": "関税法等",
     "questionNo": 15,
     "format": "語句選択",
-    "mainTopic": "期間制限",
+    "mainTopic": "賦課課税方式",
     "subTopics": [
       "申告納税方式",
       "賦課課税方式",
-      "修正申告",
-      "更正請求"
+      "納税申告",
+      "特例申告"
     ],
     "requiredKnowledge": [
-      "期間制限の原則",
+      "賦課課税方式の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -2318,17 +2897,30 @@
       "例外の削除"
     ],
     "weaknessTags": [
+      "申告納税方式",
+      "賦課課税方式",
+      "税額確定",
       "納税申告",
-      "修正申告・更正の請求",
-      "更正・決定",
-      "納税申告・更正",
-      "期間・期限"
+      "特例申告",
+      "期限後特例申告",
+      "修正申告",
+      "更正の請求",
+      "更正",
+      "決定",
+      "賦課決定",
+      "過大納付",
+      "不足税額",
+      "便益適用漏れ"
     ],
     "relatedPackIds": [
       "KZ-PACK-003"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -2337,15 +2929,15 @@
     "subject": "関税法等",
     "questionNo": 1,
     "format": "択一",
-    "mainTopic": "課税価格決定原則",
+    "mainTopic": "無償提供物品",
     "subTopics": [
-      "課税価格決定原則",
-      "現実支払価格",
+      "課税価格の決定原則",
       "輸入取引",
-      "加算要素"
+      "現実支払価格",
+      "買手と売手"
     ],
     "requiredKnowledge": [
-      "課税価格決定原則の原則",
+      "無償提供物品の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -2358,17 +2950,25 @@
     ],
     "weaknessTags": [
       "課税価格",
-      "加算要素",
-      "不算入要素",
       "輸入取引",
-      "評価方法の順序",
-      "通関実務連携計算"
+      "現実支払価格",
+      "加算要素",
+      "運賃保険料",
+      "無償提供物品",
+      "ロイヤルティ",
+      "航空運賃特例",
+      "同種類似貨物",
+      "通関実務計算"
     ],
     "relatedPackIds": [
       "KZ-PACK-001"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -2377,15 +2977,15 @@
     "subject": "関税法等",
     "questionNo": 2,
     "format": "語句選択",
-    "mainTopic": "法定納期限",
+    "mainTopic": "修正申告と法定納期限",
     "subTopics": [
       "納期限",
       "法定納期限",
-      "期限後特例申告",
-      "延滞税"
+      "延滞税",
+      "還付加算金"
     ],
     "requiredKnowledge": [
-      "法定納期限の原則",
+      "修正申告と法定納期限の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -2397,17 +2997,29 @@
       "例外の削除"
     ],
     "weaknessTags": [
-      "納期限・法定納期限",
-      "延滞税・加算税",
+      "納期限",
+      "法定納期限",
+      "延滞税",
       "還付加算金",
-      "期間・期限",
-      "納税申告・更正"
+      "加算税",
+      "過少申告加算税",
+      "無申告加算税",
+      "重加算税",
+      "特例申告",
+      "期限後特例申告",
+      "少額不徴収",
+      "正当な理由",
+      "日付計算"
     ],
     "relatedPackIds": [
       "KZ-PACK-002"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -2416,15 +3028,15 @@
     "subject": "関税法等",
     "questionNo": 3,
     "format": "複数選択",
-    "mainTopic": "修正申告",
+    "mainTopic": "更正の請求",
     "subTopics": [
       "申告納税方式",
       "賦課課税方式",
-      "修正申告",
-      "更正請求"
+      "納税申告",
+      "特例申告"
     ],
     "requiredKnowledge": [
-      "修正申告の原則",
+      "更正の請求の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -2436,17 +3048,30 @@
       "例外の削除"
     ],
     "weaknessTags": [
+      "申告納税方式",
+      "賦課課税方式",
+      "税額確定",
       "納税申告",
-      "修正申告・更正の請求",
-      "更正・決定",
-      "納税申告・更正",
-      "期間・期限"
+      "特例申告",
+      "期限後特例申告",
+      "修正申告",
+      "更正の請求",
+      "更正",
+      "決定",
+      "賦課決定",
+      "過大納付",
+      "不足税額",
+      "便益適用漏れ"
     ],
     "relatedPackIds": [
       "KZ-PACK-003"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -2455,15 +3080,15 @@
     "subject": "関税法等",
     "questionNo": 4,
     "format": "択一",
-    "mainTopic": "原産地証明",
+    "mainTopic": "特例輸入者",
     "subTopics": [
       "輸入申告",
+      "輸入の許可",
       "特例輸入者",
-      "特例委託輸入者",
-      "原産地証明"
+      "特例委託輸入者"
     ],
     "requiredKnowledge": [
-      "原産地証明の原則",
+      "特例輸入者の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -2475,17 +3100,30 @@
       "例外の削除"
     ],
     "weaknessTags": [
+      "輸入通関",
       "輸入申告",
-      "原産地表示",
-      "外為法",
-      "申告・許可・承認・届出の混同",
-      "EPA・WTO税率"
+      "輸入許可",
+      "特例輸入者",
+      "特例委託輸入者",
+      "NACCS",
+      "保税地域搬入前申告",
+      "原産地証明",
+      "WTO税率",
+      "EPA",
+      "締約国原産地証明書",
+      "他法令確認",
+      "輸入許可前引取り",
+      "郵便物輸入"
     ],
     "relatedPackIds": [
       "KZ-PACK-004"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -2494,15 +3132,15 @@
     "subject": "関税法等",
     "questionNo": 5,
     "format": "語句選択",
-    "mainTopic": "滅却",
+    "mainTopic": "難破貨物の運送",
     "subTopics": [
-      "保税地域5種",
+      "保税地域の種類",
+      "指定保税地域",
       "保税蔵置場",
-      "保税工場",
-      "保税展示場"
+      "保税工場"
     ],
     "requiredKnowledge": [
-      "滅却の原則",
+      "難破貨物の運送の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -2515,16 +3153,31 @@
     ],
     "weaknessTags": [
       "保税地域",
+      "指定保税地域",
+      "保税蔵置場",
+      "保税工場",
+      "保税展示場",
+      "総合保税地域",
+      "外国貨物",
+      "蔵置期間",
+      "帳簿管理",
+      "見本一時持出し",
+      "亡失",
+      "滅却",
       "保税運送",
-      "納税義務者",
-      "許可・承認・届出の混同",
-      "亡失責任"
+      "特定保税運送",
+      "難破貨物",
+      "許可承認届出"
     ],
     "relatedPackIds": [
       "KZ-PACK-005"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -2533,15 +3186,15 @@
     "subject": "関税法等",
     "questionNo": 6,
     "format": "複数選択",
-    "mainTopic": "輸出してはならない貨物",
+    "mainTopic": "児童ポルノ",
     "subTopics": [
       "輸入してはならない貨物",
       "輸出してはならない貨物",
       "知的財産侵害物品",
-      "認定手続"
+      "特許権"
     ],
     "requiredKnowledge": [
-      "輸出してはならない貨物の原則",
+      "児童ポルノの原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -2555,15 +3208,34 @@
     "weaknessTags": [
       "輸入禁止貨物",
       "輸出禁止貨物",
-      "知財認定手続",
-      "期間・期限",
-      "選択肢読解"
+      "知的財産権",
+      "特許権",
+      "意匠権",
+      "商標権",
+      "著作権",
+      "育成者権",
+      "不正競争防止法",
+      "認定手続",
+      "差止申立て",
+      "争う旨の申出",
+      "積戻し",
+      "没収",
+      "廃棄",
+      "風俗害物品",
+      "児童ポルノ",
+      "規制物品",
+      "他法令確認",
+      "外為法"
     ],
     "relatedPackIds": [
       "KZ-PACK-006"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -2572,15 +3244,15 @@
     "subject": "関税法等",
     "questionNo": 7,
     "format": "択一",
-    "mainTopic": "無条件免税",
+    "mainTopic": "免税後の関税徴収",
     "subTopics": [
-      "再輸出免税",
-      "特定用途免税",
-      "無条件免税",
-      "戻し税"
+      "関税の軽減",
+      "関税の免除",
+      "関税の払戻し",
+      "再輸出免税"
     ],
     "requiredKnowledge": [
-      "無条件免税の原則",
+      "免税後の関税徴収の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -2592,17 +3264,35 @@
       "例外の削除"
     ],
     "weaknessTags": [
-      "減免税",
+      "軽減",
+      "免除",
+      "払戻し",
+      "再輸出免税",
+      "再輸入免税",
+      "無条件免税",
+      "特定用途免税",
       "戻し税",
+      "同一状態再輸出",
+      "違約品",
+      "災害滅失",
+      "変質損傷",
       "用途外使用",
-      "期間・期限",
-      "制度比較"
+      "免税貨物譲渡",
+      "関税徴収",
+      "外国採捕水産物",
+      "期限要件",
+      "届出申告承認",
+      "ATA"
     ],
     "relatedPackIds": [
       "KZ-PACK-007"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -2633,15 +3323,18 @@
     "weaknessTags": [
       "品目分類",
       "関税率表の通則",
-      "税番",
-      "分類手順",
-      "通関実務連携"
+      "HS分類",
+      "税番"
     ],
     "relatedPackIds": [
       "KZ-PACK-008"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -2679,7 +3372,11 @@
       "KZ-PACK-009"
     ],
     "priority": "B",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -2709,15 +3406,18 @@
     ],
     "weaknessTags": [
       "特恵関税",
-      "特殊関税",
-      "原産地表示",
+      "原産地証明",
       "期間・期限"
     ],
     "relatedPackIds": [
       "KZ-PACK-010"
     ],
     "priority": "B",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -2748,14 +3448,17 @@
     "weaknessTags": [
       "AEO",
       "特例輸入者",
-      "主体の混同",
-      "承認取消"
+      "主体の混同"
     ],
     "relatedPackIds": [
       "KZ-PACK-011"
     ],
     "priority": "B",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -2793,7 +3496,11 @@
       "KZ-PACK-012"
     ],
     "priority": "C",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -2802,15 +3509,15 @@
     "subject": "関税法等",
     "questionNo": 13,
     "format": "択一",
-    "mainTopic": "航空運賃特例",
+    "mainTopic": "加算要素",
     "subTopics": [
-      "課税価格決定原則",
-      "現実支払価格",
+      "課税価格の決定原則",
       "輸入取引",
-      "加算要素"
+      "現実支払価格",
+      "買手と売手"
     ],
     "requiredKnowledge": [
-      "航空運賃特例の原則",
+      "加算要素の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -2823,17 +3530,25 @@
     ],
     "weaknessTags": [
       "課税価格",
-      "加算要素",
-      "不算入要素",
       "輸入取引",
-      "評価方法の順序",
-      "通関実務連携計算"
+      "現実支払価格",
+      "加算要素",
+      "運賃保険料",
+      "無償提供物品",
+      "ロイヤルティ",
+      "航空運賃特例",
+      "同種類似貨物",
+      "通関実務計算"
     ],
     "relatedPackIds": [
       "KZ-PACK-001"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -2842,15 +3557,15 @@
     "subject": "関税法等",
     "questionNo": 14,
     "format": "語句選択",
-    "mainTopic": "還付加算金",
+    "mainTopic": "無申告加算税",
     "subTopics": [
       "納期限",
       "法定納期限",
-      "期限後特例申告",
-      "延滞税"
+      "延滞税",
+      "還付加算金"
     ],
     "requiredKnowledge": [
-      "還付加算金の原則",
+      "無申告加算税の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -2862,17 +3577,29 @@
       "例外の削除"
     ],
     "weaknessTags": [
-      "納期限・法定納期限",
-      "延滞税・加算税",
+      "納期限",
+      "法定納期限",
+      "延滞税",
       "還付加算金",
-      "期間・期限",
-      "納税申告・更正"
+      "加算税",
+      "過少申告加算税",
+      "無申告加算税",
+      "重加算税",
+      "特例申告",
+      "期限後特例申告",
+      "少額不徴収",
+      "正当な理由",
+      "日付計算"
     ],
     "relatedPackIds": [
       "KZ-PACK-002"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -2881,15 +3608,15 @@
     "subject": "関税法等",
     "questionNo": 15,
     "format": "複数選択",
-    "mainTopic": "申告納税方式",
+    "mainTopic": "納税申告",
     "subTopics": [
       "申告納税方式",
       "賦課課税方式",
-      "修正申告",
-      "更正請求"
+      "納税申告",
+      "特例申告"
     ],
     "requiredKnowledge": [
-      "申告納税方式の原則",
+      "納税申告の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -2901,17 +3628,30 @@
       "例外の削除"
     ],
     "weaknessTags": [
+      "申告納税方式",
+      "賦課課税方式",
+      "税額確定",
       "納税申告",
-      "修正申告・更正の請求",
-      "更正・決定",
-      "納税申告・更正",
-      "期間・期限"
+      "特例申告",
+      "期限後特例申告",
+      "修正申告",
+      "更正の請求",
+      "更正",
+      "決定",
+      "賦課決定",
+      "過大納付",
+      "不足税額",
+      "便益適用漏れ"
     ],
     "relatedPackIds": [
       "KZ-PACK-003"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -2920,15 +3660,15 @@
     "subject": "関税法等",
     "questionNo": 1,
     "format": "語句選択",
-    "mainTopic": "現実支払価格",
+    "mainTopic": "ロイヤルティ・ライセンス料",
     "subTopics": [
-      "課税価格決定原則",
-      "現実支払価格",
+      "課税価格の決定原則",
       "輸入取引",
-      "加算要素"
+      "現実支払価格",
+      "買手と売手"
     ],
     "requiredKnowledge": [
-      "現実支払価格の原則",
+      "ロイヤルティ・ライセンス料の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -2941,17 +3681,25 @@
     ],
     "weaknessTags": [
       "課税価格",
-      "加算要素",
-      "不算入要素",
       "輸入取引",
-      "評価方法の順序",
-      "通関実務連携計算"
+      "現実支払価格",
+      "加算要素",
+      "運賃保険料",
+      "無償提供物品",
+      "ロイヤルティ",
+      "航空運賃特例",
+      "同種類似貨物",
+      "通関実務計算"
     ],
     "relatedPackIds": [
       "KZ-PACK-001"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -2960,15 +3708,15 @@
     "subject": "関税法等",
     "questionNo": 2,
     "format": "複数選択",
-    "mainTopic": "期限後特例申告",
+    "mainTopic": "納期限の延長",
     "subTopics": [
       "納期限",
       "法定納期限",
-      "期限後特例申告",
-      "延滞税"
+      "延滞税",
+      "還付加算金"
     ],
     "requiredKnowledge": [
-      "期限後特例申告の原則",
+      "納期限の延長の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -2980,17 +3728,29 @@
       "例外の削除"
     ],
     "weaknessTags": [
-      "納期限・法定納期限",
-      "延滞税・加算税",
+      "納期限",
+      "法定納期限",
+      "延滞税",
       "還付加算金",
-      "期間・期限",
-      "納税申告・更正"
+      "加算税",
+      "過少申告加算税",
+      "無申告加算税",
+      "重加算税",
+      "特例申告",
+      "期限後特例申告",
+      "少額不徴収",
+      "正当な理由",
+      "日付計算"
     ],
     "relatedPackIds": [
       "KZ-PACK-002"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -2999,15 +3759,15 @@
     "subject": "関税法等",
     "questionNo": 3,
     "format": "択一",
-    "mainTopic": "更正請求",
+    "mainTopic": "更正",
     "subTopics": [
       "申告納税方式",
       "賦課課税方式",
-      "修正申告",
-      "更正請求"
+      "納税申告",
+      "特例申告"
     ],
     "requiredKnowledge": [
-      "更正請求の原則",
+      "更正の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -3019,17 +3779,30 @@
       "例外の削除"
     ],
     "weaknessTags": [
+      "申告納税方式",
+      "賦課課税方式",
+      "税額確定",
       "納税申告",
-      "修正申告・更正の請求",
-      "更正・決定",
-      "納税申告・更正",
-      "期間・期限"
+      "特例申告",
+      "期限後特例申告",
+      "修正申告",
+      "更正の請求",
+      "更正",
+      "決定",
+      "賦課決定",
+      "過大納付",
+      "不足税額",
+      "便益適用漏れ"
     ],
     "relatedPackIds": [
       "KZ-PACK-003"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -3038,15 +3811,15 @@
     "subject": "関税法等",
     "questionNo": 4,
     "format": "語句選択",
-    "mainTopic": "EPA",
+    "mainTopic": "特例委託輸入者",
     "subTopics": [
       "輸入申告",
+      "輸入の許可",
       "特例輸入者",
-      "特例委託輸入者",
-      "原産地証明"
+      "特例委託輸入者"
     ],
     "requiredKnowledge": [
-      "EPAの原則",
+      "特例委託輸入者の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -3058,17 +3831,30 @@
       "例外の削除"
     ],
     "weaknessTags": [
+      "輸入通関",
       "輸入申告",
-      "原産地表示",
-      "外為法",
-      "申告・許可・承認・届出の混同",
-      "EPA・WTO税率"
+      "輸入許可",
+      "特例輸入者",
+      "特例委託輸入者",
+      "NACCS",
+      "保税地域搬入前申告",
+      "原産地証明",
+      "WTO税率",
+      "EPA",
+      "締約国原産地証明書",
+      "他法令確認",
+      "輸入許可前引取り",
+      "郵便物輸入"
     ],
     "relatedPackIds": [
       "KZ-PACK-004"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -3077,15 +3863,15 @@
     "subject": "関税法等",
     "questionNo": 5,
     "format": "複数選択",
-    "mainTopic": "保税運送",
+    "mainTopic": "積替え・船舶間運送",
     "subTopics": [
-      "保税地域5種",
+      "保税地域の種類",
+      "指定保税地域",
       "保税蔵置場",
-      "保税工場",
-      "保税展示場"
+      "保税工場"
     ],
     "requiredKnowledge": [
-      "保税運送の原則",
+      "積替え・船舶間運送の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -3098,16 +3884,31 @@
     ],
     "weaknessTags": [
       "保税地域",
+      "指定保税地域",
+      "保税蔵置場",
+      "保税工場",
+      "保税展示場",
+      "総合保税地域",
+      "外国貨物",
+      "蔵置期間",
+      "帳簿管理",
+      "見本一時持出し",
+      "亡失",
+      "滅却",
       "保税運送",
-      "納税義務者",
-      "許可・承認・届出の混同",
-      "亡失責任"
+      "特定保税運送",
+      "難破貨物",
+      "許可承認届出"
     ],
     "relatedPackIds": [
       "KZ-PACK-005"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -3116,15 +3917,15 @@
     "subject": "関税法等",
     "questionNo": 6,
     "format": "択一",
-    "mainTopic": "知的財産侵害物品",
+    "mainTopic": "麻薬・覚醒剤等の規制物品",
     "subTopics": [
       "輸入してはならない貨物",
       "輸出してはならない貨物",
       "知的財産侵害物品",
-      "認定手続"
+      "特許権"
     ],
     "requiredKnowledge": [
-      "知的財産侵害物品の原則",
+      "麻薬・覚醒剤等の規制物品の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -3138,15 +3939,34 @@
     "weaknessTags": [
       "輸入禁止貨物",
       "輸出禁止貨物",
-      "知財認定手続",
-      "期間・期限",
-      "選択肢読解"
+      "知的財産権",
+      "特許権",
+      "意匠権",
+      "商標権",
+      "著作権",
+      "育成者権",
+      "不正競争防止法",
+      "認定手続",
+      "差止申立て",
+      "争う旨の申出",
+      "積戻し",
+      "没収",
+      "廃棄",
+      "風俗害物品",
+      "児童ポルノ",
+      "規制物品",
+      "他法令確認",
+      "外為法"
     ],
     "relatedPackIds": [
       "KZ-PACK-006"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -3155,15 +3975,15 @@
     "subject": "関税法等",
     "questionNo": 7,
     "format": "語句選択",
-    "mainTopic": "戻し税",
+    "mainTopic": "期限要件",
     "subTopics": [
-      "再輸出免税",
-      "特定用途免税",
-      "無条件免税",
-      "戻し税"
+      "関税の軽減",
+      "関税の免除",
+      "関税の払戻し",
+      "再輸出免税"
     ],
     "requiredKnowledge": [
-      "戻し税の原則",
+      "期限要件の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -3175,17 +3995,35 @@
       "例外の削除"
     ],
     "weaknessTags": [
-      "減免税",
+      "軽減",
+      "免除",
+      "払戻し",
+      "再輸出免税",
+      "再輸入免税",
+      "無条件免税",
+      "特定用途免税",
       "戻し税",
+      "同一状態再輸出",
+      "違約品",
+      "災害滅失",
+      "変質損傷",
       "用途外使用",
-      "期間・期限",
-      "制度比較"
+      "免税貨物譲渡",
+      "関税徴収",
+      "外国採捕水産物",
+      "期限要件",
+      "届出申告承認",
+      "ATA"
     ],
     "relatedPackIds": [
       "KZ-PACK-007"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -3216,15 +4054,18 @@
     "weaknessTags": [
       "品目分類",
       "関税率表の通則",
-      "税番",
-      "分類手順",
-      "通関実務連携"
+      "HS分類",
+      "税番"
     ],
     "relatedPackIds": [
       "KZ-PACK-008"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -3262,7 +4103,11 @@
       "KZ-PACK-009"
     ],
     "priority": "B",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -3292,15 +4137,18 @@
     ],
     "weaknessTags": [
       "特恵関税",
-      "特殊関税",
-      "原産地表示",
+      "原産地証明",
       "期間・期限"
     ],
     "relatedPackIds": [
       "KZ-PACK-010"
     ],
     "priority": "B",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -3331,14 +4179,17 @@
     "weaknessTags": [
       "AEO",
       "特例輸入者",
-      "主体の混同",
-      "承認取消"
+      "主体の混同"
     ],
     "relatedPackIds": [
       "KZ-PACK-011"
     ],
     "priority": "B",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -3376,7 +4227,11 @@
       "KZ-PACK-012"
     ],
     "priority": "C",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -3385,15 +4240,15 @@
     "subject": "関税法等",
     "questionNo": 13,
     "format": "語句選択",
-    "mainTopic": "同種・類似貨物",
+    "mainTopic": "運賃・保険料",
     "subTopics": [
-      "課税価格決定原則",
-      "現実支払価格",
+      "課税価格の決定原則",
       "輸入取引",
-      "加算要素"
+      "現実支払価格",
+      "買手と売手"
     ],
     "requiredKnowledge": [
-      "同種・類似貨物の原則",
+      "運賃・保険料の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -3406,17 +4261,25 @@
     ],
     "weaknessTags": [
       "課税価格",
-      "加算要素",
-      "不算入要素",
       "輸入取引",
-      "評価方法の順序",
-      "通関実務連携計算"
+      "現実支払価格",
+      "加算要素",
+      "運賃保険料",
+      "無償提供物品",
+      "ロイヤルティ",
+      "航空運賃特例",
+      "同種類似貨物",
+      "通関実務計算"
     ],
     "relatedPackIds": [
       "KZ-PACK-001"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -3425,15 +4288,15 @@
     "subject": "関税法等",
     "questionNo": 14,
     "format": "複数選択",
-    "mainTopic": "納期限",
+    "mainTopic": "重加算税",
     "subTopics": [
       "納期限",
       "法定納期限",
-      "期限後特例申告",
-      "延滞税"
+      "延滞税",
+      "還付加算金"
     ],
     "requiredKnowledge": [
-      "納期限の原則",
+      "重加算税の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -3445,17 +4308,29 @@
       "例外の削除"
     ],
     "weaknessTags": [
-      "納期限・法定納期限",
-      "延滞税・加算税",
+      "納期限",
+      "法定納期限",
+      "延滞税",
       "還付加算金",
-      "期間・期限",
-      "納税申告・更正"
+      "加算税",
+      "過少申告加算税",
+      "無申告加算税",
+      "重加算税",
+      "特例申告",
+      "期限後特例申告",
+      "少額不徴収",
+      "正当な理由",
+      "日付計算"
     ],
     "relatedPackIds": [
       "KZ-PACK-002"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -3464,15 +4339,15 @@
     "subject": "関税法等",
     "questionNo": 15,
     "format": "択一",
-    "mainTopic": "賦課課税方式",
+    "mainTopic": "特例申告",
     "subTopics": [
       "申告納税方式",
       "賦課課税方式",
-      "修正申告",
-      "更正請求"
+      "納税申告",
+      "特例申告"
     ],
     "requiredKnowledge": [
-      "賦課課税方式の原則",
+      "特例申告の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -3484,17 +4359,30 @@
       "例外の削除"
     ],
     "weaknessTags": [
+      "申告納税方式",
+      "賦課課税方式",
+      "税額確定",
       "納税申告",
-      "修正申告・更正の請求",
-      "更正・決定",
-      "納税申告・更正",
-      "期間・期限"
+      "特例申告",
+      "期限後特例申告",
+      "修正申告",
+      "更正の請求",
+      "更正",
+      "決定",
+      "賦課決定",
+      "過大納付",
+      "不足税額",
+      "便益適用漏れ"
     ],
     "relatedPackIds": [
       "KZ-PACK-003"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -3503,15 +4391,15 @@
     "subject": "関税法等",
     "questionNo": 1,
     "format": "複数選択",
-    "mainTopic": "輸入取引",
+    "mainTopic": "売手帰属収益",
     "subTopics": [
-      "課税価格決定原則",
-      "現実支払価格",
+      "課税価格の決定原則",
       "輸入取引",
-      "加算要素"
+      "現実支払価格",
+      "買手と売手"
     ],
     "requiredKnowledge": [
-      "輸入取引の原則",
+      "売手帰属収益の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -3524,17 +4412,25 @@
     ],
     "weaknessTags": [
       "課税価格",
-      "加算要素",
-      "不算入要素",
       "輸入取引",
-      "評価方法の順序",
-      "通関実務連携計算"
+      "現実支払価格",
+      "加算要素",
+      "運賃保険料",
+      "無償提供物品",
+      "ロイヤルティ",
+      "航空運賃特例",
+      "同種類似貨物",
+      "通関実務計算"
     ],
     "relatedPackIds": [
       "KZ-PACK-001"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -3543,15 +4439,15 @@
     "subject": "関税法等",
     "questionNo": 2,
     "format": "択一",
-    "mainTopic": "延滞税",
+    "mainTopic": "納税告知",
     "subTopics": [
       "納期限",
       "法定納期限",
-      "期限後特例申告",
-      "延滞税"
+      "延滞税",
+      "還付加算金"
     ],
     "requiredKnowledge": [
-      "延滞税の原則",
+      "納税告知の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -3563,17 +4459,29 @@
       "例外の削除"
     ],
     "weaknessTags": [
-      "納期限・法定納期限",
-      "延滞税・加算税",
+      "納期限",
+      "法定納期限",
+      "延滞税",
       "還付加算金",
-      "期間・期限",
-      "納税申告・更正"
+      "加算税",
+      "過少申告加算税",
+      "無申告加算税",
+      "重加算税",
+      "特例申告",
+      "期限後特例申告",
+      "少額不徴収",
+      "正当な理由",
+      "日付計算"
     ],
     "relatedPackIds": [
       "KZ-PACK-002"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -3582,15 +4490,15 @@
     "subject": "関税法等",
     "questionNo": 3,
     "format": "語句選択",
-    "mainTopic": "更正",
+    "mainTopic": "決定",
     "subTopics": [
       "申告納税方式",
       "賦課課税方式",
-      "修正申告",
-      "更正請求"
+      "納税申告",
+      "特例申告"
     ],
     "requiredKnowledge": [
-      "更正の原則",
+      "決定の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -3602,17 +4510,30 @@
       "例外の削除"
     ],
     "weaknessTags": [
+      "申告納税方式",
+      "賦課課税方式",
+      "税額確定",
       "納税申告",
-      "修正申告・更正の請求",
-      "更正・決定",
-      "納税申告・更正",
-      "期間・期限"
+      "特例申告",
+      "期限後特例申告",
+      "修正申告",
+      "更正の請求",
+      "更正",
+      "決定",
+      "賦課決定",
+      "過大納付",
+      "不足税額",
+      "便益適用漏れ"
     ],
     "relatedPackIds": [
       "KZ-PACK-003"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -3621,15 +4542,15 @@
     "subject": "関税法等",
     "questionNo": 4,
     "format": "複数選択",
-    "mainTopic": "WTO税率",
+    "mainTopic": "NACCSによる輸入申告",
     "subTopics": [
       "輸入申告",
+      "輸入の許可",
       "特例輸入者",
-      "特例委託輸入者",
-      "原産地証明"
+      "特例委託輸入者"
     ],
     "requiredKnowledge": [
-      "WTO税率の原則",
+      "NACCSによる輸入申告の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -3641,17 +4562,30 @@
       "例外の削除"
     ],
     "weaknessTags": [
+      "輸入通関",
       "輸入申告",
-      "原産地表示",
-      "外為法",
-      "申告・許可・承認・届出の混同",
-      "EPA・WTO税率"
+      "輸入許可",
+      "特例輸入者",
+      "特例委託輸入者",
+      "NACCS",
+      "保税地域搬入前申告",
+      "原産地証明",
+      "WTO税率",
+      "EPA",
+      "締約国原産地証明書",
+      "他法令確認",
+      "輸入許可前引取り",
+      "郵便物輸入"
     ],
     "relatedPackIds": [
       "KZ-PACK-004"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -3660,15 +4594,15 @@
     "subject": "関税法等",
     "questionNo": 5,
     "format": "択一",
-    "mainTopic": "特定保税運送",
+    "mainTopic": "運送中の亡失と納税義務",
     "subTopics": [
-      "保税地域5種",
+      "保税地域の種類",
+      "指定保税地域",
       "保税蔵置場",
-      "保税工場",
-      "保税展示場"
+      "保税工場"
     ],
     "requiredKnowledge": [
-      "特定保税運送の原則",
+      "運送中の亡失と納税義務の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -3681,16 +4615,31 @@
     ],
     "weaknessTags": [
       "保税地域",
+      "指定保税地域",
+      "保税蔵置場",
+      "保税工場",
+      "保税展示場",
+      "総合保税地域",
+      "外国貨物",
+      "蔵置期間",
+      "帳簿管理",
+      "見本一時持出し",
+      "亡失",
+      "滅却",
       "保税運送",
-      "納税義務者",
-      "許可・承認・届出の混同",
-      "亡失責任"
+      "特定保税運送",
+      "難破貨物",
+      "許可承認届出"
     ],
     "relatedPackIds": [
       "KZ-PACK-005"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -3699,15 +4648,15 @@
     "subject": "関税法等",
     "questionNo": 6,
     "format": "語句選択",
-    "mainTopic": "認定手続",
+    "mainTopic": "拳銃等の規制物品",
     "subTopics": [
       "輸入してはならない貨物",
       "輸出してはならない貨物",
       "知的財産侵害物品",
-      "認定手続"
+      "特許権"
     ],
     "requiredKnowledge": [
-      "認定手続の原則",
+      "拳銃等の規制物品の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -3721,15 +4670,34 @@
     "weaknessTags": [
       "輸入禁止貨物",
       "輸出禁止貨物",
-      "知財認定手続",
-      "期間・期限",
-      "選択肢読解"
+      "知的財産権",
+      "特許権",
+      "意匠権",
+      "商標権",
+      "著作権",
+      "育成者権",
+      "不正競争防止法",
+      "認定手続",
+      "差止申立て",
+      "争う旨の申出",
+      "積戻し",
+      "没収",
+      "廃棄",
+      "風俗害物品",
+      "児童ポルノ",
+      "規制物品",
+      "他法令確認",
+      "外為法"
     ],
     "relatedPackIds": [
       "KZ-PACK-006"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -3738,15 +4706,15 @@
     "subject": "関税法等",
     "questionNo": 7,
     "format": "複数選択",
-    "mainTopic": "災害滅失",
+    "mainTopic": "届出・申告・承認の要否",
     "subTopics": [
-      "再輸出免税",
-      "特定用途免税",
-      "無条件免税",
-      "戻し税"
+      "関税の軽減",
+      "関税の免除",
+      "関税の払戻し",
+      "再輸出免税"
     ],
     "requiredKnowledge": [
-      "災害滅失の原則",
+      "届出・申告・承認の要否の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -3758,17 +4726,35 @@
       "例外の削除"
     ],
     "weaknessTags": [
-      "減免税",
+      "軽減",
+      "免除",
+      "払戻し",
+      "再輸出免税",
+      "再輸入免税",
+      "無条件免税",
+      "特定用途免税",
       "戻し税",
+      "同一状態再輸出",
+      "違約品",
+      "災害滅失",
+      "変質損傷",
       "用途外使用",
-      "期間・期限",
-      "制度比較"
+      "免税貨物譲渡",
+      "関税徴収",
+      "外国採捕水産物",
+      "期限要件",
+      "届出申告承認",
+      "ATA"
     ],
     "relatedPackIds": [
       "KZ-PACK-007"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -3799,15 +4785,18 @@
     "weaknessTags": [
       "品目分類",
       "関税率表の通則",
-      "税番",
-      "分類手順",
-      "通関実務連携"
+      "HS分類",
+      "税番"
     ],
     "relatedPackIds": [
       "KZ-PACK-008"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -3845,7 +4834,11 @@
       "KZ-PACK-009"
     ],
     "priority": "B",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -3875,15 +4868,18 @@
     ],
     "weaknessTags": [
       "特恵関税",
-      "特殊関税",
-      "原産地表示",
+      "原産地証明",
       "期間・期限"
     ],
     "relatedPackIds": [
       "KZ-PACK-010"
     ],
     "priority": "B",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -3914,14 +4910,17 @@
     "weaknessTags": [
       "AEO",
       "特例輸入者",
-      "主体の混同",
-      "承認取消"
+      "主体の混同"
     ],
     "relatedPackIds": [
       "KZ-PACK-011"
     ],
     "priority": "B",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -3959,7 +4958,11 @@
       "KZ-PACK-012"
     ],
     "priority": "C",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -3968,15 +4971,15 @@
     "subject": "関税法等",
     "questionNo": 13,
     "format": "複数選択",
-    "mainTopic": "国内販売価格方式",
+    "mainTopic": "仲介料・手数料",
     "subTopics": [
-      "課税価格決定原則",
-      "現実支払価格",
+      "課税価格の決定原則",
       "輸入取引",
-      "加算要素"
+      "現実支払価格",
+      "買手と売手"
     ],
     "requiredKnowledge": [
-      "国内販売価格方式の原則",
+      "仲介料・手数料の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -3989,17 +4992,25 @@
     ],
     "weaknessTags": [
       "課税価格",
-      "加算要素",
-      "不算入要素",
       "輸入取引",
-      "評価方法の順序",
-      "通関実務連携計算"
+      "現実支払価格",
+      "加算要素",
+      "運賃保険料",
+      "無償提供物品",
+      "ロイヤルティ",
+      "航空運賃特例",
+      "同種類似貨物",
+      "通関実務計算"
     ],
     "relatedPackIds": [
       "KZ-PACK-001"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -4008,15 +5019,15 @@
     "subject": "関税法等",
     "questionNo": 14,
     "format": "択一",
-    "mainTopic": "法定納期限",
+    "mainTopic": "期限後特例申告",
     "subTopics": [
       "納期限",
       "法定納期限",
-      "期限後特例申告",
-      "延滞税"
+      "延滞税",
+      "還付加算金"
     ],
     "requiredKnowledge": [
-      "法定納期限の原則",
+      "期限後特例申告の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -4028,17 +5039,29 @@
       "例外の削除"
     ],
     "weaknessTags": [
-      "納期限・法定納期限",
-      "延滞税・加算税",
+      "納期限",
+      "法定納期限",
+      "延滞税",
       "還付加算金",
-      "期間・期限",
-      "納税申告・更正"
+      "加算税",
+      "過少申告加算税",
+      "無申告加算税",
+      "重加算税",
+      "特例申告",
+      "期限後特例申告",
+      "少額不徴収",
+      "正当な理由",
+      "日付計算"
     ],
     "relatedPackIds": [
       "KZ-PACK-002"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -4047,15 +5070,15 @@
     "subject": "関税法等",
     "questionNo": 15,
     "format": "語句選択",
-    "mainTopic": "修正申告",
+    "mainTopic": "期限内特例申告",
     "subTopics": [
       "申告納税方式",
       "賦課課税方式",
-      "修正申告",
-      "更正請求"
+      "納税申告",
+      "特例申告"
     ],
     "requiredKnowledge": [
-      "修正申告の原則",
+      "期限内特例申告の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -4067,17 +5090,30 @@
       "例外の削除"
     ],
     "weaknessTags": [
+      "申告納税方式",
+      "賦課課税方式",
+      "税額確定",
       "納税申告",
-      "修正申告・更正の請求",
-      "更正・決定",
-      "納税申告・更正",
-      "期間・期限"
+      "特例申告",
+      "期限後特例申告",
+      "修正申告",
+      "更正の請求",
+      "更正",
+      "決定",
+      "賦課決定",
+      "過大納付",
+      "不足税額",
+      "便益適用漏れ"
     ],
     "relatedPackIds": [
       "KZ-PACK-003"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -4086,15 +5122,15 @@
     "subject": "関税法等",
     "questionNo": 1,
     "format": "択一",
-    "mainTopic": "加算要素",
+    "mainTopic": "航空運賃特例",
     "subTopics": [
-      "課税価格決定原則",
-      "現実支払価格",
+      "課税価格の決定原則",
       "輸入取引",
-      "加算要素"
+      "現実支払価格",
+      "買手と売手"
     ],
     "requiredKnowledge": [
-      "加算要素の原則",
+      "航空運賃特例の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -4107,17 +5143,25 @@
     ],
     "weaknessTags": [
       "課税価格",
-      "加算要素",
-      "不算入要素",
       "輸入取引",
-      "評価方法の順序",
-      "通関実務連携計算"
+      "現実支払価格",
+      "加算要素",
+      "運賃保険料",
+      "無償提供物品",
+      "ロイヤルティ",
+      "航空運賃特例",
+      "同種類似貨物",
+      "通関実務計算"
     ],
     "relatedPackIds": [
       "KZ-PACK-001"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -4126,15 +5170,15 @@
     "subject": "関税法等",
     "questionNo": 2,
     "format": "語句選択",
-    "mainTopic": "過少申告加算税",
+    "mainTopic": "督促",
     "subTopics": [
       "納期限",
       "法定納期限",
-      "期限後特例申告",
-      "延滞税"
+      "延滞税",
+      "還付加算金"
     ],
     "requiredKnowledge": [
-      "過少申告加算税の原則",
+      "督促の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -4146,17 +5190,29 @@
       "例外の削除"
     ],
     "weaknessTags": [
-      "納期限・法定納期限",
-      "延滞税・加算税",
+      "納期限",
+      "法定納期限",
+      "延滞税",
       "還付加算金",
-      "期間・期限",
-      "納税申告・更正"
+      "加算税",
+      "過少申告加算税",
+      "無申告加算税",
+      "重加算税",
+      "特例申告",
+      "期限後特例申告",
+      "少額不徴収",
+      "正当な理由",
+      "日付計算"
     ],
     "relatedPackIds": [
       "KZ-PACK-002"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -4165,15 +5221,15 @@
     "subject": "関税法等",
     "questionNo": 3,
     "format": "複数選択",
-    "mainTopic": "決定",
+    "mainTopic": "賦課決定",
     "subTopics": [
       "申告納税方式",
       "賦課課税方式",
-      "修正申告",
-      "更正請求"
+      "納税申告",
+      "特例申告"
     ],
     "requiredKnowledge": [
-      "決定の原則",
+      "賦課決定の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -4185,17 +5241,30 @@
       "例外の削除"
     ],
     "weaknessTags": [
+      "申告納税方式",
+      "賦課課税方式",
+      "税額確定",
       "納税申告",
-      "修正申告・更正の請求",
-      "更正・決定",
-      "納税申告・更正",
-      "期間・期限"
+      "特例申告",
+      "期限後特例申告",
+      "修正申告",
+      "更正の請求",
+      "更正",
+      "決定",
+      "賦課決定",
+      "過大納付",
+      "不足税額",
+      "便益適用漏れ"
     ],
     "relatedPackIds": [
       "KZ-PACK-003"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -4204,15 +5273,15 @@
     "subject": "関税法等",
     "questionNo": 4,
     "format": "択一",
-    "mainTopic": "他法令証明",
+    "mainTopic": "保税地域搬入前申告",
     "subTopics": [
       "輸入申告",
+      "輸入の許可",
       "特例輸入者",
-      "特例委託輸入者",
-      "原産地証明"
+      "特例委託輸入者"
     ],
     "requiredKnowledge": [
-      "他法令証明の原則",
+      "保税地域搬入前申告の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -4224,17 +5293,30 @@
       "例外の削除"
     ],
     "weaknessTags": [
+      "輸入通関",
       "輸入申告",
-      "原産地表示",
-      "外為法",
-      "申告・許可・承認・届出の混同",
-      "EPA・WTO税率"
+      "輸入許可",
+      "特例輸入者",
+      "特例委託輸入者",
+      "NACCS",
+      "保税地域搬入前申告",
+      "原産地証明",
+      "WTO税率",
+      "EPA",
+      "締約国原産地証明書",
+      "他法令確認",
+      "輸入許可前引取り",
+      "郵便物輸入"
     ],
     "relatedPackIds": [
       "KZ-PACK-004"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -4243,15 +5325,15 @@
     "subject": "関税法等",
     "questionNo": 5,
     "format": "語句選択",
-    "mainTopic": "保税地域5種",
+    "mainTopic": "保税地域の種類",
     "subTopics": [
-      "保税地域5種",
+      "保税地域の種類",
+      "指定保税地域",
       "保税蔵置場",
-      "保税工場",
-      "保税展示場"
+      "保税工場"
     ],
     "requiredKnowledge": [
-      "保税地域5種の原則",
+      "保税地域の種類の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -4264,16 +5346,31 @@
     ],
     "weaknessTags": [
       "保税地域",
+      "指定保税地域",
+      "保税蔵置場",
+      "保税工場",
+      "保税展示場",
+      "総合保税地域",
+      "外国貨物",
+      "蔵置期間",
+      "帳簿管理",
+      "見本一時持出し",
+      "亡失",
+      "滅却",
       "保税運送",
-      "納税義務者",
-      "許可・承認・届出の混同",
-      "亡失責任"
+      "特定保税運送",
+      "難破貨物",
+      "許可承認届出"
     ],
     "relatedPackIds": [
       "KZ-PACK-005"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -4282,15 +5379,15 @@
     "subject": "関税法等",
     "questionNo": 6,
     "format": "複数選択",
-    "mainTopic": "差止申立て",
+    "mainTopic": "認定手続",
     "subTopics": [
       "輸入してはならない貨物",
       "輸出してはならない貨物",
       "知的財産侵害物品",
-      "認定手続"
+      "特許権"
     ],
     "requiredKnowledge": [
-      "差止申立ての原則",
+      "認定手続の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -4304,15 +5401,34 @@
     "weaknessTags": [
       "輸入禁止貨物",
       "輸出禁止貨物",
-      "知財認定手続",
-      "期間・期限",
-      "選択肢読解"
+      "知的財産権",
+      "特許権",
+      "意匠権",
+      "商標権",
+      "著作権",
+      "育成者権",
+      "不正競争防止法",
+      "認定手続",
+      "差止申立て",
+      "争う旨の申出",
+      "積戻し",
+      "没収",
+      "廃棄",
+      "風俗害物品",
+      "児童ポルノ",
+      "規制物品",
+      "他法令確認",
+      "外為法"
     ],
     "relatedPackIds": [
       "KZ-PACK-006"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -4321,15 +5437,15 @@
     "subject": "関税法等",
     "questionNo": 7,
     "format": "択一",
-    "mainTopic": "用途外使用",
+    "mainTopic": "ATA通関手帳との関係",
     "subTopics": [
-      "再輸出免税",
-      "特定用途免税",
-      "無条件免税",
-      "戻し税"
+      "関税の軽減",
+      "関税の免除",
+      "関税の払戻し",
+      "再輸出免税"
     ],
     "requiredKnowledge": [
-      "用途外使用の原則",
+      "ATA通関手帳との関係の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -4341,17 +5457,35 @@
       "例外の削除"
     ],
     "weaknessTags": [
-      "減免税",
+      "軽減",
+      "免除",
+      "払戻し",
+      "再輸出免税",
+      "再輸入免税",
+      "無条件免税",
+      "特定用途免税",
       "戻し税",
+      "同一状態再輸出",
+      "違約品",
+      "災害滅失",
+      "変質損傷",
       "用途外使用",
-      "期間・期限",
-      "制度比較"
+      "免税貨物譲渡",
+      "関税徴収",
+      "外国採捕水産物",
+      "期限要件",
+      "届出申告承認",
+      "ATA"
     ],
     "relatedPackIds": [
       "KZ-PACK-007"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -4382,15 +5516,18 @@
     "weaknessTags": [
       "品目分類",
       "関税率表の通則",
-      "税番",
-      "分類手順",
-      "通関実務連携"
+      "HS分類",
+      "税番"
     ],
     "relatedPackIds": [
       "KZ-PACK-008"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -4428,7 +5565,11 @@
       "KZ-PACK-009"
     ],
     "priority": "B",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -4458,15 +5599,18 @@
     ],
     "weaknessTags": [
       "特恵関税",
-      "特殊関税",
-      "原産地表示",
+      "原産地証明",
       "期間・期限"
     ],
     "relatedPackIds": [
       "KZ-PACK-010"
     ],
     "priority": "B",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -4497,14 +5641,17 @@
     "weaknessTags": [
       "AEO",
       "特例輸入者",
-      "主体の混同",
-      "承認取消"
+      "主体の混同"
     ],
     "relatedPackIds": [
       "KZ-PACK-011"
     ],
     "priority": "B",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -4542,7 +5689,11 @@
       "KZ-PACK-012"
     ],
     "priority": "C",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -4551,15 +5702,15 @@
     "subject": "関税法等",
     "questionNo": 13,
     "format": "択一",
-    "mainTopic": "製造原価方式",
+    "mainTopic": "容器・包装費用",
     "subTopics": [
-      "課税価格決定原則",
-      "現実支払価格",
+      "課税価格の決定原則",
       "輸入取引",
-      "加算要素"
+      "現実支払価格",
+      "買手と売手"
     ],
     "requiredKnowledge": [
-      "製造原価方式の原則",
+      "容器・包装費用の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -4572,17 +5723,25 @@
     ],
     "weaknessTags": [
       "課税価格",
-      "加算要素",
-      "不算入要素",
       "輸入取引",
-      "評価方法の順序",
-      "通関実務連携計算"
+      "現実支払価格",
+      "加算要素",
+      "運賃保険料",
+      "無償提供物品",
+      "ロイヤルティ",
+      "航空運賃特例",
+      "同種類似貨物",
+      "通関実務計算"
     ],
     "relatedPackIds": [
       "KZ-PACK-001"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -4591,12 +5750,63 @@
     "subject": "関税法等",
     "questionNo": 14,
     "format": "語句選択",
-    "mainTopic": "期限後特例申告",
+    "mainTopic": "期限内特例申告",
     "subTopics": [
       "納期限",
       "法定納期限",
+      "延滞税",
+      "還付加算金"
+    ],
+    "requiredKnowledge": [
+      "期限内特例申告の原則",
+      "主体・権限者",
+      "期限・提出要否",
+      "例外と効果"
+    ],
+    "trapPatterns": [
+      "語句の置換",
+      "主体の入れ替え",
+      "期限・期間の混同",
+      "例外の削除"
+    ],
+    "weaknessTags": [
+      "納期限",
+      "法定納期限",
+      "延滞税",
+      "還付加算金",
+      "加算税",
+      "過少申告加算税",
+      "無申告加算税",
+      "重加算税",
+      "特例申告",
       "期限後特例申告",
-      "延滞税"
+      "少額不徴収",
+      "正当な理由",
+      "日付計算"
+    ],
+    "relatedPackIds": [
+      "KZ-PACK-002"
+    ],
+    "priority": "A",
+    "sourceLabel": "過去問分析由来",
+    "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
+    "note": "過去問本文は保存しない。論点分析のみ。"
+  },
+  {
+    "id": "EXAM-58-KZ-Q15",
+    "examNo": 58,
+    "subject": "関税法等",
+    "questionNo": 15,
+    "format": "複数選択",
+    "mainTopic": "期限後特例申告",
+    "subTopics": [
+      "申告納税方式",
+      "賦課課税方式",
+      "納税申告",
+      "特例申告"
     ],
     "requiredKnowledge": [
       "期限後特例申告の原則",
@@ -4611,56 +5821,30 @@
       "例外の削除"
     ],
     "weaknessTags": [
-      "納期限・法定納期限",
-      "延滞税・加算税",
-      "還付加算金",
-      "期間・期限",
-      "納税申告・更正"
-    ],
-    "relatedPackIds": [
-      "KZ-PACK-002"
-    ],
-    "priority": "A",
-    "lawRevisionCheckRequired": true,
-    "note": "過去問本文は保存しない。論点分析のみ。"
-  },
-  {
-    "id": "EXAM-58-KZ-Q15",
-    "examNo": 58,
-    "subject": "関税法等",
-    "questionNo": 15,
-    "format": "複数選択",
-    "mainTopic": "更正請求",
-    "subTopics": [
       "申告納税方式",
       "賦課課税方式",
-      "修正申告",
-      "更正請求"
-    ],
-    "requiredKnowledge": [
-      "更正請求の原則",
-      "主体・権限者",
-      "期限・提出要否",
-      "例外と効果"
-    ],
-    "trapPatterns": [
-      "語句の置換",
-      "主体の入れ替え",
-      "期限・期間の混同",
-      "例外の削除"
-    ],
-    "weaknessTags": [
+      "税額確定",
       "納税申告",
-      "修正申告・更正の請求",
-      "更正・決定",
-      "納税申告・更正",
-      "期間・期限"
+      "特例申告",
+      "期限後特例申告",
+      "修正申告",
+      "更正の請求",
+      "更正",
+      "決定",
+      "賦課決定",
+      "過大納付",
+      "不足税額",
+      "便益適用漏れ"
     ],
     "relatedPackIds": [
       "KZ-PACK-003"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -4669,15 +5853,15 @@
     "subject": "関税法等",
     "questionNo": 1,
     "format": "語句選択",
-    "mainTopic": "航空運賃特例",
+    "mainTopic": "同種又は類似貨物による課税価格",
     "subTopics": [
-      "課税価格決定原則",
-      "現実支払価格",
+      "課税価格の決定原則",
       "輸入取引",
-      "加算要素"
+      "現実支払価格",
+      "買手と売手"
     ],
     "requiredKnowledge": [
-      "航空運賃特例の原則",
+      "同種又は類似貨物による課税価格の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -4690,17 +5874,25 @@
     ],
     "weaknessTags": [
       "課税価格",
-      "加算要素",
-      "不算入要素",
       "輸入取引",
-      "評価方法の順序",
-      "通関実務連携計算"
+      "現実支払価格",
+      "加算要素",
+      "運賃保険料",
+      "無償提供物品",
+      "ロイヤルティ",
+      "航空運賃特例",
+      "同種類似貨物",
+      "通関実務計算"
     ],
     "relatedPackIds": [
       "KZ-PACK-001"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -4709,15 +5901,15 @@
     "subject": "関税法等",
     "questionNo": 2,
     "format": "複数選択",
-    "mainTopic": "無申告加算税",
+    "mainTopic": "少額不徴収",
     "subTopics": [
       "納期限",
       "法定納期限",
-      "期限後特例申告",
-      "延滞税"
+      "延滞税",
+      "還付加算金"
     ],
     "requiredKnowledge": [
-      "無申告加算税の原則",
+      "少額不徴収の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -4729,17 +5921,29 @@
       "例外の削除"
     ],
     "weaknessTags": [
-      "納期限・法定納期限",
-      "延滞税・加算税",
+      "納期限",
+      "法定納期限",
+      "延滞税",
       "還付加算金",
-      "期間・期限",
-      "納税申告・更正"
+      "加算税",
+      "過少申告加算税",
+      "無申告加算税",
+      "重加算税",
+      "特例申告",
+      "期限後特例申告",
+      "少額不徴収",
+      "正当な理由",
+      "日付計算"
     ],
     "relatedPackIds": [
       "KZ-PACK-002"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -4748,15 +5952,15 @@
     "subject": "関税法等",
     "questionNo": 3,
     "format": "択一",
-    "mainTopic": "期間制限",
+    "mainTopic": "税額確定方式",
     "subTopics": [
       "申告納税方式",
       "賦課課税方式",
-      "修正申告",
-      "更正請求"
+      "納税申告",
+      "特例申告"
     ],
     "requiredKnowledge": [
-      "期間制限の原則",
+      "税額確定方式の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -4768,17 +5972,30 @@
       "例外の削除"
     ],
     "weaknessTags": [
+      "申告納税方式",
+      "賦課課税方式",
+      "税額確定",
       "納税申告",
-      "修正申告・更正の請求",
-      "更正・決定",
-      "納税申告・更正",
-      "期間・期限"
+      "特例申告",
+      "期限後特例申告",
+      "修正申告",
+      "更正の請求",
+      "更正",
+      "決定",
+      "賦課決定",
+      "過大納付",
+      "不足税額",
+      "便益適用漏れ"
     ],
     "relatedPackIds": [
       "KZ-PACK-003"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -4787,15 +6004,15 @@
     "subject": "関税法等",
     "questionNo": 4,
     "format": "語句選択",
-    "mainTopic": "輸入許可前引取り",
+    "mainTopic": "申告先税関長",
     "subTopics": [
       "輸入申告",
+      "輸入の許可",
       "特例輸入者",
-      "特例委託輸入者",
-      "原産地証明"
+      "特例委託輸入者"
     ],
     "requiredKnowledge": [
-      "輸入許可前引取りの原則",
+      "申告先税関長の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -4807,17 +6024,30 @@
       "例外の削除"
     ],
     "weaknessTags": [
+      "輸入通関",
       "輸入申告",
-      "原産地表示",
-      "外為法",
-      "申告・許可・承認・届出の混同",
-      "EPA・WTO税率"
+      "輸入許可",
+      "特例輸入者",
+      "特例委託輸入者",
+      "NACCS",
+      "保税地域搬入前申告",
+      "原産地証明",
+      "WTO税率",
+      "EPA",
+      "締約国原産地証明書",
+      "他法令確認",
+      "輸入許可前引取り",
+      "郵便物輸入"
     ],
     "relatedPackIds": [
       "KZ-PACK-004"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -4826,15 +6056,15 @@
     "subject": "関税法等",
     "questionNo": 5,
     "format": "複数選択",
-    "mainTopic": "保税蔵置場",
+    "mainTopic": "指定保税地域",
     "subTopics": [
-      "保税地域5種",
+      "保税地域の種類",
+      "指定保税地域",
       "保税蔵置場",
-      "保税工場",
-      "保税展示場"
+      "保税工場"
     ],
     "requiredKnowledge": [
-      "保税蔵置場の原則",
+      "指定保税地域の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -4847,16 +6077,31 @@
     ],
     "weaknessTags": [
       "保税地域",
+      "指定保税地域",
+      "保税蔵置場",
+      "保税工場",
+      "保税展示場",
+      "総合保税地域",
+      "外国貨物",
+      "蔵置期間",
+      "帳簿管理",
+      "見本一時持出し",
+      "亡失",
+      "滅却",
       "保税運送",
-      "納税義務者",
-      "許可・承認・届出の混同",
-      "亡失責任"
+      "特定保税運送",
+      "難破貨物",
+      "許可承認届出"
     ],
     "relatedPackIds": [
       "KZ-PACK-005"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -4865,15 +6110,15 @@
     "subject": "関税法等",
     "questionNo": 6,
     "format": "択一",
-    "mainTopic": "争う旨の申出",
+    "mainTopic": "差止申立て",
     "subTopics": [
       "輸入してはならない貨物",
       "輸出してはならない貨物",
       "知的財産侵害物品",
-      "認定手続"
+      "特許権"
     ],
     "requiredKnowledge": [
-      "争う旨の申出の原則",
+      "差止申立ての原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -4887,15 +6132,34 @@
     "weaknessTags": [
       "輸入禁止貨物",
       "輸出禁止貨物",
-      "知財認定手続",
-      "期間・期限",
-      "選択肢読解"
+      "知的財産権",
+      "特許権",
+      "意匠権",
+      "商標権",
+      "著作権",
+      "育成者権",
+      "不正競争防止法",
+      "認定手続",
+      "差止申立て",
+      "争う旨の申出",
+      "積戻し",
+      "没収",
+      "廃棄",
+      "風俗害物品",
+      "児童ポルノ",
+      "規制物品",
+      "他法令確認",
+      "外為法"
     ],
     "relatedPackIds": [
       "KZ-PACK-006"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -4904,15 +6168,15 @@
     "subject": "関税法等",
     "questionNo": 7,
     "format": "語句選択",
-    "mainTopic": "再輸出免税",
+    "mainTopic": "関税の軽減",
     "subTopics": [
-      "再輸出免税",
-      "特定用途免税",
-      "無条件免税",
-      "戻し税"
+      "関税の軽減",
+      "関税の免除",
+      "関税の払戻し",
+      "再輸出免税"
     ],
     "requiredKnowledge": [
-      "再輸出免税の原則",
+      "関税の軽減の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -4924,17 +6188,35 @@
       "例外の削除"
     ],
     "weaknessTags": [
-      "減免税",
+      "軽減",
+      "免除",
+      "払戻し",
+      "再輸出免税",
+      "再輸入免税",
+      "無条件免税",
+      "特定用途免税",
       "戻し税",
+      "同一状態再輸出",
+      "違約品",
+      "災害滅失",
+      "変質損傷",
       "用途外使用",
-      "期間・期限",
-      "制度比較"
+      "免税貨物譲渡",
+      "関税徴収",
+      "外国採捕水産物",
+      "期限要件",
+      "届出申告承認",
+      "ATA"
     ],
     "relatedPackIds": [
       "KZ-PACK-007"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -4965,15 +6247,18 @@
     "weaknessTags": [
       "品目分類",
       "関税率表の通則",
-      "税番",
-      "分類手順",
-      "通関実務連携"
+      "HS分類",
+      "税番"
     ],
     "relatedPackIds": [
       "KZ-PACK-008"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -5011,7 +6296,11 @@
       "KZ-PACK-009"
     ],
     "priority": "B",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -5041,15 +6330,18 @@
     ],
     "weaknessTags": [
       "特恵関税",
-      "特殊関税",
-      "原産地表示",
+      "原産地証明",
       "期間・期限"
     ],
     "relatedPackIds": [
       "KZ-PACK-010"
     ],
     "priority": "B",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -5080,14 +6372,17 @@
     "weaknessTags": [
       "AEO",
       "特例輸入者",
-      "主体の混同",
-      "承認取消"
+      "主体の混同"
     ],
     "relatedPackIds": [
       "KZ-PACK-011"
     ],
     "priority": "B",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -5125,7 +6420,11 @@
       "KZ-PACK-012"
     ],
     "priority": "C",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -5134,15 +6433,15 @@
     "subject": "関税法等",
     "questionNo": 13,
     "format": "語句選択",
-    "mainTopic": "課税価格決定原則",
+    "mainTopic": "無償提供物品",
     "subTopics": [
-      "課税価格決定原則",
-      "現実支払価格",
+      "課税価格の決定原則",
       "輸入取引",
-      "加算要素"
+      "現実支払価格",
+      "買手と売手"
     ],
     "requiredKnowledge": [
-      "課税価格決定原則の原則",
+      "無償提供物品の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -5155,17 +6454,25 @@
     ],
     "weaknessTags": [
       "課税価格",
-      "加算要素",
-      "不算入要素",
       "輸入取引",
-      "評価方法の順序",
-      "通関実務連携計算"
+      "現実支払価格",
+      "加算要素",
+      "運賃保険料",
+      "無償提供物品",
+      "ロイヤルティ",
+      "航空運賃特例",
+      "同種類似貨物",
+      "通関実務計算"
     ],
     "relatedPackIds": [
       "KZ-PACK-001"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -5174,15 +6481,15 @@
     "subject": "関税法等",
     "questionNo": 14,
     "format": "複数選択",
-    "mainTopic": "延滞税",
+    "mainTopic": "修正申告と法定納期限",
     "subTopics": [
       "納期限",
       "法定納期限",
-      "期限後特例申告",
-      "延滞税"
+      "延滞税",
+      "還付加算金"
     ],
     "requiredKnowledge": [
-      "延滞税の原則",
+      "修正申告と法定納期限の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -5194,17 +6501,29 @@
       "例外の削除"
     ],
     "weaknessTags": [
-      "納期限・法定納期限",
-      "延滞税・加算税",
+      "納期限",
+      "法定納期限",
+      "延滞税",
       "還付加算金",
-      "期間・期限",
-      "納税申告・更正"
+      "加算税",
+      "過少申告加算税",
+      "無申告加算税",
+      "重加算税",
+      "特例申告",
+      "期限後特例申告",
+      "少額不徴収",
+      "正当な理由",
+      "日付計算"
     ],
     "relatedPackIds": [
       "KZ-PACK-002"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   },
   {
@@ -5213,15 +6532,15 @@
     "subject": "関税法等",
     "questionNo": 15,
     "format": "択一",
-    "mainTopic": "更正",
+    "mainTopic": "修正申告",
     "subTopics": [
       "申告納税方式",
       "賦課課税方式",
-      "修正申告",
-      "更正請求"
+      "納税申告",
+      "特例申告"
     ],
     "requiredKnowledge": [
-      "更正の原則",
+      "修正申告の原則",
       "主体・権限者",
       "期限・提出要否",
       "例外と効果"
@@ -5233,17 +6552,30 @@
       "例外の削除"
     ],
     "weaknessTags": [
+      "申告納税方式",
+      "賦課課税方式",
+      "税額確定",
       "納税申告",
-      "修正申告・更正の請求",
-      "更正・決定",
-      "納税申告・更正",
-      "期間・期限"
+      "特例申告",
+      "期限後特例申告",
+      "修正申告",
+      "更正の請求",
+      "更正",
+      "決定",
+      "賦課決定",
+      "過大納付",
+      "不足税額",
+      "便益適用漏れ"
     ],
     "relatedPackIds": [
       "KZ-PACK-003"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認",
     "note": "過去問本文は保存しない。論点分析のみ。"
   }
 ]

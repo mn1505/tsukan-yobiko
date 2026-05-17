@@ -17,7 +17,10 @@
       "mock-kz-pack-001-010"
     ],
     "sourceLabel": "過去問分析由来",
-    "lawRevisionCheckRequired": true
+    "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認"
   },
   {
     "mockId": "KZ-PACK-002-MINI-MOCK",
@@ -37,7 +40,10 @@
       "mock-kz-pack-002-010"
     ],
     "sourceLabel": "過去問分析由来",
-    "lawRevisionCheckRequired": true
+    "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認"
   },
   {
     "mockId": "KZ-PACK-003-MINI-MOCK",
@@ -57,7 +63,10 @@
       "mock-kz-pack-003-010"
     ],
     "sourceLabel": "過去問分析由来",
-    "lawRevisionCheckRequired": true
+    "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認"
   },
   {
     "mockId": "KZ-PACK-004-MINI-MOCK",
@@ -77,7 +86,10 @@
       "mock-kz-pack-004-010"
     ],
     "sourceLabel": "過去問分析由来",
-    "lawRevisionCheckRequired": true
+    "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認"
   },
   {
     "mockId": "KZ-PACK-005-MINI-MOCK",
@@ -97,7 +109,10 @@
       "mock-kz-pack-005-010"
     ],
     "sourceLabel": "過去問分析由来",
-    "lawRevisionCheckRequired": true
+    "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認"
   },
   {
     "mockId": "KZ-PACK-006-MINI-MOCK",
@@ -117,7 +132,10 @@
       "mock-kz-pack-006-010"
     ],
     "sourceLabel": "過去問分析由来",
-    "lawRevisionCheckRequired": true
+    "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認"
   },
   {
     "mockId": "KZ-PACK-007-MINI-MOCK",
@@ -137,7 +155,10 @@
       "mock-kz-pack-007-010"
     ],
     "sourceLabel": "過去問分析由来",
-    "lawRevisionCheckRequired": true
+    "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認"
   },
   {
     "mockId": "KZ-PACK-008-MINI-MOCK",
@@ -157,7 +178,10 @@
       "mock-kz-pack-008-010"
     ],
     "sourceLabel": "過去問分析由来",
-    "lawRevisionCheckRequired": true
+    "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認"
   },
   {
     "mockId": "KZ-PACK-009-MINI-MOCK",
@@ -177,7 +201,10 @@
       "mock-kz-pack-009-010"
     ],
     "sourceLabel": "過去問分析由来",
-    "lawRevisionCheckRequired": true
+    "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認"
   },
   {
     "mockId": "KZ-PACK-010-MINI-MOCK",
@@ -197,7 +224,10 @@
       "mock-kz-pack-010-010"
     ],
     "sourceLabel": "過去問分析由来",
-    "lawRevisionCheckRequired": true
+    "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認"
   },
   {
     "mockId": "KZ-PACK-011-MINI-MOCK",
@@ -217,7 +247,10 @@
       "mock-kz-pack-011-010"
     ],
     "sourceLabel": "過去問分析由来",
-    "lawRevisionCheckRequired": true
+    "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認"
   },
   {
     "mockId": "KZ-PACK-012-MINI-MOCK",
@@ -237,6 +270,9 @@
       "mock-kz-pack-012-010"
     ],
     "sourceLabel": "過去問分析由来",
-    "lawRevisionCheckRequired": true
+    "lawRevisionCheckRequired": true,
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認"
   }
 ]

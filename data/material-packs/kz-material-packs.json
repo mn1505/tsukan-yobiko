@@ -4,14 +4,22 @@
     "packName": "課税価格・輸入取引・加算要素パック",
     "subject": "関税法等",
     "targetTopics": [
-      "課税価格決定原則",
-      "現実支払価格",
+      "課税価格の決定原則",
       "輸入取引",
+      "現実支払価格",
+      "買手と売手",
       "加算要素",
+      "運賃・保険料",
+      "仲介料・手数料",
+      "容器・包装費用",
+      "無償提供物品",
+      "ロイヤルティ・ライセンス料",
+      "売手帰属収益",
       "航空運賃特例",
-      "同種・類似貨物",
+      "同種又は類似貨物による課税価格",
       "国内販売価格方式",
-      "製造原価方式"
+      "製造原価方式",
+      "特殊関係がある場合の注意点"
     ],
     "sourceExamQuestions": [
       "EXAM-51-KZ-Q01",
@@ -34,11 +42,40 @@
       "EXAM-59-KZ-Q13"
     ],
     "reason": "第51回以降の関税法等で繰り返し問われる論点・ひっかけ・弱点タグを横断補強するため。",
+    "lectures": [
+      "課税価格とは何か",
+      "輸入取引と現実支払価格",
+      "加算要素の全体像",
+      "運賃・保険料の扱い",
+      "無償提供物品の判断",
+      "ロイヤルティ・ライセンス料の判断",
+      "航空運賃特例",
+      "課税価格の代替的決定方法",
+      "通関実務の計算問題へのつなげ方"
+    ],
+    "checkQuestions": 55,
+    "trapQuestions": 20,
+    "drills": [
+      "課税価格基礎用語ドリル",
+      "加算要素判定ドリル",
+      "運賃・保険料判定ドリル",
+      "無償提供物品ドリル",
+      "ロイヤルティ判定ドリル",
+      "航空運賃特例ドリル",
+      "評価方法選択ドリル",
+      "通関実務連携ドリル"
+    ],
+    "miniMockQuestions": 10,
     "lectureIds": [
       "lesson-kz-pack-001-01",
       "lesson-kz-pack-001-02",
       "lesson-kz-pack-001-03",
-      "lesson-kz-pack-001-04"
+      "lesson-kz-pack-001-04",
+      "lesson-kz-pack-001-05",
+      "lesson-kz-pack-001-06",
+      "lesson-kz-pack-001-07",
+      "lesson-kz-pack-001-08",
+      "lesson-kz-pack-001-09"
     ],
     "checkQuestionIds": [
       "qb-kz-pack-001-check-001",
@@ -60,7 +97,42 @@
       "qb-kz-pack-001-check-017",
       "qb-kz-pack-001-check-018",
       "qb-kz-pack-001-check-019",
-      "qb-kz-pack-001-check-020"
+      "qb-kz-pack-001-check-020",
+      "qb-kz-pack-001-check-021",
+      "qb-kz-pack-001-check-022",
+      "qb-kz-pack-001-check-023",
+      "qb-kz-pack-001-check-024",
+      "qb-kz-pack-001-check-025",
+      "qb-kz-pack-001-check-026",
+      "qb-kz-pack-001-check-027",
+      "qb-kz-pack-001-check-028",
+      "qb-kz-pack-001-check-029",
+      "qb-kz-pack-001-check-030",
+      "qb-kz-pack-001-check-031",
+      "qb-kz-pack-001-check-032",
+      "qb-kz-pack-001-check-033",
+      "qb-kz-pack-001-check-034",
+      "qb-kz-pack-001-check-035",
+      "qb-kz-pack-001-check-036",
+      "qb-kz-pack-001-check-037",
+      "qb-kz-pack-001-check-038",
+      "qb-kz-pack-001-check-039",
+      "qb-kz-pack-001-check-040",
+      "qb-kz-pack-001-check-041",
+      "qb-kz-pack-001-check-042",
+      "qb-kz-pack-001-check-043",
+      "qb-kz-pack-001-check-044",
+      "qb-kz-pack-001-check-045",
+      "qb-kz-pack-001-check-046",
+      "qb-kz-pack-001-check-047",
+      "qb-kz-pack-001-check-048",
+      "qb-kz-pack-001-check-049",
+      "qb-kz-pack-001-check-050",
+      "qb-kz-pack-001-check-051",
+      "qb-kz-pack-001-check-052",
+      "qb-kz-pack-001-check-053",
+      "qb-kz-pack-001-check-054",
+      "qb-kz-pack-001-check-055"
     ],
     "trapQuestionIds": [
       "qb-kz-pack-001-trap-001",
@@ -77,12 +149,22 @@
       "qb-kz-pack-001-trap-012",
       "qb-kz-pack-001-trap-013",
       "qb-kz-pack-001-trap-014",
-      "qb-kz-pack-001-trap-015"
+      "qb-kz-pack-001-trap-015",
+      "qb-kz-pack-001-trap-016",
+      "qb-kz-pack-001-trap-017",
+      "qb-kz-pack-001-trap-018",
+      "qb-kz-pack-001-trap-019",
+      "qb-kz-pack-001-trap-020"
     ],
     "drillIds": [
       "KZ-PACK-001-DRILL-01",
       "KZ-PACK-001-DRILL-02",
-      "KZ-PACK-001-DRILL-03"
+      "KZ-PACK-001-DRILL-03",
+      "KZ-PACK-001-DRILL-04",
+      "KZ-PACK-001-DRILL-05",
+      "KZ-PACK-001-DRILL-06",
+      "KZ-PACK-001-DRILL-07",
+      "KZ-PACK-001-DRILL-08"
     ],
     "mockQuestionIds": [
       "mock-kz-pack-001-001",
@@ -98,15 +180,22 @@
     ],
     "weaknessTags": [
       "課税価格",
-      "加算要素",
-      "不算入要素",
       "輸入取引",
-      "評価方法の順序",
-      "通関実務連携計算"
+      "現実支払価格",
+      "加算要素",
+      "運賃保険料",
+      "無償提供物品",
+      "ロイヤルティ",
+      "航空運賃特例",
+      "同種類似貨物",
+      "通関実務計算"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
-    "sourceLabel": "過去問分析由来"
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認"
   },
   {
     "packId": "KZ-PACK-002",
@@ -115,11 +204,20 @@
     "targetTopics": [
       "納期限",
       "法定納期限",
-      "期限後特例申告",
       "延滞税",
+      "還付加算金",
       "過少申告加算税",
       "無申告加算税",
-      "還付加算金"
+      "重加算税",
+      "期限後特例申告",
+      "期限内特例申告",
+      "修正申告と法定納期限",
+      "納期限の延長",
+      "納税告知",
+      "督促",
+      "少額不徴収",
+      "正当な理由",
+      "課されない場合と徴収されない場合の違い"
     ],
     "sourceExamQuestions": [
       "EXAM-51-KZ-Q02",
@@ -142,11 +240,44 @@
       "EXAM-59-KZ-Q14"
     ],
     "reason": "第51回以降の関税法等で繰り返し問われる論点・ひっかけ・弱点タグを横断補強するため。",
+    "lectures": [
+      "納期限と法定納期限の違い",
+      "期限内特例申告と期限後特例申告",
+      "延滞税の基本構造",
+      "還付加算金の起算日",
+      "過少申告加算税の基本",
+      "無申告加算税の基本",
+      "重加算税の位置づけ",
+      "少額不徴収と端数処理の考え方",
+      "正当な理由がある場合の扱い",
+      "「課されない」と「徴収されない」の違い",
+      "日付問題の解き方"
+    ],
+    "checkQuestions": 55,
+    "trapQuestions": 20,
+    "drills": [
+      "納期限・法定納期限比較ドリル",
+      "特例申告期限ドリル",
+      "延滞税起算日ドリル",
+      "還付加算金起算日ドリル",
+      "加算税判定ドリル",
+      "少額不徴収ドリル",
+      "正当な理由判定ドリル",
+      "日付タイムラインドリル"
+    ],
+    "miniMockQuestions": 10,
     "lectureIds": [
       "lesson-kz-pack-002-01",
       "lesson-kz-pack-002-02",
       "lesson-kz-pack-002-03",
-      "lesson-kz-pack-002-04"
+      "lesson-kz-pack-002-04",
+      "lesson-kz-pack-002-05",
+      "lesson-kz-pack-002-06",
+      "lesson-kz-pack-002-07",
+      "lesson-kz-pack-002-08",
+      "lesson-kz-pack-002-09",
+      "lesson-kz-pack-002-10",
+      "lesson-kz-pack-002-11"
     ],
     "checkQuestionIds": [
       "qb-kz-pack-002-check-001",
@@ -173,7 +304,37 @@
       "qb-kz-pack-002-check-022",
       "qb-kz-pack-002-check-023",
       "qb-kz-pack-002-check-024",
-      "qb-kz-pack-002-check-025"
+      "qb-kz-pack-002-check-025",
+      "qb-kz-pack-002-check-026",
+      "qb-kz-pack-002-check-027",
+      "qb-kz-pack-002-check-028",
+      "qb-kz-pack-002-check-029",
+      "qb-kz-pack-002-check-030",
+      "qb-kz-pack-002-check-031",
+      "qb-kz-pack-002-check-032",
+      "qb-kz-pack-002-check-033",
+      "qb-kz-pack-002-check-034",
+      "qb-kz-pack-002-check-035",
+      "qb-kz-pack-002-check-036",
+      "qb-kz-pack-002-check-037",
+      "qb-kz-pack-002-check-038",
+      "qb-kz-pack-002-check-039",
+      "qb-kz-pack-002-check-040",
+      "qb-kz-pack-002-check-041",
+      "qb-kz-pack-002-check-042",
+      "qb-kz-pack-002-check-043",
+      "qb-kz-pack-002-check-044",
+      "qb-kz-pack-002-check-045",
+      "qb-kz-pack-002-check-046",
+      "qb-kz-pack-002-check-047",
+      "qb-kz-pack-002-check-048",
+      "qb-kz-pack-002-check-049",
+      "qb-kz-pack-002-check-050",
+      "qb-kz-pack-002-check-051",
+      "qb-kz-pack-002-check-052",
+      "qb-kz-pack-002-check-053",
+      "qb-kz-pack-002-check-054",
+      "qb-kz-pack-002-check-055"
     ],
     "trapQuestionIds": [
       "qb-kz-pack-002-trap-001",
@@ -200,7 +361,12 @@
     "drillIds": [
       "KZ-PACK-002-DRILL-01",
       "KZ-PACK-002-DRILL-02",
-      "KZ-PACK-002-DRILL-03"
+      "KZ-PACK-002-DRILL-03",
+      "KZ-PACK-002-DRILL-04",
+      "KZ-PACK-002-DRILL-05",
+      "KZ-PACK-002-DRILL-06",
+      "KZ-PACK-002-DRILL-07",
+      "KZ-PACK-002-DRILL-08"
     ],
     "mockQuestionIds": [
       "mock-kz-pack-002-001",
@@ -215,15 +381,26 @@
       "mock-kz-pack-002-010"
     ],
     "weaknessTags": [
-      "納期限・法定納期限",
-      "延滞税・加算税",
+      "納期限",
+      "法定納期限",
+      "延滞税",
       "還付加算金",
-      "期間・期限",
-      "納税申告・更正"
+      "加算税",
+      "過少申告加算税",
+      "無申告加算税",
+      "重加算税",
+      "特例申告",
+      "期限後特例申告",
+      "少額不徴収",
+      "正当な理由",
+      "日付計算"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
-    "sourceLabel": "過去問分析由来"
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認"
   },
   {
     "packId": "KZ-PACK-003",
@@ -232,11 +409,21 @@
     "targetTopics": [
       "申告納税方式",
       "賦課課税方式",
+      "納税申告",
+      "特例申告",
+      "期限内特例申告",
+      "期限後特例申告",
       "修正申告",
-      "更正請求",
+      "更正の請求",
       "更正",
       "決定",
-      "期間制限"
+      "賦課決定",
+      "税額確定方式",
+      "税関長による調査",
+      "過大納付",
+      "不足税額",
+      "EPA・特恵税率などの便益適用漏れ",
+      "輸入許可前引取り承認貨物の税額確定"
     ],
     "sourceExamQuestions": [
       "EXAM-51-KZ-Q03",
@@ -259,10 +446,44 @@
       "EXAM-59-KZ-Q15"
     ],
     "reason": "第51回以降の関税法等で繰り返し問われる論点・ひっかけ・弱点タグを横断補強するため。",
+    "lectures": [
+      "申告納税方式と賦課課税方式の違い",
+      "納税申告と特例申告の基本",
+      "期限内特例申告と期限後特例申告",
+      "修正申告とは何か",
+      "更正の請求とは何か",
+      "更正と決定の違い",
+      "賦課決定が行われる場面",
+      "税関長による調査と税額確定",
+      "過大納付・不足税額の処理",
+      "EPA・特恵税率の適用漏れと更正の請求",
+      "輸入許可前引取り承認貨物の税額確定"
+    ],
+    "checkQuestions": 55,
+    "trapQuestions": 20,
+    "drills": [
+      "税額確定方式判定ドリル",
+      "申告納税・賦課課税比較ドリル",
+      "修正申告判定ドリル",
+      "更正の請求判定ドリル",
+      "更正・決定比較ドリル",
+      "特例申告手続ドリル",
+      "過大納付・不足税額処理ドリル",
+      "便益適用漏れ対応ドリル"
+    ],
+    "miniMockQuestions": 10,
     "lectureIds": [
       "lesson-kz-pack-003-01",
       "lesson-kz-pack-003-02",
-      "lesson-kz-pack-003-03"
+      "lesson-kz-pack-003-03",
+      "lesson-kz-pack-003-04",
+      "lesson-kz-pack-003-05",
+      "lesson-kz-pack-003-06",
+      "lesson-kz-pack-003-07",
+      "lesson-kz-pack-003-08",
+      "lesson-kz-pack-003-09",
+      "lesson-kz-pack-003-10",
+      "lesson-kz-pack-003-11"
     ],
     "checkQuestionIds": [
       "qb-kz-pack-003-check-001",
@@ -284,7 +505,42 @@
       "qb-kz-pack-003-check-017",
       "qb-kz-pack-003-check-018",
       "qb-kz-pack-003-check-019",
-      "qb-kz-pack-003-check-020"
+      "qb-kz-pack-003-check-020",
+      "qb-kz-pack-003-check-021",
+      "qb-kz-pack-003-check-022",
+      "qb-kz-pack-003-check-023",
+      "qb-kz-pack-003-check-024",
+      "qb-kz-pack-003-check-025",
+      "qb-kz-pack-003-check-026",
+      "qb-kz-pack-003-check-027",
+      "qb-kz-pack-003-check-028",
+      "qb-kz-pack-003-check-029",
+      "qb-kz-pack-003-check-030",
+      "qb-kz-pack-003-check-031",
+      "qb-kz-pack-003-check-032",
+      "qb-kz-pack-003-check-033",
+      "qb-kz-pack-003-check-034",
+      "qb-kz-pack-003-check-035",
+      "qb-kz-pack-003-check-036",
+      "qb-kz-pack-003-check-037",
+      "qb-kz-pack-003-check-038",
+      "qb-kz-pack-003-check-039",
+      "qb-kz-pack-003-check-040",
+      "qb-kz-pack-003-check-041",
+      "qb-kz-pack-003-check-042",
+      "qb-kz-pack-003-check-043",
+      "qb-kz-pack-003-check-044",
+      "qb-kz-pack-003-check-045",
+      "qb-kz-pack-003-check-046",
+      "qb-kz-pack-003-check-047",
+      "qb-kz-pack-003-check-048",
+      "qb-kz-pack-003-check-049",
+      "qb-kz-pack-003-check-050",
+      "qb-kz-pack-003-check-051",
+      "qb-kz-pack-003-check-052",
+      "qb-kz-pack-003-check-053",
+      "qb-kz-pack-003-check-054",
+      "qb-kz-pack-003-check-055"
     ],
     "trapQuestionIds": [
       "qb-kz-pack-003-trap-001",
@@ -301,11 +557,22 @@
       "qb-kz-pack-003-trap-012",
       "qb-kz-pack-003-trap-013",
       "qb-kz-pack-003-trap-014",
-      "qb-kz-pack-003-trap-015"
+      "qb-kz-pack-003-trap-015",
+      "qb-kz-pack-003-trap-016",
+      "qb-kz-pack-003-trap-017",
+      "qb-kz-pack-003-trap-018",
+      "qb-kz-pack-003-trap-019",
+      "qb-kz-pack-003-trap-020"
     ],
     "drillIds": [
       "KZ-PACK-003-DRILL-01",
-      "KZ-PACK-003-DRILL-02"
+      "KZ-PACK-003-DRILL-02",
+      "KZ-PACK-003-DRILL-03",
+      "KZ-PACK-003-DRILL-04",
+      "KZ-PACK-003-DRILL-05",
+      "KZ-PACK-003-DRILL-06",
+      "KZ-PACK-003-DRILL-07",
+      "KZ-PACK-003-DRILL-08"
     ],
     "mockQuestionIds": [
       "mock-kz-pack-003-001",
@@ -320,15 +587,27 @@
       "mock-kz-pack-003-010"
     ],
     "weaknessTags": [
+      "申告納税方式",
+      "賦課課税方式",
+      "税額確定",
       "納税申告",
-      "修正申告・更正の請求",
-      "更正・決定",
-      "納税申告・更正",
-      "期間・期限"
+      "特例申告",
+      "期限後特例申告",
+      "修正申告",
+      "更正の請求",
+      "更正",
+      "決定",
+      "賦課決定",
+      "過大納付",
+      "不足税額",
+      "便益適用漏れ"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
-    "sourceLabel": "過去問分析由来"
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認"
   },
   {
     "packId": "KZ-PACK-004",
@@ -336,13 +615,24 @@
     "subject": "関税法等",
     "targetTopics": [
       "輸入申告",
+      "輸入の許可",
       "特例輸入者",
       "特例委託輸入者",
-      "原産地証明",
-      "EPA",
-      "WTO税率",
-      "他法令証明",
-      "輸入許可前引取り"
+      "NACCSによる輸入申告",
+      "保税地域搬入前申告",
+      "申告先税関長",
+      "郵便物の輸入手続",
+      "原産地証明書",
+      "WTO協定税率",
+      "EPA税率",
+      "締約国原産地証明書",
+      "原産品申告書",
+      "特恵原産地証明",
+      "原産地証明書の提出省略",
+      "他法令の許可・承認・検査",
+      "輸入許可前引取り承認",
+      "輸入してはならない貨物との境界",
+      "保税蔵置場に置く承認と原産地証明書の関係"
     ],
     "sourceExamQuestions": [
       "EXAM-51-KZ-Q04",
@@ -356,11 +646,47 @@
       "EXAM-59-KZ-Q04"
     ],
     "reason": "第51回以降の関税法等で繰り返し問われる論点・ひっかけ・弱点タグを横断補強するため。",
+    "lectures": [
+      "輸入通関の基本ルート",
+      "輸入申告と輸入許可の流れ",
+      "特例輸入者と特例委託輸入者",
+      "NACCSによる輸入申告",
+      "保税地域搬入前申告の考え方",
+      "郵便物の輸入手続",
+      "WTO協定税率と原産地証明書",
+      "EPA税率と締約国原産地証明書",
+      "原産地証明書の提出省略",
+      "他法令確認の基本",
+      "輸入許可前引取り承認",
+      "原産地・EPA・他法令の横断整理"
+    ],
+    "checkQuestions": 55,
+    "trapQuestions": 20,
+    "drills": [
+      "輸入申告ルート判定ドリル",
+      "特例輸入者・特例委託輸入者比較ドリル",
+      "NACCS輸入申告ドリル",
+      "保税地域搬入前申告ドリル",
+      "原産地証明書提出要否ドリル",
+      "WTO・EPA比較ドリル",
+      "他法令確認ドリル",
+      "輸入許可前引取り承認ドリル",
+      "郵便物輸入手続ドリル"
+    ],
+    "miniMockQuestions": 10,
     "lectureIds": [
       "lesson-kz-pack-004-01",
       "lesson-kz-pack-004-02",
       "lesson-kz-pack-004-03",
-      "lesson-kz-pack-004-04"
+      "lesson-kz-pack-004-04",
+      "lesson-kz-pack-004-05",
+      "lesson-kz-pack-004-06",
+      "lesson-kz-pack-004-07",
+      "lesson-kz-pack-004-08",
+      "lesson-kz-pack-004-09",
+      "lesson-kz-pack-004-10",
+      "lesson-kz-pack-004-11",
+      "lesson-kz-pack-004-12"
     ],
     "checkQuestionIds": [
       "qb-kz-pack-004-check-001",
@@ -387,7 +713,37 @@
       "qb-kz-pack-004-check-022",
       "qb-kz-pack-004-check-023",
       "qb-kz-pack-004-check-024",
-      "qb-kz-pack-004-check-025"
+      "qb-kz-pack-004-check-025",
+      "qb-kz-pack-004-check-026",
+      "qb-kz-pack-004-check-027",
+      "qb-kz-pack-004-check-028",
+      "qb-kz-pack-004-check-029",
+      "qb-kz-pack-004-check-030",
+      "qb-kz-pack-004-check-031",
+      "qb-kz-pack-004-check-032",
+      "qb-kz-pack-004-check-033",
+      "qb-kz-pack-004-check-034",
+      "qb-kz-pack-004-check-035",
+      "qb-kz-pack-004-check-036",
+      "qb-kz-pack-004-check-037",
+      "qb-kz-pack-004-check-038",
+      "qb-kz-pack-004-check-039",
+      "qb-kz-pack-004-check-040",
+      "qb-kz-pack-004-check-041",
+      "qb-kz-pack-004-check-042",
+      "qb-kz-pack-004-check-043",
+      "qb-kz-pack-004-check-044",
+      "qb-kz-pack-004-check-045",
+      "qb-kz-pack-004-check-046",
+      "qb-kz-pack-004-check-047",
+      "qb-kz-pack-004-check-048",
+      "qb-kz-pack-004-check-049",
+      "qb-kz-pack-004-check-050",
+      "qb-kz-pack-004-check-051",
+      "qb-kz-pack-004-check-052",
+      "qb-kz-pack-004-check-053",
+      "qb-kz-pack-004-check-054",
+      "qb-kz-pack-004-check-055"
     ],
     "trapQuestionIds": [
       "qb-kz-pack-004-trap-001",
@@ -414,7 +770,13 @@
     "drillIds": [
       "KZ-PACK-004-DRILL-01",
       "KZ-PACK-004-DRILL-02",
-      "KZ-PACK-004-DRILL-03"
+      "KZ-PACK-004-DRILL-03",
+      "KZ-PACK-004-DRILL-04",
+      "KZ-PACK-004-DRILL-05",
+      "KZ-PACK-004-DRILL-06",
+      "KZ-PACK-004-DRILL-07",
+      "KZ-PACK-004-DRILL-08",
+      "KZ-PACK-004-DRILL-09"
     ],
     "mockQuestionIds": [
       "mock-kz-pack-004-001",
@@ -429,30 +791,54 @@
       "mock-kz-pack-004-010"
     ],
     "weaknessTags": [
+      "輸入通関",
       "輸入申告",
-      "原産地表示",
-      "外為法",
-      "申告・許可・承認・届出の混同",
-      "EPA・WTO税率"
+      "輸入許可",
+      "特例輸入者",
+      "特例委託輸入者",
+      "NACCS",
+      "保税地域搬入前申告",
+      "原産地証明",
+      "WTO税率",
+      "EPA",
+      "締約国原産地証明書",
+      "他法令確認",
+      "輸入許可前引取り",
+      "郵便物輸入"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
-    "sourceLabel": "過去問分析由来"
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認"
   },
   {
     "packId": "KZ-PACK-005",
     "packName": "保税地域・保税蔵置場・保税運送パック",
     "subject": "関税法等",
     "targetTopics": [
-      "保税地域5種",
+      "保税地域の種類",
+      "指定保税地域",
       "保税蔵置場",
       "保税工場",
       "保税展示場",
       "総合保税地域",
-      "亡失",
-      "滅却",
+      "外国貨物を置く場所の制限",
+      "保税地域外に置ける例外",
+      "保税蔵置場の許可",
+      "保税蔵置場の蔵置期間",
+      "保税蔵置場の帳簿管理",
+      "保税蔵置場でできる行為",
+      "見本の一時持出し",
+      "外国貨物の亡失",
+      "外国貨物の滅却",
+      "保税地域の許可取消・業務停止",
       "保税運送",
-      "特定保税運送"
+      "特定保税運送",
+      "難破貨物の運送",
+      "積替え・船舶間運送",
+      "運送中の亡失と納税義務"
     ],
     "sourceExamQuestions": [
       "EXAM-51-KZ-Q05",
@@ -466,11 +852,50 @@
       "EXAM-59-KZ-Q05"
     ],
     "reason": "第51回以降の関税法等で繰り返し問われる論点・ひっかけ・弱点タグを横断補強するため。",
+    "lectures": [
+      "保税地域の全体像",
+      "保税地域5種類の違い",
+      "外国貨物を置く場所の制限",
+      "保税蔵置場の許可と管理",
+      "保税蔵置場の蔵置期間",
+      "保税蔵置場でできる行為",
+      "見本の一時持出し",
+      "外国貨物の亡失・滅却と納税義務",
+      "保税工場・保税展示場・総合保税地域の基本",
+      "保税運送の基本",
+      "特定保税運送の基本",
+      "難破貨物・積替貨物の運送",
+      "許可・承認・届出・指定の見分け方"
+    ],
+    "checkQuestions": 55,
+    "trapQuestions": 20,
+    "drills": [
+      "保税地域5分類ドリル",
+      "保税蔵置場ルールドリル",
+      "許可・承認・届出・指定判定ドリル",
+      "外国貨物置場制限ドリル",
+      "保税蔵置場蔵置期間ドリル",
+      "見本一時持出しドリル",
+      "外国貨物亡失責任ドリル",
+      "保税運送承認要否ドリル",
+      "特定保税運送ドリル",
+      "難破貨物運送ドリル"
+    ],
+    "miniMockQuestions": 10,
     "lectureIds": [
       "lesson-kz-pack-005-01",
       "lesson-kz-pack-005-02",
       "lesson-kz-pack-005-03",
-      "lesson-kz-pack-005-04"
+      "lesson-kz-pack-005-04",
+      "lesson-kz-pack-005-05",
+      "lesson-kz-pack-005-06",
+      "lesson-kz-pack-005-07",
+      "lesson-kz-pack-005-08",
+      "lesson-kz-pack-005-09",
+      "lesson-kz-pack-005-10",
+      "lesson-kz-pack-005-11",
+      "lesson-kz-pack-005-12",
+      "lesson-kz-pack-005-13"
     ],
     "checkQuestionIds": [
       "qb-kz-pack-005-check-001",
@@ -497,7 +922,37 @@
       "qb-kz-pack-005-check-022",
       "qb-kz-pack-005-check-023",
       "qb-kz-pack-005-check-024",
-      "qb-kz-pack-005-check-025"
+      "qb-kz-pack-005-check-025",
+      "qb-kz-pack-005-check-026",
+      "qb-kz-pack-005-check-027",
+      "qb-kz-pack-005-check-028",
+      "qb-kz-pack-005-check-029",
+      "qb-kz-pack-005-check-030",
+      "qb-kz-pack-005-check-031",
+      "qb-kz-pack-005-check-032",
+      "qb-kz-pack-005-check-033",
+      "qb-kz-pack-005-check-034",
+      "qb-kz-pack-005-check-035",
+      "qb-kz-pack-005-check-036",
+      "qb-kz-pack-005-check-037",
+      "qb-kz-pack-005-check-038",
+      "qb-kz-pack-005-check-039",
+      "qb-kz-pack-005-check-040",
+      "qb-kz-pack-005-check-041",
+      "qb-kz-pack-005-check-042",
+      "qb-kz-pack-005-check-043",
+      "qb-kz-pack-005-check-044",
+      "qb-kz-pack-005-check-045",
+      "qb-kz-pack-005-check-046",
+      "qb-kz-pack-005-check-047",
+      "qb-kz-pack-005-check-048",
+      "qb-kz-pack-005-check-049",
+      "qb-kz-pack-005-check-050",
+      "qb-kz-pack-005-check-051",
+      "qb-kz-pack-005-check-052",
+      "qb-kz-pack-005-check-053",
+      "qb-kz-pack-005-check-054",
+      "qb-kz-pack-005-check-055"
     ],
     "trapQuestionIds": [
       "qb-kz-pack-005-trap-001",
@@ -524,7 +979,14 @@
     "drillIds": [
       "KZ-PACK-005-DRILL-01",
       "KZ-PACK-005-DRILL-02",
-      "KZ-PACK-005-DRILL-03"
+      "KZ-PACK-005-DRILL-03",
+      "KZ-PACK-005-DRILL-04",
+      "KZ-PACK-005-DRILL-05",
+      "KZ-PACK-005-DRILL-06",
+      "KZ-PACK-005-DRILL-07",
+      "KZ-PACK-005-DRILL-08",
+      "KZ-PACK-005-DRILL-09",
+      "KZ-PACK-005-DRILL-10"
     ],
     "mockQuestionIds": [
       "mock-kz-pack-005-001",
@@ -540,14 +1002,28 @@
     ],
     "weaknessTags": [
       "保税地域",
+      "指定保税地域",
+      "保税蔵置場",
+      "保税工場",
+      "保税展示場",
+      "総合保税地域",
+      "外国貨物",
+      "蔵置期間",
+      "帳簿管理",
+      "見本一時持出し",
+      "亡失",
+      "滅却",
       "保税運送",
-      "納税義務者",
-      "許可・承認・届出の混同",
-      "亡失責任"
+      "特定保税運送",
+      "難破貨物",
+      "許可承認届出"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
-    "sourceLabel": "過去問分析由来"
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認"
   },
   {
     "packId": "KZ-PACK-006",
@@ -557,9 +1033,27 @@
       "輸入してはならない貨物",
       "輸出してはならない貨物",
       "知的財産侵害物品",
+      "特許権",
+      "実用新案権",
+      "意匠権",
+      "商標権",
+      "著作権",
+      "著作隣接権",
+      "育成者権",
+      "回路配置利用権",
+      "不正競争防止法関係物品",
+      "風俗を害すべき物品",
+      "児童ポルノ",
+      "麻薬・覚醒剤等の規制物品",
+      "拳銃等の規制物品",
       "認定手続",
       "差止申立て",
-      "争う旨の申出"
+      "権利者への通知",
+      "輸入者・輸出者による争う旨の申出",
+      "積戻しの可否",
+      "没収・廃棄・積戻し命令",
+      "輸入禁止貨物と他法令確認の違い",
+      "輸出禁止貨物と外為法規制の違い"
     ],
     "sourceExamQuestions": [
       "EXAM-51-KZ-Q06",
@@ -573,10 +1067,48 @@
       "EXAM-59-KZ-Q06"
     ],
     "reason": "第51回以降の関税法等で繰り返し問われる論点・ひっかけ・弱点タグを横断補強するため。",
+    "lectures": [
+      "輸入してはならない貨物の全体像",
+      "輸出してはならない貨物の全体像",
+      "知的財産侵害物品の基本",
+      "知財権の種類別整理",
+      "認定手続の流れ",
+      "差止申立ての基本",
+      "権利者・輸入者・輸出者への通知",
+      "争う旨の申出と期限管理",
+      "没収・廃棄・積戻しの考え方",
+      "風俗害物品・児童ポルノ・規制物品の整理",
+      "輸入禁止貨物と輸出禁止貨物の違い",
+      "輸出入禁止貨物と他法令・外為法の境界"
+    ],
+    "checkQuestions": 55,
+    "trapQuestions": 25,
+    "drills": [
+      "輸入禁止貨物分類ドリル",
+      "輸出禁止貨物分類ドリル",
+      "知財権別対象ドリル",
+      "認定手続フロードリル",
+      "差止申立て判定ドリル",
+      "争う旨の申出期限ドリル",
+      "積戻し可否判定ドリル",
+      "没収・廃棄・積戻し命令ドリル",
+      "輸出入禁止比較ドリル",
+      "他法令・外為法との境界ドリル"
+    ],
+    "miniMockQuestions": 10,
     "lectureIds": [
       "lesson-kz-pack-006-01",
       "lesson-kz-pack-006-02",
-      "lesson-kz-pack-006-03"
+      "lesson-kz-pack-006-03",
+      "lesson-kz-pack-006-04",
+      "lesson-kz-pack-006-05",
+      "lesson-kz-pack-006-06",
+      "lesson-kz-pack-006-07",
+      "lesson-kz-pack-006-08",
+      "lesson-kz-pack-006-09",
+      "lesson-kz-pack-006-10",
+      "lesson-kz-pack-006-11",
+      "lesson-kz-pack-006-12"
     ],
     "checkQuestionIds": [
       "qb-kz-pack-006-check-001",
@@ -603,7 +1135,37 @@
       "qb-kz-pack-006-check-022",
       "qb-kz-pack-006-check-023",
       "qb-kz-pack-006-check-024",
-      "qb-kz-pack-006-check-025"
+      "qb-kz-pack-006-check-025",
+      "qb-kz-pack-006-check-026",
+      "qb-kz-pack-006-check-027",
+      "qb-kz-pack-006-check-028",
+      "qb-kz-pack-006-check-029",
+      "qb-kz-pack-006-check-030",
+      "qb-kz-pack-006-check-031",
+      "qb-kz-pack-006-check-032",
+      "qb-kz-pack-006-check-033",
+      "qb-kz-pack-006-check-034",
+      "qb-kz-pack-006-check-035",
+      "qb-kz-pack-006-check-036",
+      "qb-kz-pack-006-check-037",
+      "qb-kz-pack-006-check-038",
+      "qb-kz-pack-006-check-039",
+      "qb-kz-pack-006-check-040",
+      "qb-kz-pack-006-check-041",
+      "qb-kz-pack-006-check-042",
+      "qb-kz-pack-006-check-043",
+      "qb-kz-pack-006-check-044",
+      "qb-kz-pack-006-check-045",
+      "qb-kz-pack-006-check-046",
+      "qb-kz-pack-006-check-047",
+      "qb-kz-pack-006-check-048",
+      "qb-kz-pack-006-check-049",
+      "qb-kz-pack-006-check-050",
+      "qb-kz-pack-006-check-051",
+      "qb-kz-pack-006-check-052",
+      "qb-kz-pack-006-check-053",
+      "qb-kz-pack-006-check-054",
+      "qb-kz-pack-006-check-055"
     ],
     "trapQuestionIds": [
       "qb-kz-pack-006-trap-001",
@@ -635,7 +1197,14 @@
     "drillIds": [
       "KZ-PACK-006-DRILL-01",
       "KZ-PACK-006-DRILL-02",
-      "KZ-PACK-006-DRILL-03"
+      "KZ-PACK-006-DRILL-03",
+      "KZ-PACK-006-DRILL-04",
+      "KZ-PACK-006-DRILL-05",
+      "KZ-PACK-006-DRILL-06",
+      "KZ-PACK-006-DRILL-07",
+      "KZ-PACK-006-DRILL-08",
+      "KZ-PACK-006-DRILL-09",
+      "KZ-PACK-006-DRILL-10"
     ],
     "mockQuestionIds": [
       "mock-kz-pack-006-001",
@@ -652,25 +1221,59 @@
     "weaknessTags": [
       "輸入禁止貨物",
       "輸出禁止貨物",
-      "知財認定手続",
-      "期間・期限",
-      "選択肢読解"
+      "知的財産権",
+      "特許権",
+      "意匠権",
+      "商標権",
+      "著作権",
+      "育成者権",
+      "不正競争防止法",
+      "認定手続",
+      "差止申立て",
+      "争う旨の申出",
+      "積戻し",
+      "没収",
+      "廃棄",
+      "風俗害物品",
+      "児童ポルノ",
+      "規制物品",
+      "他法令確認",
+      "外為法"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
-    "sourceLabel": "過去問分析由来"
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認"
   },
   {
     "packId": "KZ-PACK-007",
     "packName": "関税の軽減・免除・払戻しパック",
     "subject": "関税法等",
     "targetTopics": [
+      "関税の軽減",
+      "関税の免除",
+      "関税の払戻し",
       "再輸出免税",
-      "特定用途免税",
+      "再輸入免税",
       "無条件免税",
-      "戻し税",
-      "災害滅失",
-      "用途外使用"
+      "特定用途免税",
+      "外交官用貨物等の免税",
+      "学術研究用品等の免税",
+      "宗教・慈善・教育用物品の免税",
+      "変質・損傷等の場合の減税又は戻し税",
+      "災害等による滅失・損傷",
+      "輸入時と同一状態で再輸出される場合の戻し税",
+      "違約品等の再輸出又は廃棄による戻し税",
+      "加工又は修繕のため輸出された貨物の減税",
+      "外国で採捕された水産物等の減免税",
+      "用途外使用",
+      "免税貨物の譲渡",
+      "免税後の関税徴収",
+      "期限要件",
+      "届出・申告・承認の要否",
+      "ATA通関手帳との関係"
     ],
     "sourceExamQuestions": [
       "EXAM-51-KZ-Q07",
@@ -684,11 +1287,51 @@
       "EXAM-59-KZ-Q07"
     ],
     "reason": "第51回以降の関税法等で繰り返し問われる論点・ひっかけ・弱点タグを横断補強するため。",
+    "lectures": [
+      "関税の軽減・免除・払戻しの全体像",
+      "再輸出免税の基本",
+      "再輸入免税と無条件免税の整理",
+      "特定用途免税の用途制限",
+      "変質・損傷・滅失時の減税又は戻し税",
+      "輸入時と同一状態で再輸出される場合の戻し税",
+      "違約品等の再輸出又は廃棄による戻し税",
+      "加工又は修繕のため輸出された貨物の減税",
+      "外国で採捕された水産物等の減免税",
+      "用途外使用・譲渡・免税後徴収の考え方",
+      "期限要件の比較",
+      "届出・申告・承認の見分け方",
+      "ATA通関手帳と再輸出免税の関係"
+    ],
+    "checkQuestions": 55,
+    "trapQuestions": 20,
+    "drills": [
+      "軽減・免除・払戻し制度比較ドリル",
+      "再輸出免税要件ドリル",
+      "再輸入免税・無条件免税比較ドリル",
+      "特定用途免税ドリル",
+      "用途外使用判定ドリル",
+      "災害滅失・変質損傷ドリル",
+      "同一状態再輸出戻し税ドリル",
+      "違約品等戻し税ドリル",
+      "外国採捕水産物等ドリル",
+      "期限要件比較ドリル",
+      "届出・申告・承認判定ドリル"
+    ],
+    "miniMockQuestions": 10,
     "lectureIds": [
       "lesson-kz-pack-007-01",
       "lesson-kz-pack-007-02",
       "lesson-kz-pack-007-03",
-      "lesson-kz-pack-007-04"
+      "lesson-kz-pack-007-04",
+      "lesson-kz-pack-007-05",
+      "lesson-kz-pack-007-06",
+      "lesson-kz-pack-007-07",
+      "lesson-kz-pack-007-08",
+      "lesson-kz-pack-007-09",
+      "lesson-kz-pack-007-10",
+      "lesson-kz-pack-007-11",
+      "lesson-kz-pack-007-12",
+      "lesson-kz-pack-007-13"
     ],
     "checkQuestionIds": [
       "qb-kz-pack-007-check-001",
@@ -710,7 +1353,42 @@
       "qb-kz-pack-007-check-017",
       "qb-kz-pack-007-check-018",
       "qb-kz-pack-007-check-019",
-      "qb-kz-pack-007-check-020"
+      "qb-kz-pack-007-check-020",
+      "qb-kz-pack-007-check-021",
+      "qb-kz-pack-007-check-022",
+      "qb-kz-pack-007-check-023",
+      "qb-kz-pack-007-check-024",
+      "qb-kz-pack-007-check-025",
+      "qb-kz-pack-007-check-026",
+      "qb-kz-pack-007-check-027",
+      "qb-kz-pack-007-check-028",
+      "qb-kz-pack-007-check-029",
+      "qb-kz-pack-007-check-030",
+      "qb-kz-pack-007-check-031",
+      "qb-kz-pack-007-check-032",
+      "qb-kz-pack-007-check-033",
+      "qb-kz-pack-007-check-034",
+      "qb-kz-pack-007-check-035",
+      "qb-kz-pack-007-check-036",
+      "qb-kz-pack-007-check-037",
+      "qb-kz-pack-007-check-038",
+      "qb-kz-pack-007-check-039",
+      "qb-kz-pack-007-check-040",
+      "qb-kz-pack-007-check-041",
+      "qb-kz-pack-007-check-042",
+      "qb-kz-pack-007-check-043",
+      "qb-kz-pack-007-check-044",
+      "qb-kz-pack-007-check-045",
+      "qb-kz-pack-007-check-046",
+      "qb-kz-pack-007-check-047",
+      "qb-kz-pack-007-check-048",
+      "qb-kz-pack-007-check-049",
+      "qb-kz-pack-007-check-050",
+      "qb-kz-pack-007-check-051",
+      "qb-kz-pack-007-check-052",
+      "qb-kz-pack-007-check-053",
+      "qb-kz-pack-007-check-054",
+      "qb-kz-pack-007-check-055"
     ],
     "trapQuestionIds": [
       "qb-kz-pack-007-trap-001",
@@ -730,12 +1408,22 @@
       "qb-kz-pack-007-trap-015",
       "qb-kz-pack-007-trap-016",
       "qb-kz-pack-007-trap-017",
-      "qb-kz-pack-007-trap-018"
+      "qb-kz-pack-007-trap-018",
+      "qb-kz-pack-007-trap-019",
+      "qb-kz-pack-007-trap-020"
     ],
     "drillIds": [
       "KZ-PACK-007-DRILL-01",
       "KZ-PACK-007-DRILL-02",
-      "KZ-PACK-007-DRILL-03"
+      "KZ-PACK-007-DRILL-03",
+      "KZ-PACK-007-DRILL-04",
+      "KZ-PACK-007-DRILL-05",
+      "KZ-PACK-007-DRILL-06",
+      "KZ-PACK-007-DRILL-07",
+      "KZ-PACK-007-DRILL-08",
+      "KZ-PACK-007-DRILL-09",
+      "KZ-PACK-007-DRILL-10",
+      "KZ-PACK-007-DRILL-11"
     ],
     "mockQuestionIds": [
       "mock-kz-pack-007-001",
@@ -750,15 +1438,32 @@
       "mock-kz-pack-007-010"
     ],
     "weaknessTags": [
-      "減免税",
+      "軽減",
+      "免除",
+      "払戻し",
+      "再輸出免税",
+      "再輸入免税",
+      "無条件免税",
+      "特定用途免税",
       "戻し税",
+      "同一状態再輸出",
+      "違約品",
+      "災害滅失",
+      "変質損傷",
       "用途外使用",
-      "期間・期限",
-      "制度比較"
+      "免税貨物譲渡",
+      "関税徴収",
+      "外国採捕水産物",
+      "期限要件",
+      "届出申告承認",
+      "ATA"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
-    "sourceLabel": "過去問分析由来"
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認"
   },
   {
     "packId": "KZ-PACK-008",
@@ -785,6 +1490,19 @@
       "EXAM-59-KZ-Q08"
     ],
     "reason": "第51回以降の関税法等で繰り返し問われる論点・ひっかけ・弱点タグを横断補強するため。",
+    "lectures": [
+      "通則の適用順序",
+      "通則1の優先",
+      "通則2〜6の使いどころ"
+    ],
+    "checkQuestions": 20,
+    "trapQuestions": 15,
+    "drills": [
+      "通則番号判定",
+      "分類手順",
+      "通関実務連携"
+    ],
+    "miniMockQuestions": 10,
     "lectureIds": [
       "lesson-kz-pack-008-01",
       "lesson-kz-pack-008-02",
@@ -849,13 +1567,15 @@
     "weaknessTags": [
       "品目分類",
       "関税率表の通則",
-      "税番",
-      "分類手順",
-      "通関実務連携"
+      "HS分類",
+      "税番"
     ],
     "priority": "A",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
-    "sourceLabel": "過去問分析由来"
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認"
   },
   {
     "packId": "KZ-PACK-009",
@@ -881,6 +1601,16 @@
       "EXAM-59-KZ-Q09"
     ],
     "reason": "第51回以降の関税法等で繰り返し問われる論点・ひっかけ・弱点タグを横断補強するため。",
+    "lectures": [
+      "許可と承認の違い",
+      "輸出規制と輸入規制の全体像"
+    ],
+    "checkQuestions": 15,
+    "trapQuestions": 12,
+    "drills": [
+      "許可/承認要否判定"
+    ],
+    "miniMockQuestions": 10,
     "lectureIds": [
       "lesson-kz-pack-009-01",
       "lesson-kz-pack-009-02"
@@ -938,8 +1668,11 @@
       "輸入承認"
     ],
     "priority": "B",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
-    "sourceLabel": "過去問分析由来"
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認"
   },
   {
     "packId": "KZ-PACK-010",
@@ -966,6 +1699,18 @@
       "EXAM-59-KZ-Q10"
     ],
     "reason": "第51回以降の関税法等で繰り返し問われる論点・ひっかけ・弱点タグを横断補強するため。",
+    "lectures": [
+      "特恵関税制度",
+      "特殊関税の全体像",
+      "不当廉売関税の構造"
+    ],
+    "checkQuestions": 20,
+    "trapQuestions": 15,
+    "drills": [
+      "特恵適用要件",
+      "不当廉売関税判定"
+    ],
+    "miniMockQuestions": 10,
     "lectureIds": [
       "lesson-kz-pack-010-01",
       "lesson-kz-pack-010-02",
@@ -1028,13 +1773,15 @@
     ],
     "weaknessTags": [
       "特恵関税",
-      "特殊関税",
-      "原産地表示",
+      "原産地証明",
       "期間・期限"
     ],
     "priority": "B",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
-    "sourceLabel": "過去問分析由来"
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認"
   },
   {
     "packId": "KZ-PACK-011",
@@ -1061,6 +1808,17 @@
       "EXAM-59-KZ-Q11"
     ],
     "reason": "第51回以降の関税法等で繰り返し問われる論点・ひっかけ・弱点タグを横断補強するため。",
+    "lectures": [
+      "AEO制度の輸入側・輸出側比較"
+    ],
+    "checkQuestions": 18,
+    "trapQuestions": 15,
+    "drills": [
+      "主体比較",
+      "承認取消",
+      "申告先判定"
+    ],
+    "miniMockQuestions": 10,
     "lectureIds": [
       "lesson-kz-pack-011-01"
     ],
@@ -1121,12 +1879,14 @@
     "weaknessTags": [
       "AEO",
       "特例輸入者",
-      "主体の混同",
-      "承認取消"
+      "主体の混同"
     ],
     "priority": "B",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
-    "sourceLabel": "過去問分析由来"
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認"
   },
   {
     "packId": "KZ-PACK-012",
@@ -1151,6 +1911,15 @@
       "EXAM-59-KZ-Q12"
     ],
     "reason": "第51回以降の関税法等で繰り返し問われる論点・ひっかけ・弱点タグを横断補強するため。",
+    "lectures": [
+      "特例法の薄型整理"
+    ],
+    "checkQuestions": 12,
+    "trapQuestions": 10,
+    "drills": [
+      "制度名と要件の対応判定"
+    ],
+    "miniMockQuestions": 10,
     "lectureIds": [
       "lesson-kz-pack-012-01"
     ],
@@ -1202,7 +1971,10 @@
       "暗記不足"
     ],
     "priority": "C",
+    "sourceLabel": "過去問分析由来",
     "lawRevisionCheckRequired": true,
-    "sourceLabel": "過去問分析由来"
+    "lawRevisionStatus": "unchecked",
+    "lawRevisionCheckedAt": "",
+    "lawRevisionMemo": "数字・期限・対象範囲は現行法確認"
   }
 ]
